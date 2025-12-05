@@ -1,0 +1,114 @@
+{% extends "main/base.html" %}
+{% block title %}landingPage{% endblock %}
+
+
+{% load static %}
+
+{% block head_extra %}
+    <!-- Load Tailwind CSS (often handled in base.html, but included here for completeness) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* Custom font application */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7; /* Light grey background for the overall page */
+        }
+        /* Style for the main container to match the design's shadow/border */
+        .main-container {
+            max-width: 1280px;
+            margin: 4vh auto;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 2rem;
+        }
+        /* Custom styling for the logo circle effect */
+        .logo-circle {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+        }
+        /* Custom styling for the "Menu" button circle effect */
+        .menu-circle {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+{% endblock head_extra %}
+
+{% block title %}
+    JobBridge - Connect Talent and Opportunity
+{% endblock title %}
+
+{% block content %}
+<div class="main-container">
+
+    <!-- Header/Navigation Bar (Retained in template, assuming base.html handles general page structure but not this specific header) -->
+    <header class="flex justify-between items-center py-4 px-2 md:px-6">
+        <!-- Logo Section -->
+        <div class="flex items-center space-x-3">
+            <!-- Logo/Icon Circle -->
+            <div class="logo-circle w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center p-1.5 border border-gray-200">
+                <!-- Placeholder icon based on the image -->
+                <svg class="w-full h-full text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
+            <span class="text-xl font-semibold text-gray-800 hidden sm:block">JobBridge</span>
+        </div>
+
+        <!-- Desktop Navigation Links (Hidden on small screens) -->
+        <nav class="hidden md:flex items-center space-x-8 text-gray-700 font-medium">
+            <a href="{% url 'jobs' %}" class="hover:text-blue-600 transition duration-150">jobs</a>
+            <a href="{% url 'about' %}" class="hover:text-blue-600 transition duration-150">about</a>
+        </nav>
+
+        <!-- User Actions & Menu -->
+        <div class="flex items-center space-x-4">
+            <!-- Login Button (Black, rounded pill) -->
+            <a href="{% url 'login' %}" class="bg-black text-white px-6 py-2 rounded-full font-medium hover:bg-gray-800 transition duration-150 shadow-lg">
+                login
+            </a>
+
+            <!-- Menu Icon (Grey circle with lines) -->
+            <button class="menu-circle w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200 ml-4">
+                <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+    <!-- End of Header/Navigation Bar -->
+
+    <!-- Hero Section -->
+    <main class="text-center pt-16 pb-12 px-4">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-4 max-w-4xl mx-auto">
+            Connect Talent and Opportunity
+        </h1>
+
+        <p class="text-lg text-gray-500 mb-10 max-w-xl mx-auto">
+            Samting our sht will do (para explanation na guti)
+        </p>
+
+        <!-- Call-to-Action Buttons -->
+        <div class="flex justify-center space-x-4 md:space-x-6">
+            <a href="{% url 'find_job' %}" class="bg-gray-100 text-gray-700 font-medium px-8 py-3 rounded-full hover:bg-gray-200 transition duration-150 shadow-md">
+                find job
+            </a>
+            <a href="{% url 'contact_us' %}" class="bg-gray-800 text-white font-medium px-8 py-3 rounded-full hover:bg-black transition duration-150 shadow-lg">
+                contact us
+            </a>
+        </div>
+    </main>
+    <!-- End of Hero Section -->
+
+    <!-- Large Content Placeholder Area -->
+    <section id="design-placeholder" class="mt-16 mb-6 p-12 mx-auto" style="max-width: 95%; height: 50vh;">
+        <div class="w-full h-full bg-stone-300 rounded-2xl flex items-center justify-center p-8">
+            <p class="text-4xl font-bold text-gray-800 tracking-wider">
+                design here
+            </p>
+        </div>
+    </section>
+    <!-- End of Placeholder Area -->
+
+</div>
+{% endblock content %}  
