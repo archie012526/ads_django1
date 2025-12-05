@@ -1,0 +1,127 @@
+{% extends "main/base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="layout">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar-left">
+        <div class="profile-card">
+            <div class="profile-pic"></div>
+            <h3>Archie Boleche</h3>
+            <p>Location</p>
+        </div>
+
+        <div class="sidebar-links">
+            <p>📁 saved jobs</p>
+            <p>👥 groups</p>
+            <p>📰 newsletters</p>
+            <p>📅 events</p>
+        </div>
+    </aside>
+
+
+    <!-- CENTER FEED -->
+    <main class="feed">
+
+        <!-- POST CREATOR -->
+        <div class="post-box">
+            <div class="post-top">
+                <div class="avatar"></div>
+                <input type="text" placeholder="Start a post">
+            </div>
+
+            <div class="post-actions">
+                <button>🎥 Video</button>
+                <button>🖼 Photo</button>
+                <button>✍️ Write article</button>
+            </div>
+        </div>
+
+        <!-- RECOMMENDED PROFILES -->
+        <div class="recommended-box">
+            <h4>Recommended for you</h4>
+
+            <div class="recommended-item">
+                <div class="avatar small"></div>
+                <span>archie king D boleche</span>
+                <button class="follow-btn">+ Follow</button>
+            </div>
+
+            <div class="recommended-item">
+                <div class="avatar small"></div>
+                <span>archie king D boleche</span>
+                <button class="follow-btn">+ Follow</button>
+            </div>
+
+            <div class="recommended-item">
+                <div class="avatar small"></div>
+                <span>archie king D boleche</span>
+                <button class="follow-btn">+ Follow</button>
+            </div>
+
+            <p class="show-more">Show more →</p>
+        </div>
+
+        <!-- FEED POST -->
+        <div class="post">
+            <div class="post-header">
+                <div class="avatar small"></div>
+                <div>
+                    <strong>archie king D boleche</strong>
+                    <p>Career Growth</p>
+                </div>
+                <span class="post-options">⋯</span>
+            </div>
+
+            <p class="post-text">
+                "You don't need to have it all figured out — just take the next step."
+            </p>
+
+            <img src="https://images.unsplash.com/photo-1497032205916-ac775f0649ae" 
+                 class="post-image">
+
+            <div class="post-stats">
+                ❤️ 2.1k · 💬 198 · 🔁 76
+            </div>
+
+            <div class="post-buttons">
+                <button>👍 like</button>
+                <button>💬 comment</button>
+                <button>🔁 repost</button>
+                <button>📨 send</button>
+            </div>
+        </div>
+
+    </main>
+
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="sidebar-right">
+
+        <div class="widget">
+            <h4>JobBridge News</h4>
+        </div>
+
+        <div class="widget">
+            <h4>Add to your feed</h4>
+
+            <div class="feed-item">
+                <div class="icon-box"></div>
+                <span>Hotel jobs</span>
+                <button class="follow-btn">+ Follow</button>
+            </div>
+
+            <div class="feed-item">
+                <div class="icon-box"></div>
+                <span>Mcdonalds</span>
+                <button class="follow-btn">+ Follow</button>
+            </div>
+
+            <a class="show-more">View all recommendations →</a>
+        </div>
+
+    </aside>
+
+</div>
+{% endblock %}

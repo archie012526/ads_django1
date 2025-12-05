@@ -1,0 +1,159 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #e4e4e4;
+}
+
+/* NAVBAR */
+.navbar {
+    height: 55px;
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.search-box input {
+    width: 200px;
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+}
+
+.nav-icons span {
+    margin: 0 10px;
+    font-size: 20px;
+}
+
+.menu-icon {
+    font-size: 25px;
+}
+
+/* LAYOUT */
+.layout {
+    display: grid;
+    grid-template-columns: 250px 1fr 250px;
+    gap: 20px;
+    margin: 25px;
+}
+
+/* LEFT SIDEBAR */
+.sidebar-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.profile-pic {
+    width: 80px;
+    height: 80px;
+    background: #ccc;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+}
+
+/* POST CREATOR */
+.post-box, .recommended-box, .post {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.post-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar {
+    width: 50px;
+    height: 50px;
+    background: #aaa;
+    border-radius: 50%;
+}
+
+.avatar.small {
+    width: 35px;
+    height: 35px;
+}
+
+.post-actions button {
+    margin: 5px;
+    background: none;
+    border: none;
+    font-size: 14px;
+}
+
+/* RECOMMENDED */
+.recommended-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+
+.follow-btn {
+    background: #eef3f8;
+    border: 1px solid #aaa;
+    padding: 5px 10px;
+    border-radius: 20px;
+}
+
+.show-more {
+    font-size: 14px;
+    color: #0066c0;
+    cursor: pointer;
+}
+
+/* POST */
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.post-image {
+    width: 100%;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.post-buttons button {
+    background: none;
+    border: none;
+    padding: 10px;
+    width: 25%;
+}
+
+/* RIGHT SIDEBAR */
+.widget {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.feed-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.icon-box {
+    width: 30px;
+    height: 30px;
+    background: #ccc;
+    border-radius: 5px;
+}

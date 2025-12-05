@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}JobBridge{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo"></div>
+
+            <div class="search-box">
+                <input type="text" placeholder="Search">
+            </div>
+
+            <div class="nav-icons">
+                <span>🏠</span>
+                <span>👥</span>
+                <span>💼</span>
+                <span>✉️</span>
+                <span>🔔</span>
+                <span>👤</span>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <span class="menu-icon">☰</span>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+</body>
+</html>
