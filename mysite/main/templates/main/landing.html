@@ -1,89 +1,62 @@
 {% extends "main/base.html" %}
 {% load static %}
 
-{% block title %}JobBridge - Connect Talent and Opportunity{% endblock %}
-
 {% block head_extra %}
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f7f7;
-        }
-        .main-container {
-            max-width: 1280px;
-            margin: 4vh auto;
-            background-color: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            padding: 2rem;
-        }
-        .logo-circle {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-        }
-        .menu-circle {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-        }
-    </style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'style/landing.css' %}?v=1">
 {% endblock head_extra %}
+
+{% block title %}
+JobBridge - Connect Talent and Opportunity
+{% endblock title %}
 
 {% block content %}
 <div class="main-container">
 
-    <!-- Header Section -->
-    <header class="flex justify-between items-center py-4 px-2 md:px-6">
-        <div class="flex items-center space-x-3">
-            <div class="logo-circle w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center p-1.5 border border-gray-200">
-                <svg class="w-full h-full text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+    <!-- Header -->
+    <header class="header">
+        <div class="left-side">
+            <div class="logo-circle">
+                <svg class="logo-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                 </svg>
             </div>
-            <span class="text-xl font-semibold text-gray-800 hidden sm:block">JobBridge</span>
+            <span class="logo-text">JobBridge</span>
         </div>
 
-        <nav class="hidden md:flex items-center space-x-8 text-gray-700 font-medium">
-            <a href="{% url 'jobs' %}" class="hover:text-blue-600">jobs</a>
-            <a href="{% url 'about' %}" class="hover:text-blue-600">about</a>
+        <nav class="nav-links">
+            <a href="{% url 'jobs' %}">jobs</a>
+            <a href="{% url 'about' %}">about</a>
         </nav>
 
-        <div class="flex items-center space-x-4">
-            <a href="{% url 'login' %}" class="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-800 shadow-lg">
-                login
-            </a>
+        <div class="right-side">
+            <a href="{% url 'login' %}" class="login-btn">login</a>
 
-            <button class="menu-circle w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200 ml-4">
-                <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            <button class="menu-circle">
+                <svg class="menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6h16M4 12h16M4 18h16"></path>
                 </svg>
             </button>
         </div>
     </header>
 
     <!-- Hero Section -->
-    <main class="text-center pt-16 pb-12 px-4">
-        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 mb-4 max-w-4xl mx-auto">
-            Connect Talent and Opportunity
-        </h1>
+    <main class="hero">
+        <h1>Connect Talent and Opportunity</h1>
+        <p class="subtitle">Samting our sht will do (para explanation na guti)</p>
 
-        <p class="text-lg text-gray-500 mb-10 max-w-xl mx-auto">
-            Samting our sht will do (para explanation na guti)
-        </p>
-
-        <div class="flex justify-center space-x-4 md:space-x-6">
-            <a href="{% url 'find_job' %}" class="bg-gray-100 text-gray-700 px-8 py-3 rounded-full hover:bg-gray-200 shadow-md">
-                find job
-            </a>
-            <a href="{% url 'contact_us' %}" class="bg-gray-800 text-white px-8 py-3 rounded-full hover:bg-black shadow-lg">
-                contact us
-            </a>
+        <div class="buttons">
+            <a href="{% url 'find_job' %}" class="btn-light">find job</a>
+            <a href="{% url 'contact_us' %}" class="btn-dark">contact us</a>
         </div>
     </main>
 
-    <!-- Placeholder -->
-    <section class="mt-16 mb-6 p-12 mx-auto" style="max-width: 95%; height: 50vh;">
-        <div class="w-full h-full bg-stone-300 rounded-2xl flex items-center justify-center p-8">
-            <p class="text-4xl font-bold text-gray-800 tracking-wider">design here</p>
+    <!-- Design Placeholder -->
+    <section class="placeholder">
+        <div class="placeholder-box">
+            <p>design here</p>
         </div>
     </section>
 
