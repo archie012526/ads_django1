@@ -1,127 +1,147 @@
 {% extends "main/base.html" %}
-{% block title %}Home{% endblock %}
+
+{% load static %}
+
+{% block title %}Homepage{% endblock %}
 
 {% block content %}
-<div class="layout">
 
-    <!-- LEFT SIDEBAR -->
-    <aside class="sidebar-left">
+<div class="homepage-layout">
+
+    <!-- ========== LEFT SIDEBAR ========== -->
+    <aside class="left-sidebar">
+
         <div class="profile-card">
-            <div class="profile-pic"></div>
-            <h3>Archie Boleche</h3>
-            <p>Location</p>
+            <div class="profile-banner"></div>
+
+            <div class="profile-avatar">
+                <img src="{% static 'main/img/profile.png' %}" alt="profile">
+            </div>
+
+            <h3 class="profile-name">Archie Boleche</h3>
+            <p class="profile-location">location</p>
+
+            <div class="profile-menu">
+                <ul>
+                    <li><i class="fa-solid fa-bookmark"></i> saved jobs</li>
+                    <li><i class="fa-solid fa-users"></i> groups</li>
+                    <li><i class="fa-solid fa-newspaper"></i> news letters</li>
+                    <li><i class="fa-solid fa-calendar"></i> events</li>
+                </ul>
+            </div>
         </div>
 
-        <div class="sidebar-links">
-            <p>📁 saved jobs</p>
-            <p>👥 groups</p>
-            <p>📰 newsletters</p>
-            <p>📅 events</p>
-        </div>
     </aside>
 
-
-    <!-- CENTER FEED -->
+    <!-- ========== CENTER FEED ========== -->
     <main class="feed">
 
-        <!-- POST CREATOR -->
-        <div class="post-box">
-            <div class="post-top">
-                <div class="avatar"></div>
-                <input type="text" placeholder="Start a post">
+        <!-- CREATE POST BOX -->
+        <div class="create-post-box">
+            <div class="create-post-input">
+                <img src="{% static 'main/img/profile.png' %}">
+                <button class="write-btn">Start a post</button>
             </div>
 
-            <div class="post-actions">
-                <button>🎥 Video</button>
-                <button>🖼 Photo</button>
-                <button>✍️ Write article</button>
+            <div class="create-post-actions">
+                <button><i class="fa-solid fa-video"></i> Video</button>
+                <button><i class="fa-solid fa-image"></i> Photo</button>
+                <button><i class="fa-solid fa-pen"></i> Write article</button>
             </div>
         </div>
 
-        <!-- RECOMMENDED PROFILES -->
+        <!-- Recommended Users -->
         <div class="recommended-box">
             <h4>Recommended for you</h4>
 
-            <div class="recommended-item">
-                <div class="avatar small"></div>
+            <div class="recommended-user">
+                <img src="{% static 'main/img/profile.png' %}">
                 <span>archie king D boleche</span>
                 <button class="follow-btn">+ Follow</button>
             </div>
 
-            <div class="recommended-item">
-                <div class="avatar small"></div>
+            <div class="recommended-user">
+                <img src="{% static 'main/img/profile.png' %}">
                 <span>archie king D boleche</span>
                 <button class="follow-btn">+ Follow</button>
             </div>
 
-            <div class="recommended-item">
-                <div class="avatar small"></div>
+            <div class="recommended-user">
+                <img src="{% static 'main/img/profile.png' %}">
                 <span>archie king D boleche</span>
                 <button class="follow-btn">+ Follow</button>
             </div>
 
-            <p class="show-more">Show more →</p>
+            <button class="show-more">Show more →</button>
         </div>
 
-        <!-- FEED POST -->
-        <div class="post">
+        <!-- POST CARD -->
+        <div class="post-card">
+
+            <!-- Post Header -->
             <div class="post-header">
-                <div class="avatar small"></div>
+                <img src="{% static 'main/img/profile.png' %}">
                 <div>
-                    <strong>archie king D boleche</strong>
+                    <h4>archie king D boleche</h4>
                     <p>Career Growth</p>
                 </div>
-                <span class="post-options">⋯</span>
+                <i class="fa-solid fa-ellipsis"></i>
             </div>
 
+            <!-- Post Text -->
             <p class="post-text">
-                "You don't need to have it all figured out — just take the next step."
+                “You don’t need to have it all figured out — just take the next step.” ✨
             </p>
 
-            <img src="https://images.unsplash.com/photo-1497032205916-ac775f0649ae" 
-                 class="post-image">
+            <!-- Post Image -->
+            <img class="post-image" src="{% static 'main/img/post.jpg' %}" alt="post">
 
+            <!-- Post Stats -->
             <div class="post-stats">
-                ❤️ 2.1k · 💬 198 · 🔁 76
+                <span>❤️ 2.1k</span>
+                <span>💬 198</span>
+                <span>🔁 76</span>
             </div>
 
-            <div class="post-buttons">
-                <button>👍 like</button>
-                <button>💬 comment</button>
-                <button>🔁 repost</button>
-                <button>📨 send</button>
+            <!-- Post Actions -->
+            <div class="post-actions">
+                <button><i class="fa-regular fa-thumbs-up"></i> like</button>
+                <button><i class="fa-regular fa-comment"></i> comment</button>
+                <button><i class="fa-solid fa-repeat"></i> repost</button>
+                <button><i class="fa-regular fa-paper-plane"></i> send</button>
             </div>
+
         </div>
 
     </main>
 
+    <!-- ========== RIGHT SIDEBAR ========== -->
+    <aside class="right-sidebar">
 
-    <!-- RIGHT SIDEBAR -->
-    <aside class="sidebar-right">
-
-        <div class="widget">
+        <div class="news-card">
             <h4>JobBridge News</h4>
         </div>
 
-        <div class="widget">
+        <div class="feed-card">
             <h4>Add to your feed</h4>
 
             <div class="feed-item">
-                <div class="icon-box"></div>
+                <img src="{% static 'main/img/hotel.png' %}">
                 <span>Hotel jobs</span>
                 <button class="follow-btn">+ Follow</button>
             </div>
 
             <div class="feed-item">
-                <div class="icon-box"></div>
+                <img src="{% static 'main/img/mcd.png' %}">
                 <span>Mcdonalds</span>
                 <button class="follow-btn">+ Follow</button>
             </div>
 
-            <a class="show-more">View all recommendations →</a>
+            <p class="view-more">View all recommendations →</p>
         </div>
 
     </aside>
 
 </div>
+
 {% endblock %}
