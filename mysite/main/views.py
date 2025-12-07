@@ -76,7 +76,24 @@ def signup_page(request):
 
     return render(request, "main/signup.html")
 
+def edit_profile_page(request):
+    return render(request, "main/edit_profile.html")
 
+def profile_page(request):
+    skills = ["Python", "Django", "HTML", "CSS"]
 
+    job_database = [
+        {"title": "Junior Django Developer", "skill": "Django"},
+        {"title": "Frontend Intern", "skill": "HTML"},
+        {"title": "Backend Developer", "skill": "Python"},
+        {"title": "Web Designer", "skill": "CSS"},
+        {"title": "Full Stack Developer", "skill": "Python"},
+    ]
 
+    suggestions = [job for job in job_database if job["skill"] in skills]
+
+    return render(request, "main/profile.html", {
+        "skills": skills,
+        "job_suggestions": suggestions,
+    })
 
