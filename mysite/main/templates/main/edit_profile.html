@@ -1,6 +1,74 @@
 {% extends "main/base.html" %}
+{% load static %}
 
 {% block content %}
-<h2>Edit Profile Page</h2>
-<p>Work in progress...</p>
+
+<link rel="stylesheet" href="{% static 'style/edit_profile.css' %}">
+
+<div class="settings-wrapper">
+
+    <h1 class="settings-title">Edit Profile</h1>
+    <p class="settings-subtitle">Manage your profile</p>
+
+    <div class="edit-tabs">
+        <a class="tab active">Edit Profile</a>
+    </div>
+
+    <div class="edit-grid">
+
+        <!-- LEFT: PERSONAL INFO -->
+        <div class="card">
+            <h2 class="card-title">Personal Info</h2>
+
+            <div class="profile-photo-row">
+                <img src="{% static 'images/default-pfp.png' %}" class="pfp">
+
+                <div class="photo-buttons">
+                    <button class="btn-purple">Upload new picture</button>
+                    <button class="btn-outline">Delete</button>
+                </div>
+            </div>
+
+            <label class="label">Name</label>
+            <input type="text" class="input" placeholder="Jack">
+
+            <label class="label">Email</label>
+            <input type="email" class="input" placeholder="you@email.com">
+            <span class="note">We'll never share your details</span>
+
+            <label class="label">Bio</label>
+            <textarea class="textarea" placeholder="A bit about yourself and your role"></textarea>
+
+            <button class="btn-purple save-btn">Save personal info</button>
+
+            <!-- Company Info Section -->
+            <h2 class="card-title mt">Company Info</h2>
+
+            <label class="label">Company name</label>
+            <input type="text" class="input" value="UserActive">
+
+            <label class="label">Role</label>
+            <input type="text" class="input" placeholder="Designer / Developer">
+            
+        </div>
+
+        <!-- RIGHT: CHANGE PASSWORD -->
+        <div class="card">
+            <h2 class="card-title">Change password</h2>
+
+            <label class="label">Old password</label>
+            <input type="password" class="input">
+
+            <label class="label">New password</label>
+            <input type="password" class="input">
+            <span class="note">Minimum 6 characters</span>
+
+            <button class="btn-purple change-btn">Change</button>
+
+            <button class="delete-account">🗑 Delete account</button>
+        </div>
+
+    </div>
+</div>
+
 {% endblock %}
