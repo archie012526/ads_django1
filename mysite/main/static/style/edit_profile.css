@@ -1,0 +1,168 @@
+/* Container */
+.settings-wrapper {
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+    font-family: Arial, sans-serif;
+}
+
+/* Page title */
+.settings-title {
+    font-size: 26px;
+    font-weight: 600;
+}
+
+.settings-subtitle {
+    color: #666;
+    margin-top: 4px;
+}
+
+/* Tabs */
+.edit-tabs {
+    margin-top: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.edit-tabs .tab {
+    margin-right: 20px;
+    padding: 6px 0;
+    color: #666;
+    cursor: pointer;
+}
+
+.edit-tabs .active {
+    color: #7c3aed;
+    border-bottom: 2px solid #7c3aed;
+    font-weight: 600;
+}
+
+/* Two-column layout */
+.edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-top: 25px;
+}
+
+/* Card */
+.card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+/* Profile photo row */
+.profile-photo-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.pfp {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.photo-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Buttons */
+.btn-purple {
+    background: #7c3aed;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-purple:hover {
+    opacity: 0.9;
+}
+
+.btn-outline {
+    background: white;
+    border: 1px solid #ccc;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-outline:hover {
+    background: #f1f1f1;
+}
+
+/* Inputs */
+.label {
+    display: block;
+    font-weight: 500;
+    margin-top: 15px;
+}
+
+.input, .textarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.input:focus, .textarea:focus {
+    border-color: #7c3aed;
+    outline: none;
+}
+
+.textarea {
+    height: 110px;
+    resize: none;
+}
+
+/* Notes under inputs */
+.note {
+    display: block;
+    color: #999;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+/* Save button */
+.save-btn {
+    margin-top: 20px;
+    float: right;
+}
+
+/* Password change button */
+.change-btn {
+    margin-top: 15px;
+    width: 100px;
+}
+
+/* Delete account */
+.delete-account {
+    background: none;
+    color: #d00;
+    border: none;
+    margin-top: 40px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.mt {
+    margin-top: 40px;
+}
