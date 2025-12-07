@@ -40,12 +40,43 @@ def login_page(request):
 
         if user is not None:
             login(request, user)
-            return redirect("dashboard")  # change to your home page
+            return redirect("homepage")  # change to your home page
         else:
             messages.error(request, "Incorrect password.")
             return render(request, "main/login.html")
 
     return render(request, "main/login.html")
 
-def register_page(request):
-    return render(request, "main/register.html")
+def signup_page(request):
+    if request.method == "POST":
+        first = request.POST.get("first_name")
+        last = request.POST.get("last_name")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        # Check if account already exists
+        if User.objects.filter(username=email).exists():
+            messages.error(request, "Account already exists. Please log in instead.")
+            return render(request, "main/signup.html")
+
+        # Create user
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            first_name=first,
+            last_name=last,
+            password=password
+        )
+        user.save()
+
+        # Auto login after registration
+        login(request, user)
+
+        return redirect("login") # change this to your home/dashboard
+
+    return render(request, "main/signup.html")
+
+
+
+
+
