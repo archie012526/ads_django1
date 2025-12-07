@@ -6,71 +6,67 @@
     <title>{% block title %}ADS Project{% endblock %}</title>
 
     {% load static %}
+    <link rel="stylesheet" href="{% static 'style/base.css' %}">
+    <link rel="stylesheet" href="{% static 'style/styles.css' %}">
     <link rel="stylesheet" href="{% static 'style/landing.css' %}">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-
-    <style>
-        /* ============= BASE LAYOUT ============= */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background: #f8f8f8;
-        }
-
-        .navbar {
-            width: 100%;
-            background: #202020;
-            padding: 15px 20px;
-            color: white;
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .homepage-layout {
-            display: grid;
-            grid-template-columns: 18% auto 22%;
-            gap: 20px;
-            padding: 20px;
-        }
-
-        /* ============= LEFT SIDEBAR ============= */
-        .left-sidebar {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            height: 88vh;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
-        }
-
-        /* ============= MID SECTION ============= */
-        .mid-section {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            height: 88vh;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
-        }
-
-        /* ============= RIGHT SIDEBAR ============= */
-        .right-sidebar {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            height: 88vh;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
-        }
-    </style>
 
     {% block extra_head %}{% endblock %}
 </head>
+
 <body>
 
-    <!-- TOP NAV BAR -->
-    <div class="navbar">ARCHIE DASHBOARD</div>
+<!-- TOP NAV BAR -->
+<header class="top-navbar">
+    <div class="nav-left">
+        <img src="{% static 'images/profile.png' %}" class="profile-icon" alt="Profile">
 
-    <!-- MAIN PAGE CONTENT -->
+        <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Search">
+        </div>
+    </div>
+
+    <nav class="nav-center">
+        <a href="{% url 'homepage' %}" class="nav-item">
+            <img src="{% static 'images/home.png' %}" alt="">
+            <span>Home</span>
+        </a>
+
+        <div class="nav-item">
+            <img src="{% static 'images/network.png' %}" alt="">
+            <span>My Network</span>
+        </div>
+
+        <div class="nav-item">
+            <img src="{% static 'images/jobs.png' %}" alt="">
+            <span>Jobs</span>
+        </div>
+
+        <div class="nav-item">
+            <img src="{% static 'images/messages.png' %}" alt="">
+            <span>Messages</span>
+        </div>
+
+        <div class="nav-item">
+            <img src="{% static 'images/notification.png' %}" alt="">
+            <span>Notification</span>
+        </div>
+
+        <div class="nav-item">
+            <img src="{% static 'images/me.png' %}" alt="">
+            <span>Me</span>
+        </div>
+    </nav>
+
+    <div class="nav-right">
+        <img src="{% static 'images/menu.png' %}" class="menu-icon" alt="Menu">
+    </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="main-container">
     {% block content %}{% endblock %}
+</main>
 
 </body>
 </html>
