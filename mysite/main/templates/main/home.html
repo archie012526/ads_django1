@@ -1,147 +1,113 @@
 {% extends "main/base.html" %}
-
 {% load static %}
 
-{% block title %}Homepage{% endblock %}
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'style/home.css' %}?v=1">
+{% endblock extra_head %}
 
 {% block content %}
 
-<div class="homepage-layout">
+<div class="home-container">
 
-    <!-- ========== LEFT SIDEBAR ========== -->
-    <aside class="left-sidebar">
-
+    <!-- LEFT COLUMN -->
+    <div class="left-column">
         <div class="profile-card">
             <div class="profile-banner"></div>
 
-            <div class="profile-avatar">
-                <img src="{% static 'main/img/profile.png' %}" alt="profile">
-            </div>
+            <div class="profile-pic-placeholder"></div>
 
-            <h3 class="profile-name">Archie Boleche</h3>
-            <p class="profile-location">location</p>
+            <a href="{% url 'profile' %}" class="profile-name-link">Archie Boleche</a>
 
-            <div class="profile-menu">
-                <ul>
-                    <li><i class="fa-solid fa-bookmark"></i> saved jobs</li>
-                    <li><i class="fa-solid fa-users"></i> groups</li>
-                    <li><i class="fa-solid fa-newspaper"></i> news letters</li>
-                    <li><i class="fa-solid fa-calendar"></i> events</li>
-                </ul>
-            </div>
+            <p class="location">location</p>
+
+            <ul class="profile-links">
+                <li>saved jobs</li>
+                <li>groups</li>
+                <li>news letters</li>
+                <li>events</li>
+            </ul>
         </div>
+    </div>
 
-    </aside>
+    <!-- CENTER COLUMN -->
+    <div class="center-column">
 
-    <!-- ========== CENTER FEED ========== -->
-    <main class="feed">
-
-        <!-- CREATE POST BOX -->
-        <div class="create-post-box">
-            <div class="create-post-input">
-                <img src="{% static 'main/img/profile.png' %}">
-                <button class="write-btn">Start a post</button>
+        <!-- Create Post -->
+        <div class="create-post-card">
+              <div class="top-row">
+            <div class="profile-pic-small"></div>
+             <input type="text" placeholder="Start a post" class="post-input">
             </div>
-
-            <div class="create-post-actions">
-                <button><i class="fa-solid fa-video"></i> Video</button>
-                <button><i class="fa-solid fa-image"></i> Photo</button>
-                <button><i class="fa-solid fa-pen"></i> Write article</button>
+            <div class="post-options">
+                <span>📹 Video</span>
+                <span>📷 Photo</span>
+                <span>✍️ Write article</span>
             </div>
         </div>
 
         <!-- Recommended Users -->
-        <div class="recommended-box">
-            <h4>Recommended for you</h4>
+        <div class="recommended-card">
+            <h3>Recommended for you</h3>
 
+            {% for i in "123" %}
             <div class="recommended-user">
-                <img src="{% static 'main/img/profile.png' %}">
-                <span>archie king D boleche</span>
-                <button class="follow-btn">+ Follow</button>
-            </div>
-
-            <div class="recommended-user">
-                <img src="{% static 'main/img/profile.png' %}">
-                <span>archie king D boleche</span>
-                <button class="follow-btn">+ Follow</button>
-            </div>
-
-            <div class="recommended-user">
-                <img src="{% static 'main/img/profile.png' %}">
-                <span>archie king D boleche</span>
-                <button class="follow-btn">+ Follow</button>
-            </div>
-
-            <button class="show-more">Show more →</button>
-        </div>
-
-        <!-- POST CARD -->
-        <div class="post-card">
-
-            <!-- Post Header -->
-            <div class="post-header">
-                <img src="{% static 'main/img/profile.png' %}">
+                <div class="profile-pic-small"></div>
                 <div>
-                    <h4>archie king D boleche</h4>
-                    <p>Career Growth</p>
+                    <p class="username">archie king D boleche</p>
                 </div>
-                <i class="fa-solid fa-ellipsis"></i>
+                <button class="follow-btn">+ Follow</button>
+            </div>
+            {% endfor %}
+
+            <p class="show-more">Show more →</p>
+        </div>
+
+        <!-- POST -->
+        <div class="post-card">
+            <div class="post-header">
+                <div class="profile-pic-small"></div>
+                <div>
+                    <p class="username">archie king D boleche</p>
+                    <small>Career Growth</small>
+                </div>
             </div>
 
-            <!-- Post Text -->
-            <p class="post-text">
-                “You don’t need to have it all figured out — just take the next step.” ✨
-            </p>
-
-            <!-- Post Image -->
-            <img class="post-image" src="{% static 'main/img/post.jpg' %}" alt="post">
-
-            <!-- Post Stats -->
-            <div class="post-stats">
-                <span>❤️ 2.1k</span>
-                <span>💬 198</span>
-                <span>🔁 76</span>
+            <div class="post-content">
+                <div class="post-image-placeholder"></div>
             </div>
 
-            <!-- Post Actions -->
             <div class="post-actions">
-                <button><i class="fa-regular fa-thumbs-up"></i> like</button>
-                <button><i class="fa-regular fa-comment"></i> comment</button>
-                <button><i class="fa-solid fa-repeat"></i> repost</button>
-                <button><i class="fa-regular fa-paper-plane"></i> send</button>
+                <span>👍 like</span>
+                <span>💬 comment</span>
+                <span>🔁 repost</span>
+                <span>📨 send</span>
             </div>
-
         </div>
 
-    </main>
+    </div>
 
-    <!-- ========== RIGHT SIDEBAR ========== -->
-    <aside class="right-sidebar">
-
-        <div class="news-card">
-            <h4>JobBridge News</h4>
-        </div>
+    <!-- RIGHT COLUMN -->
+    <div class="right-column">
+        <div class="news-card"></div>
 
         <div class="feed-card">
             <h4>Add to your feed</h4>
 
             <div class="feed-item">
-                <img src="{% static 'main/img/hotel.png' %}">
-                <span>Hotel jobs</span>
-                <button class="follow-btn">+ Follow</button>
+                <div class="profile-pic-small"></div>
+                <p>Hotel jobs</p>
+                <button class="follow-btn">Follow</button>
             </div>
 
             <div class="feed-item">
-                <img src="{% static 'main/img/mcd.png' %}">
-                <span>Mcdonalds</span>
-                <button class="follow-btn">+ Follow</button>
+                <div class="profile-pic-small"></div>
+                <p>Mcdonalds</p>
+                <button class="follow-btn">Follow</button>
             </div>
-
-            <p class="view-more">View all recommendations →</p>
         </div>
-
-    </aside>
+    </div>
 
 </div>
 
-{% endblock %}
+{% endblock content %}
