@@ -27,9 +27,10 @@
     </div>
 
     <nav class="nav-center">
-        <a href="{% url 'homepage' %}" class="nav-item">
-            <img src="{% static 'images/home.png' %}" alt="">
-            <span>Home</span>
+        <a href="{% url 'homepage' %}" class="nav-link">
+        <img src="{% static 'images/home.png' %}" class="nav-icon" alt="">
+        Home
+    </a>
         </a>
 
         <div class="nav-item">
@@ -39,7 +40,8 @@
 
         <div class="nav-item">
             <img src="{% static 'images/jobs.png' %}" alt="">
-            <span>Jobs</span>
+            <a href="{% url 'jobs' %}"
+            class="{% if request.path == '/jobs/' %}nav-active{% endif %}">Jobs</a>
         </div>
 
         <div class="nav-item">
@@ -52,9 +54,10 @@
             <span>Notification</span>
         </div>
 
-        <div class="nav-item">
+        <div class="nav-item" >
             <img src="{% static 'images/me.png' %}" alt="">
-            <span>Me</span>
+            <a href="{% url 'profile' %}"
+            class="{% if request.path == '/profile/' %}nav-active{% endif %}">Me</a>
         </div>
     </nav>
 

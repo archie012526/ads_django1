@@ -240,3 +240,22 @@ body {
     font-size: 14px;
     color: #7a6c62;
 }
+.profile-name-link {
+    display: block;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #000000;          /* Text stays black */
+    text-decoration: none;   /* Remove underline */
+    margin-top: 10px;
+}
+
+/* Prevent the link from ever turning purple after click */
+.profile-name-link:visited {
+    color: #000000;
+}
+
+/* Optional hover effect */
+.profile-name-link:hover {
+    color: #0073b1;
+}
