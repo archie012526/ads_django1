@@ -14,5 +14,5 @@ urlpatterns = [
     path("messages/", views._messages, name="messages"),
     path("notifications/", views.notifications_page, name="notifications"),
     path("mark-read/", views.mark_all_as_read, name="mark_all_as_read"),
-    path("job/<int:job_id>/apply/", views.application, name="job_application"),
+    path("job-applications/", views.job_applications_page, name="job_applications"),
 ]

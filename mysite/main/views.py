@@ -1,6 +1,8 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from .forms import UserForm, ProfileForm
+from .models import Profile
 from django.contrib import messages
 
 from django.contrib.auth.models import User
@@ -58,9 +60,28 @@ def find_job_page(request):
 def contact_us_page(request):
     return render(request, "main/contact_us.html")
 
+@login_required
 def edit_profile_page(request):
-    return render(request, "main/edit_profile.html")
+    profile, created = Profile.objects.get_or_create(user=request.user)
 
+    if request.method == "POST":
+        user_form = UserForm(request.POST, instance=request.user)
+        profile_form = ProfileForm(request.POST, request.FILES, instance=profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            return redirect("profile")   # redirect to profile page
+        
+    else:
+        user_form = UserForm(instance=request.user)
+        profile_form = ProfileForm(instance=profile)
+
+    return render(request, "main/edit_profile.html", {
+        "user_form": user_form,
+        "profile_form": profile_form,
+        "profile": profile,
+    })
 
 # ============================
 # AUTH: LOGIN
@@ -198,9 +219,5 @@ def mark_all_as_read(request):
 # ============================
 # JOB APPLICATION PAGE
 # ============================
-def application(request, job_id):
-    job = get_object_or_404(Job, id=job_id)
-
-    return render(request, "main/job_application.html", {
-        "job": job
-    })
+def job_applications_page(request):
+    return render(request, "main/job_applications.html")
