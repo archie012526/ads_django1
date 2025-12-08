@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
 
@@ -96,3 +97,48 @@ def profile_page(request):
 
 def _messages(request):
     return render(request, "main/messages.html")
+
+@login_required
+def notifications_page(request):
+    # You can replace this with database model later
+    sample_notifications = {
+        "user1": [
+            {
+                "title": "New Job Recommendation",
+                "description": "3 new jobs match your skills.",
+                "type": "Job",
+                "time": "10 minutes ago",
+                "status": "unread",
+                "color": "blue",
+            },
+            {
+                "title": "Profile View",
+                "description": "An employer viewed your profile.",
+                "type": "Profile",
+                "time": "1 hour ago",
+                "status": "read",
+                "color": "green",
+            },
+        ],
+        "user2": [
+            {
+                "title": "New Message",
+                "description": "You received a new message.",
+                "type": "Message",
+                "time": "5 minutes ago",
+                "status": "unread",
+                "color": "purple",
+            }
+        ]
+    }
+
+    # Map logged-in user to sample data
+    username = request.user.username
+    notifications = sample_notifications.get(username, [])
+
+    return render(request, "main/notifications.html", {
+        "notifications": notifications
+    })
+
+def mark_all_as_read(request):
+    return redirect("notifications")
