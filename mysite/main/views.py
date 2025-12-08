@@ -1,12 +1,12 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from .forms import UserForm, ProfileForm
+from django.contrib.auth import update_session_auth_hash
+from .models import Skill
+from .forms import SkillForm
 from .models import Profile
 from django.contrib import messages
-
 from django.contrib.auth.models import User
-
 from .models import Profile, Job, JobApplication, Notification
 
 
@@ -62,26 +62,46 @@ def contact_us_page(request):
 
 @login_required
 def edit_profile_page(request):
-    profile, created = Profile.objects.get_or_create(user=request.user)
+    profile = Profile.objects.get(user=request.user)
 
     if request.method == "POST":
-        user_form = UserForm(request.POST, instance=request.user)
-        profile_form = ProfileForm(request.POST, request.FILES, instance=profile)
 
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-            return redirect("profile")   # redirect to profile page
-        
-    else:
-        user_form = UserForm(instance=request.user)
-        profile_form = ProfileForm(instance=profile)
+        # Delete image
+        if "delete_image" in request.POST:
+            if profile.image:
+                profile.image.delete()
+            profile.image = None
+            profile.save()
+            return redirect("edit_profile")
 
-    return render(request, "main/edit_profile.html", {
-        "user_form": user_form,
-        "profile_form": profile_form,
-        "profile": profile,
-    })
+        # Change password
+        if "change_password" in request.POST:
+            old = request.POST.get("old_password")
+            new = request.POST.get("new_password")
+
+            if request.user.check_password(old):
+                request.user.set_password(new)
+                request.user.save()
+                update_session_auth_hash(request, request.user)
+                messages.success(request, "Password updated!")
+            else:
+                messages.error(request, "Old password incorrect.")
+            return redirect("edit_profile")
+
+        # Update PROFILE fields
+        profile.full_name = request.POST.get("full_name")
+        profile.bio = request.POST.get("bio")
+        profile.company_name = request.POST.get("company_name")
+        profile.role = request.POST.get("role")
+
+        if request.FILES.get("image"):
+            profile.image = request.FILES["image"]
+
+        profile.save()
+        messages.success(request, "Profile updated!")
+        return redirect("edit_profile")
+
+    return render(request, "main/edit_profile.html", {"profile": profile})
 
 # ============================
 # AUTH: LOGIN
@@ -142,24 +162,10 @@ def signup_page(request):
 # ============================
 # PROFILE
 # ============================
+@login_required
 def profile_page(request):
-    skills = ["Python", "Django", "HTML", "CSS"]
-
-    job_database = [
-        {"title": "Junior Django Developer", "skill": "Django"},
-        {"title": "Frontend Intern", "skill": "HTML"},
-        {"title": "Backend Developer", "skill": "Python"},
-        {"title": "Web Designer", "skill": "CSS"},
-        {"title": "Full Stack Developer", "skill": "Python"},
-    ]
-
-    suggestions = [job for job in job_database if job["skill"] in skills]
-
-    return render(request, "main/profile.html", {
-        "skills": skills,
-        "job_suggestions": suggestions,
-    })
-
+    profile = Profile.objects.get(user=request.user)
+    return render(request, "main/profile.html", {"profile": profile})
 
 # ============================
 # MESSAGES
@@ -224,3 +230,63 @@ def job_applications_page(request):
 
 def location(request):
     return render(request, "main/add_location.html")
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Profile, Skill
+
+
+@login_required
+def edit_profile_page(request):
+    profile = Profile.objects.get(user=request.user)
+
+    # -----------------------------
+    #  ADD NEW SKILL
+    # -----------------------------
+    if "add_skill" in request.POST:
+        skill_name = request.POST.get("new_skill").strip()
+        if skill_name:
+            Skill.objects.create(profile=profile, name=skill_name)
+        return redirect("edit_profile")
+
+    # -----------------------------
+    #  REMOVE SKILL
+    # -----------------------------
+    if "remove_skill" in request.POST:
+        skill_id = request.POST.get("remove_skill")
+        Skill.objects.filter(id=skill_id, profile=profile).delete()
+        return redirect("edit_profile")
+
+    # -----------------------------
+    #  SAVE PROFILE INFO
+    # -----------------------------
+    if request.method == "POST" and "change_password" not in request.POST:
+        profile.full_name = request.POST.get("full_name")
+        profile.bio = request.POST.get("bio")
+        profile.company_name = request.POST.get("company_name")
+        profile.role = request.POST.get("role")
+
+        if "image" in request.FILES:
+            profile.image = request.FILES["image"]
+
+        if request.POST.get("delete_image"):
+            profile.image = None
+
+        profile.save()
+        return redirect("edit_profile")
+
+    # -----------------------------
+    #  CHANGE PASSWORD
+    # -----------------------------
+    if "change_password" in request.POST:
+        old_password = request.POST.get("old_password")
+        new_password = request.POST.get("new_password")
+
+        if request.user.check_password(old_password) and len(new_password) >= 6:
+            request.user.set_password(new_password)
+            request.user.save()
+            return redirect("login")
+
+    return render(request, "main/edit_profile.html", {
+        "profile": profile,
+        "skills": profile.skills.all()
+    })

@@ -18,4 +18,6 @@ urlpatterns = [
     path("add-location/", views.location, name="add_location"),
     
     path("location/", views.location, name="location"),
+
+    path("profile/skills/", views.edit_profile_page, name="manage_skills"),
 ]
