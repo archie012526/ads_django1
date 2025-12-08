@@ -14,8 +14,11 @@ body {
     background: #ffffff;
     padding: 10px 20px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    position: sticky;
-    top: 0;
+
+    /* REMOVED sticky */
+    position: relative;
+    top: unset;
+
     z-index: 50;
 }
 
@@ -101,6 +104,8 @@ body {
     height: 88vh;
     box-shadow: 0 0 5px rgba(0,0,0,0.1);
 }
+
+/* ============= TOP NAVBAR ============= */
 .top-navbar {
     width: 100%;
     background: white;
@@ -109,8 +114,11 @@ body {
     align-items: center;
     justify-content: space-between;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    position: sticky;
-    top: 0;
+
+    /* REMOVED sticky */
+    position: relative;
+    top: unset;
+
     z-index: 1000;
 }
 
@@ -163,12 +171,13 @@ body {
     height: 25px;
 }
 
-/* Right menu button */
+/* Right menu icon */
 .menu-icon {
     width: 30px;
 }
+
 .nav-active {
-    color: #0073b1; /* or your highlight color */
+    color: #0073b1;
     font-weight: 600;
 }
 
@@ -192,6 +201,7 @@ body {
     font-size: 14px;
     color: #333;
 }
+
 .nav-link:hover {
-    color: #0073b1; /* or your highlight color */
+    color: #0073b1;
 }

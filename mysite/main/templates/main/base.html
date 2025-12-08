@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ADS Project{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+
+    
 
     {% load static %}
     <link rel="stylesheet" href="{% static 'style/base.css' %}">
@@ -16,7 +20,7 @@
 <body>
 
 <!-- TOP NAV BAR -->
-<header class="top-navbar">
+<header class="top-navbar sticky top-0 z-50 bg-white shadow">
     <div class="nav-left">
         <img src="{% static 'images/profile.png' %}" class="profile-icon" alt="Profile">
 
@@ -28,10 +32,10 @@
 
     <nav class="nav-center">
         <a href="{% url 'homepage' %}" class="nav-link">
-        <img src="{% static 'images/home.png' %}" class="nav-icon" alt="">
-        Home
-    </a>
+            <img src="{% static 'images/home.png' %}" class="nav-icon" alt="">
+            Home
         </a>
+
 
 
         <div class="nav-item">
@@ -42,7 +46,8 @@
 
         <div class="nav-item">
             <img src="{% static 'images/messages.png' %}" alt="">
-            <span>Messages</span>
+            <a href="{% url 'messages' %}"
+                class="{% if request.path == '/messages/' %}nav-active{% endif %}">Messages</a>
         </div>
 
         <div class="nav-item">

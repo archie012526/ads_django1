@@ -1,14 +1,21 @@
+html, body {
+    overflow-x: hidden;
+}
 /* GENERAL PAGE LAYOUT */
 .home-container {
     display: grid;
     grid-template-columns: 280px 1fr 260px;
     gap: 24px;
+
+    /* SAME WIDTH AS YOUR MESSAGES PAGE */
+    max-width: 1200px;    
     width: 100%;
-    max-width: 1300px;
-    margin: 25px auto;
-    font-family: 'Inter', sans-serif;
-    padding: 10px 20px;
+    margin: 30px auto;
+
+    padding: 20px;
+    box-sizing: border-box;
 }
+
 
 /* Distinct page background */
 body {
@@ -20,11 +27,8 @@ body {
 /* ---------------------------- */
 
 .left-column {
-    position: sticky;
-    top: 90px;
-    height: max-content;
+    position: relative;  /* or remove the whole block */
 }
-
 /* Reusable card styling */
 .card {
     background: #ffffff;
@@ -258,4 +262,31 @@ body {
 /* Optional hover effect */
 .profile-name-link:hover {
     color: #0073b1;
+}
+
+/* When screen is smaller than 1200px, reduce side columns */
+@media (max-width: 1200px) {
+    .home-container {
+        grid-template-columns: 220px 1fr 220px;
+    }
+}
+
+/* When screen is smaller than 992px, hide the right column */
+@media (max-width: 992px) {
+    .home-container {
+        grid-template-columns: 240px 1fr;
+    }
+    .right-column {
+        display: none;
+    }
+}
+
+/* When screen is smaller than 768px, 1-column layout */
+@media (max-width: 768px) {
+    .home-container {
+        grid-template-columns: 1fr;
+    }
+    .left-column {
+        display: none;
+    }
 }
