@@ -1,28 +1,24 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import Profile
-from .models import Skill
 
 class UserForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "email"]
+        fields = ["email", "first_name", "last_name"]
+        widgets = {
+            "email": forms.EmailInput(attrs={"class": "input"}),
+            "first_name": forms.TextInput(attrs={"class": "input"}),
+            "last_name": forms.TextInput(attrs={"class": "input"}),
+        }
 
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = [
-            'full_name',
-            'phone_number',
-            'location',
-            'bio',
-            'company_name',
-            'role',
-            'image',   # <-- correct name (NOT profile_picture)
-        ]
-class SkillForm(forms.ModelForm):
-    class Meta:
-        model = Skill
-        fields = ["name"]
+        fields = ["full_name", "phone_number", "location", "bio"]
         widgets = {
-            "name": forms.TextInput(attrs={"class": "input-field", "placeholder": "Enter a skill"}),   }
+            "full_name": forms.TextInput(attrs={"class": "input-field"}),
+            "phone_number": forms.TextInput(attrs={"class": "input-field"}),
+            "location": forms.TextInput(attrs={"class": "input-field"}),
+            "bio": forms.Textarea(attrs={"class": "input-field h-24 resize-none"}),
+        }
