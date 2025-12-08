@@ -13,19 +13,22 @@
     <!-- LEFT COLUMN -->
     <div class="left-column">
         <div class="profile-card">
+
             <div class="profile-banner"></div>
 
             <div class="profile-pic-placeholder"></div>
 
-            <a href="{% url 'profile' %}" class="profile-name-link">Archie Boleche</a>
+            <a href="{% url 'profile' %}" class="profile-name-link">
+                {{ profile.full_name }}
+            </a>
 
             <a href="{% url 'add_location' %}" class="location">location</a>
+            <p class="location">{{ profile.location }}</p>
 
             <ul class="profile-links">
-                <li>saved jobs</li>
-                <li>groups</li>
-                <li>news letters</li>
-                <li>events</li>
+                <li>Saved Jobs: {{ saved_jobs_count }}</li>
+                <li>Applications: {{ applications_count }}</li>
+                <li>Notifications: {{ unread_notifications }}</li>
             </ul>
         </div>
     </div>
@@ -35,9 +38,9 @@
 
         <!-- Create Post -->
         <div class="create-post-card">
-              <div class="top-row">
-            <div class="profile-pic-small"></div>
-             <input type="text" placeholder="Start a post" class="post-input">
+            <div class="top-row">
+                <div class="profile-pic-small"></div>
+                <input type="text" placeholder="Start a post" class="post-input">
             </div>
             <div class="post-options">
                 <span>📹 Video</span>
@@ -50,12 +53,14 @@
         <div class="recommended-card">
             <h3>Recommended for you</h3>
 
-            {% for i in "123" %}
+            {% for user in recommended_users %}
             <div class="recommended-user">
                 <div class="profile-pic-small"></div>
+
                 <div>
-                    <p class="username">archie king D boleche</p>
+                    <p class="username">{{ user.profile.full_name }}</p>
                 </div>
+
                 <button class="follow-btn">+ Follow</button>
             </div>
             {% endfor %}
@@ -63,49 +68,53 @@
             <p class="show-more">Show more →</p>
         </div>
 
-        <!-- POST -->
+        <!-- Job Posts (from Job model) -->
+        {% for job in jobs %}
         <div class="post-card">
+
             <div class="post-header">
                 <div class="profile-pic-small"></div>
                 <div>
-                    <p class="username">archie king D boleche</p>
-                    <small>Career Growth</small>
+                    <p class="username">{{ job.company }}</p>
+                    <small>{{ job.location }}</small>
                 </div>
             </div>
 
             <div class="post-content">
-                <div class="post-image-placeholder"></div>
+                <p style="padding: 10px 0; font-weight: 500;">
+                    {{ job.title }}
+                </p>
+                <p>{{ job.description|truncatewords:20 }}</p>
             </div>
 
             <div class="post-actions">
-                <span>👍 like</span>
-                <span>💬 comment</span>
-                <span>🔁 repost</span>
-                <span>📨 send</span>
+                <a href="{% url 'job_application' job.id %}">
+                    <span>📝 Apply</span>
+                </a>
             </div>
+
         </div>
+        {% empty %}
+        <p style="text-align:center; margin-top:20px;">No jobs yet.</p>
+        {% endfor %}
 
     </div>
 
     <!-- RIGHT COLUMN -->
     <div class="right-column">
-        <div class="news-card"></div>
 
         <div class="feed-card">
             <h4>Add to your feed</h4>
 
+            {% for industry in industries %}
             <div class="feed-item">
                 <div class="profile-pic-small"></div>
-                <p>Hotel jobs</p>
+                <p>{{ industry }}</p>
                 <button class="follow-btn">Follow</button>
             </div>
-
-            <div class="feed-item">
-                <div class="profile-pic-small"></div>
-                <p>Mcdonalds</p>
-                <button class="follow-btn">Follow</button>
-            </div>
+            {% endfor %}
         </div>
+
     </div>
 
 </div>

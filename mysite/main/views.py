@@ -1,21 +1,56 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+
 from django.contrib.auth.models import User
 
+from .models import Profile, Job, JobApplication, Notification
 
-def homepage(request):
-    return render(request, "main/home.html")
 
+
+# ============================
+# HOME PAGE
+# ============================
+@login_required
+def home_page(request):
+    profile, created = Profile.objects.get_or_create(
+        user=request.user,
+        defaults={"full_name": request.user.username}
+    )
+
+    jobs = Job.objects.all().order_by('-posted_at')[:10]
+    recommended_users = User.objects.exclude(id=request.user.id)[:5]
+
+    applications_count = JobApplication.objects.filter(user=request.user).count()
+    unread_notifications = Notification.objects.filter(
+        user=request.user, is_read=False
+    ).count()
+
+    industries = ["Hotel Jobs", "Fast Food", "Management", "Retail"]
+
+    context = {
+        "profile": profile,
+        "jobs": jobs,
+        "recommended_users": recommended_users,
+        "applications_count": applications_count,
+        "unread_notifications": unread_notifications,
+        "saved_jobs_count": 0,
+        "industries": industries,
+    }
+
+    return render(request, "main/home.html", context)
+
+
+
+# ============================
+# STATIC PAGES
+# ============================
 def landingpage(request):
     return render(request, "main/landing.html")
 
 def about_page(request):
     return render(request, "main/about.html")
-
-def login_page(request):
-    return render(request, "main/login.html")
 
 def find_job_page(request):
     return render(request, "main/find_job.html")
@@ -23,6 +58,13 @@ def find_job_page(request):
 def contact_us_page(request):
     return render(request, "main/contact_us.html")
 
+def edit_profile_page(request):
+    return render(request, "main/edit_profile.html")
+
+
+# ============================
+# AUTH: LOGIN
+# ============================
 def login_page(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -38,13 +80,16 @@ def login_page(request):
 
         if user is not None:
             login(request, user)
-            return redirect("homepage")  # change to your home page
+            return redirect("homepage")  
         else:
             messages.error(request, "Incorrect password.")
-            return render(request, "main/login.html")
 
     return render(request, "main/login.html")
 
+
+# ============================
+# AUTH: SIGNUP
+# ============================
 def signup_page(request):
     if request.method == "POST":
         first = request.POST.get("first_name")
@@ -52,7 +97,7 @@ def signup_page(request):
         email = request.POST.get("email")
         password = request.POST.get("password")
 
-        # Check if account already exists
+        # Check if user exists
         if User.objects.filter(username=email).exists():
             messages.error(request, "Account already exists. Please log in instead.")
             return render(request, "main/signup.html")
@@ -67,16 +112,15 @@ def signup_page(request):
         )
         user.save()
 
-        # Auto login after registration
         login(request, user)
-
-        return redirect("login") # change this to your home/dashboard
+        return redirect("login")
 
     return render(request, "main/signup.html")
 
-def edit_profile_page(request):
-    return render(request, "main/edit_profile.html")
 
+# ============================
+# PROFILE
+# ============================
 def profile_page(request):
     skills = ["Python", "Django", "HTML", "CSS"]
 
@@ -95,12 +139,19 @@ def profile_page(request):
         "job_suggestions": suggestions,
     })
 
+
+# ============================
+# MESSAGES
+# ============================
 def _messages(request):
     return render(request, "main/messages.html")
 
+
+# ============================
+# NOTIFICATIONS
+# ============================
 @login_required
 def notifications_page(request):
-    # You can replace this with database model later
     sample_notifications = {
         "user1": [
             {
@@ -132,13 +183,13 @@ def notifications_page(request):
         ]
     }
 
-    # Map logged-in user to sample data
     username = request.user.username
     notifications = sample_notifications.get(username, [])
 
     return render(request, "main/notifications.html", {
         "notifications": notifications
     })
+
 
 def mark_all_as_read(request):
     return redirect("notifications")
@@ -148,3 +199,13 @@ def application(request):
 
 def location(request):
     return render(request, "main/add_location.html")
+
+# ============================
+# JOB APPLICATION PAGE
+# ============================
+def application(request, job_id):
+    job = get_object_or_404(Job, id=job_id)
+
+    return render(request, "main/job_application.html", {
+        "job": job
+    })
