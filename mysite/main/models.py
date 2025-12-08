@@ -1,19 +1,38 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
+# =========================
+#        PROFILE
+# =========================
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=200)
+    full_name = models.CharField(max_length=255, blank=True, null=True)
+    phone_number = models.CharField(max_length=50, blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
-    location = models.CharField(max_length=200, blank=True, null=True)
-    phone_number = models.CharField(max_length=20, blank=True, null=True)
-    birth_date = models.DateField(blank=True, null=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    company_name = models.CharField(max_length=255, blank=True, null=True)
+    role = models.CharField(max_length=255, blank=True, null=True)
+    image = models.ImageField(upload_to="profile_images/", blank=True, null=True)
 
     def __str__(self):
-        return self.full_name
+        return self.full_name or self.user.username
 
 
+# =========================
+#        SKILLS
+# =========================
+class Skill(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="skills")
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+# =========================
+#         JOBS
+# =========================
 class Job(models.Model):
     title = models.CharField(max_length=255)
     company = models.CharField(max_length=255)
@@ -26,6 +45,9 @@ class Job(models.Model):
         return f"{self.title} at {self.company}"
 
 
+# =========================
+#     JOB APPLICATIONS
+# =========================
 class JobApplication(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
@@ -47,6 +69,9 @@ class JobApplication(models.Model):
         return f"{self.user.username} → {self.job.title}"
 
 
+# =========================
+#      NOTIFICATIONS
+# =========================
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.CharField(max_length=255)
@@ -57,6 +82,9 @@ class Notification(models.Model):
         return f"Notification for {self.user.username}"
 
 
+# =========================
+#         MESSAGES
+# =========================
 class Message(models.Model):
     sender = models.ForeignKey(User, related_name="sender", on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, related_name="receiver", on_delete=models.CASCADE)
@@ -68,6 +96,9 @@ class Message(models.Model):
         return f"{self.sender} → {self.receiver}"
 
 
+# =========================
+#   CONTACT SUBMISSION
+# =========================
 class ContactSubmission(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField()
@@ -77,15 +108,3 @@ class ContactSubmission(models.Model):
     def __str__(self):
         return f"Message from {self.name}"
     
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=255, blank=True, null=True)
-    phone_number = models.CharField(max_length=50, blank=True, null=True)
-    location = models.CharField(max_length=255, blank=True, null=True)
-    bio = models.TextField(blank=True, null=True)
-    company_name = models.CharField(max_length=255, blank=True, null=True)
-    role = models.CharField(max_length=255, blank=True, null=True)
-    image = models.ImageField(upload_to="profile_images/", blank=True, null=True)
-
-    def __str__(self):
-        return self.full_name or self.user.username
