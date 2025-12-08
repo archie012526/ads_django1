@@ -1,0 +1,339 @@
+/* Basic Reset and Variables */
+:root {
+    --primary-color: #007bff; /* Blue for highlights/active state */
+    --background-color: #f4f7f6;
+    --panel-background: #ffffff;
+    --text-color: #333;
+    --border-color: #eee;
+    --incoming-bubble: #e8e8e8;
+    --outgoing-bubble: #dcf8c6; /* Or a lighter primary-color if preferred */
+    --agent-name-color: #6a6a6a;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+}
+
+.message-container {
+    display: flex;
+    max-width: 1200px;
+    height: 90vh;
+    margin: 30px auto;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background-color: var(--panel-background);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* --- LEFT COLUMN: MESSAGE LIST --- */
+.message-list-panel {
+    flex: 0 0 350px; /* Fixed width */
+    border-right: 1px solid var(--border-color);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.message-list-panel .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.search-box {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 10px 10px 40px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.search-box .fa-search {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--agent-name-color);
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.user-item:hover {
+    background-color: #f0f0f0;
+}
+
+.user-item.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.user-item.active p,
+.user-item.active .timestamp {
+    color: #fff;
+}
+
+.user-item .avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    margin-right: 15px;
+    object-fit: cover;
+}
+
+.user-info {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.user-info strong {
+    display: block;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-info p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--agent-name-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.status {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.timestamp {
+    font-size: 10px;
+    color: var(--agent-name-color);
+    margin-bottom: 5px;
+}
+
+.unread-dot {
+    width: 8px;
+    height: 8px;
+    background-color: red;
+    border-radius: 50%;
+    display: block;
+}
+
+/* Hide unread dot on active item for demonstration */
+.user-item.active .unread-dot {
+    display: none;
+}
+
+
+/* --- RIGHT COLUMN: CHAT WINDOW --- */
+.chat-panel {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.chat-header .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.user-details {
+    flex-grow: 1;
+}
+
+.user-details strong {
+    font-size: 16px;
+    display: block;
+}
+
+.user-details span {
+    font-size: 12px;
+    color: var(--agent-name-color);
+}
+
+.meta-info {
+    display: flex;
+    gap: 15px;
+    margin-right: 20px;
+    font-size: 12px;
+}
+
+.rating-badge, .transaction-badge {
+    background-color: var(--background-color);
+    padding: 5px 8px;
+    border-radius: 4px;
+}
+
+.chat-history {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+}
+
+/* Chat Bubbles */
+.message {
+    display: flex;
+    margin-bottom: 15px;
+    align-items: flex-start;
+}
+
+.message .avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.message-content {
+    max-width: 60%;
+    padding: 10px 15px;
+    border-radius: 18px;
+    position: relative;
+    font-size: 14px;
+}
+
+.message-content p {
+    margin: 0;
+}
+
+.message-content .time {
+    font-size: 10px;
+    color: #888;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Incoming (User) Styles */
+.message.incoming {
+    justify-content: flex-start;
+}
+
+.message.incoming .message-content {
+    background-color: var(--incoming-bubble);
+    border-bottom-left-radius: 4px;
+    margin-left: 10px;
+}
+
+/* Outgoing (Agent) Styles */
+.message.outgoing {
+    justify-content: flex-end;
+}
+
+.message.outgoing .message-content {
+    background-color: var(--primary-color);
+    color: white;
+    border-bottom-right-radius: 4px;
+    margin-right: 10px;
+    text-align: right;
+}
+
+.message.outgoing .message-content .time {
+    color: #f0f0f0;
+}
+
+.agent-name {
+    display: block;
+    font-size: 10px;
+    font-weight: bold;
+    margin-bottom: 2px;
+    text-align: right;
+}
+
+/* Date Divider */
+.date-divider {
+    text-align: center;
+    font-size: 12px;
+    color: var(--agent-name-color);
+    margin: 20px 0;
+    position: relative;
+}
+
+.date-divider::before, .date-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 30%;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.date-divider::before { left: 15%; }
+.date-divider::after { right: 15%; }
+
+
+/* Input Area */
+.chat-input {
+    border-top: 1px solid var(--border-color);
+    padding: 15px 20px;
+    background-color: var(--panel-background);
+}
+
+.chat-input textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    min-height: 50px;
+    resize: none;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+.input-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+}
+
+.input-actions i {
+    font-size: 18px;
+    color: var(--agent-name-color);
+    cursor: pointer;
+}
+
+.input-actions button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.input-actions button:hover {
+    background-color: #0056b3;
+}
