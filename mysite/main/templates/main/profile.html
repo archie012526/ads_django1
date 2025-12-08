@@ -56,7 +56,11 @@
                         <span class="tag">Entry Level</span>
                     </div>
                 </div>
-                <button class="apply-btn">Apply</button>
+                <a href="{% url 'job_applications' %}">
+    <button class="apply-btn">Apply</button>
+</a>
+
+                
             </div>
 
             <div class="job-card">
@@ -70,7 +74,10 @@
                         <span class="tag">Full-time</span>
                     </div>
                 </div>
-                <button class="apply-btn">Apply</button>
+                <a href="{% url 'job_applications' %}">
+    <button class="apply-btn">Apply</button>
+</a>
+
             </div>
 
             <div class="job-card">
@@ -84,7 +91,10 @@
                         <span class="tag">Contract</span>
                     </div>
                 </div>
-                <button class="apply-btn">Apply</button>
+                <a href="{% url 'job_applications' %}">
+    <button class="apply-btn">Apply</button>
+</a>
+
             </div>
         </div>
 
@@ -112,7 +122,10 @@
                     <li class="suggestion-item">
                         <h3>{{ job.title }}</h3>
                         <p class="skill-match">Matches your skill: {{ job.skill }}</p>
-                        <a href="#" class="apply-btn">Apply Now</a>
+                        <a href="{% url 'job_applications' %}">
+    <button class="apply-btn">Apply</button>
+</a>
+
                     </li>
                 {% endfor %}
             </ul>

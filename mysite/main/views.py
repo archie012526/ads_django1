@@ -142,3 +142,6 @@ def notifications_page(request):
 
 def mark_all_as_read(request):
     return redirect("notifications")
+
+def application(request):
+    return render(request, "main/job_application.html")
