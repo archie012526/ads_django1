@@ -22,7 +22,7 @@
                 {{ profile.full_name }}
             </a>
 
-            <p class="location">{{ profile.location }}</p>
+            <a href="{% url 'add_location' %}" class="location">location</a>
 
             <ul class="profile-links">
                 <li>Saved Jobs: {{ saved_jobs_count }}</li>
