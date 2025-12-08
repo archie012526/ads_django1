@@ -12,23 +12,10 @@ class Profile(models.Model):
     location = models.CharField(max_length=255, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     company_name = models.CharField(max_length=255, blank=True, null=True)
-    role = models.CharField(max_length=255, blank=True, null=True)
-    image = models.ImageField(upload_to="profile_images/", blank=True, null=True)
+    profile_image = models.ImageField(upload_to="profile_images/", blank=True, null=True)
 
     def __str__(self):
-        return self.full_name or self.user.username
-
-
-# =========================
-#        SKILLS
-# =========================
-class Skill(models.Model):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="skills")
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
+        return self.user.username
 
 # =========================
 #         JOBS
@@ -107,4 +94,3 @@ class ContactSubmission(models.Model):
 
     def __str__(self):
         return f"Message from {self.name}"
-    

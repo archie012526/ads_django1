@@ -10,14 +10,16 @@ urlpatterns = [
     path("contact-us/", views.contact_us_page, name="contact_us"),
     path("register/", views.signup_page, name="signup"),
     path("profile/", views.profile_page, name="profile"),
-    path("profile/edit/", views.edit_profile_page, name="edit_profile"),
+
     path("messages/", views._messages, name="messages"),
     path("notifications/", views.notifications_page, name="notifications"),
     path("mark-read/", views.mark_all_as_read, name="mark_all_as_read"),
+
     path("job-applications/", views.job_applications_page, name="job_applications"),
+
     path("add-location/", views.location, name="add_location"),
-    
     path("location/", views.location, name="location"),
 
-    path("profile/skills/", views.edit_profile_page, name="manage_skills"),
+    path("profile/edit/", views.edit_profile_page, name="edit_profile"),
+
 ]

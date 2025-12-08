@@ -9,6 +9,21 @@
 
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind form styling -->
+<style>
+    .input-field {
+        width: 100%;
+        margin-top: 0.25rem;
+        padding: 0.5rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        outline: none;
+    }
+    .input-field:focus {
+        border-color: #a855f7;
+        box-shadow: 0 0 0 3px rgb(168 85 247 / 0.3);
+    }
+</style>
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'style/base.css' %}">
@@ -17,6 +32,8 @@
 
     {% block extra_head %}{% endblock %}
 </head>
+
+
 
 <body>
 
@@ -107,6 +124,11 @@
 
 <!-- MAIN CONTENT -->
 <main class="main-container">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+
+
     {% block content %}{% endblock %}
 </main>
 
