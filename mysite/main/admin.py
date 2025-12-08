@@ -9,16 +9,6 @@ from .models import (
 )
 
 # ---------------------------
-# PROFILE
-# ---------------------------
-@admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'full_name', 'phone_number', 'location')
-    search_fields = ('user__username', 'full_name', 'phone_number')
-    list_filter = ('location',)
-
-
-# ---------------------------
 # JOBS
 # ---------------------------
 @admin.register(Job)
@@ -52,7 +42,7 @@ class NotificationAdmin(admin.ModelAdmin):
 
 
 # ---------------------------
-# MESSAGES (User-to-user)
+# MESSAGES
 # ---------------------------
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
