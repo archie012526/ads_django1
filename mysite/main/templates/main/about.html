@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>About — JobBridge</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/static/style/about.css"> <!-- change path if needed -->
+
+  <!-- If using Django, swap the above line for:
+       {% load static %}
+       <link rel="stylesheet" href="{% static 'style/about.css' %}">
+  -->
+
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-image" role="img" aria-label="Office building">
+      <!-- background image is set in CSS; replace with your own file -->
+    </div>
+
+    <div class="container hero-content">
+      <h1>About Us</h1>
+      <p class="lead">We make hiring and job hunting simple. Our platform connects passionate candidates with forward-thinking employers.</p>
+    </div>
+  </section>
+
+  <!-- OUR STORY -->
+  <section class="our-story container">
+    <h2>Our Story</h2>
+    <div class="story-grid">
+      <div class="story-card">
+        <h3>History Of The Company</h3>
+        <p>JobBridge started with a simple idea: make the hiring process human, fast, and efficient. We built a lightweight platform that helps employers post jobs and applicants apply easily.</p>
+      </div>
+
+      <div class="story-card">
+        <h3>Mission</h3>
+        <p>To empower job seekers and employers with tools that reduce friction and highlight fit — so the right people meet the right opportunities, faster.</p>
+      </div>
+
+      <div class="story-card">
+        <h3>Company Values</h3>
+        <p>Transparency, speed, and respect. We prioritize trusted employers, meaningful matches, and a clear application process for every candidate.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <div class="logo-circle small">JB</div>
+        <p>&copy; <span id="year"></span> JobBridge — all rights reserved.</p>
+      </div>
+
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+        <a href="/contact">Contact</a>
+      </div>
+
+      <div class="footer-contact">
+        <p><strong>Location</strong></p>
+        <p>City Hall Road, YourTown</p>
+        <p><a href="mailto:info@jobbridge.example">info@jobbridge.example</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // small script for year
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
