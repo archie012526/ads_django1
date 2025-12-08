@@ -10,9 +10,6 @@ def homepage(request):
 def landingpage(request):
     return render(request, "main/landing.html")
 
-def jobs_page(request):
-    return render(request, "main/jobs.html")
-
 def about_page(request):
     return render(request, "main/about.html")
 

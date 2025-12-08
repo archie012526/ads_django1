@@ -40,8 +40,8 @@
 
         <div class="nav-item">
             <img src="{% static 'images/jobs.png' %}" alt="">
-            <a href="{% url 'jobs' %}"
-            class="{% if request.path == '/jobs/' %}nav-active{% endif %}">Jobs</a>
+            <a href="{% url 'find_job' %}"
+            class="{% if request.path == '/find-job/' %}nav-active{% endif %}">find jobs</a>
         </div>
 
         <div class="nav-item">
