@@ -14,7 +14,10 @@ from .models import Profile, Job, JobApplication, Notification
 # ============================
 @login_required
 def home_page(request):
-    profile = Profile.objects.get(user=request.user)
+    profile, created = Profile.objects.get_or_create(
+        user=request.user,
+        defaults={"full_name": request.user.username}
+    )
 
     jobs = Job.objects.all().order_by('-posted_at')[:10]
     recommended_users = User.objects.exclude(id=request.user.id)[:5]
@@ -37,6 +40,7 @@ def home_page(request):
     }
 
     return render(request, "main/home.html", context)
+
 
 
 # ============================
