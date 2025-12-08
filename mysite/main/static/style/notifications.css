@@ -1,0 +1,152 @@
+/* Container */
+.notif-container {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Header */
+.back-btn {
+    text-decoration: none;
+    color: #555;
+    display: inline-block;
+    margin-bottom: 15px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 600;
+}
+
+.subtitle {
+    color: #777;
+    margin-bottom: 20px;
+}
+
+/* Search + Controls */
+.notif-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    width: 280px;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+}
+
+.control-btn {
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.mark-read-btn {
+    padding: 10px 16px;
+    background: #4f46e5;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+/* Notification List */
+.notif-list {
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.notif-item {
+    display: grid;
+    grid-template-columns: 40px 1fr 90px 120px 80px;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #eee;
+    background: white;
+}
+
+.notif-item.unread {
+    background: #f7f8ff;
+}
+
+/* Icon Colors */
+.notif-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+}
+
+.blue { background: #3b82f6; }
+.green { background: #22c55e; }
+.purple { background: #a855f7; }
+
+/* Content */
+.notif-content h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.notif-content p {
+    margin: 5px 0 0;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Tags */
+.notif-type {
+    font-size: 12px;
+    background: #f1f1f1;
+    padding: 4px 10px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.notif-time {
+    font-size: 14px;
+    color: #777;
+}
+
+/* Status Badges */
+.unread-badge,
+.read-badge {
+    padding: 6px 14px;
+    font-size: 12px;
+    border-radius: 12px;
+    text-transform: lowercase;
+}
+
+.unread-badge {
+    background: #e0e7ff;
+    color: #4338ca;
+}
+
+.read-badge {
+    background: #e5e7eb;
+    color: #555;
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+    .notif-item {
+        grid-template-columns: 40px 1fr;
+        grid-row-gap: 10px;
+    }
+
+    .notif-type, .notif-time, .notif-status {
+        grid-column: 2;
+    }
+}
+

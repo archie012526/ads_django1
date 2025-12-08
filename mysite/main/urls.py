@@ -14,6 +14,9 @@ urlpatterns = [
     path("profile/edit/", views.edit_profile_page, name="edit_profile"),
     path("messages/", views._messages, name="messages"),
     
+    path("notifications/", views.notifications_page, name="notifications"),
+    path("mark-read/", views.mark_all_as_read, name="mark_all_as_read"),
+
 ]
 
 
