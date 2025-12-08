@@ -16,10 +16,22 @@
 
         <!-- Profile Header -->
         <div class="profile-header">
-            <img src="{% static 'images/default-pfp.png' %}" class="profile-img">
-            <a href="{% url 'profile' %}" class="profile-name">Archie Boleche</a>
-            <p class="profile-role">Student • Developer</p>
-            <a href="{% url 'edit_profile' %}" class="edit-btn">Edit Profile</a>
+
+            {% if profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}" class="profile-img">
+            {% else %}
+                <img src="{% static 'images/default-pfp.png' %}" class="profile-img">
+            {% endif %}
+
+            <a href="{% url 'profile' %}" class="profile-name">{{ profile.full_name }}</a>
+            <p class="profile-role">{{ profile.bio }}</p>
+
+            <!-- Buttons -->
+            <div class="profile-buttons">
+                <a href="{% url 'edit_profile' %}" class="edit-btn">Edit Profile</a>
+                <a href="{% url 'edit_profile' %}?tab=skills" class="edit-btn">Manage Skills</a>
+            </div>
+
         </div>
 
         <!-- Info Cards -->
@@ -40,97 +52,16 @@
             </div>
         </div>
 
-        <!-- Job Applications Section -->
-        <div class="job-suggestions">
-            <h2 class="section-title">Job Applications for You</h2>
-
-            <div class="job-card">
-                <img src="{% static 'images/company1.png' %}" class="job-logo">
-                <div class="job-details">
-                    <h3 class="job-title">Front-End Developer</h3>
-                    <p class="company">Meta Platforms Inc.</p>
-
-                    <div class="job-tags">
-                        <span class="tag">Remote</span>
-                        <span class="tag">Full-time</span>
-                        <span class="tag">Entry Level</span>
-                    </div>
-                </div>
-                <a href="{% url 'job_applications' %}">
-    <button class="apply-btn">Apply</button>
-</a>
-
-                
-            </div>
-
-            <div class="job-card">
-                <img src="{% static 'images/company2.png' %}" class="job-logo">
-                <div class="job-details">
-                    <h3 class="job-title">Junior Software Engineer</h3>
-                    <p class="company">Google LLC</p>
-
-                    <div class="job-tags">
-                        <span class="tag">On-site</span>
-                        <span class="tag">Full-time</span>
-                    </div>
-                </div>
-                <a href="{% url 'job_applications' %}">
-    <button class="apply-btn">Apply</button>
-</a>
-
-            </div>
-
-            <div class="job-card">
-                <img src="{% static 'images/company3.png' %}" class="job-logo">
-                <div class="job-details">
-                    <h3 class="job-title">UI/UX Designer</h3>
-                    <p class="company">Figma Inc.</p>
-
-                    <div class="job-tags">
-                        <span class="tag">Remote</span>
-                        <span class="tag">Contract</span>
-                    </div>
-                </div>
-                <a href="{% url 'job_applications' %}">
-    <button class="apply-btn">Apply</button>
-</a>
-
-            </div>
-        </div>
-
         <!-- Skills Section -->
         <div class="skills-section">
             <h2>Skills</h2>
             <div class="skills-list">
-                <span class="skill-tag">Python</span>
-                <span class="skill-tag">Django</span>
-                <span class="skill-tag">JavaScript</span>
-                <span class="skill-tag">HTML & CSS</span>
-                <span class="skill-tag">React</span>
+                {% for skill in skills %}
+                    <span class="skill-tag">{{ skill.name }}</span>
+                {% empty %}
+                    <p class="note">No skills added yet.</p>
+                {% endfor %}
             </div>
         </div>
-
-    </div>
-
-    <!-- Job Suggestions Section -->
-    <div class="job-suggestions">
-        <h2 class="section-title">Job Suggestions</h2>
-
-        {% if job_suggestions %}
-            <ul class="suggestion-list">
-                {% for job in job_suggestions %}
-                    <li class="suggestion-item">
-                        <h3>{{ job.title }}</h3>
-                        <p class="skill-match">Matches your skill: {{ job.skill }}</p>
-                        <a href="{% url 'job_applications' %}">
-    <button class="apply-btn">Apply</button>
-</a>
-
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No job suggestions available yet.</p>
-        {% endif %}
     </div>
 {% endblock content %}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Skills</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 500px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        h2 {
+            margin-bottom: 10px;
+        }
+        .skill-item {
+            background: #f1f1f1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .delete-btn {
+            color: red;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .input-box {
+            margin-top: 20px;
+            display: flex;
+            gap: 8px;
+        }
+        .input-field {
+            flex: 1;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid gray;
+        }
+        .add-btn {
+            padding: 8px 16px;
+            background: black;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .add-btn:hover {
+            background: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Manage Skills</h2>
+
+        <!-- List Skills -->
+        {% for skill in skills %}
+            <div class="skill-item">
+                <span>{{ skill.name }}</span>
+                <a href="{% url 'delete_skill' skill.id %}" class="delete-btn">Delete</a>
+            </div>
+        {% empty %}
+            <p>No skills added yet.</p>
+        {% endfor %}
+
+        <!-- Add Skill -->
+        <form method="POST" class="input-box">
+            {% csrf_token %}
+            {{ form.name }}
+            <button class="add-btn" type="submit">Add</button>
+        </form>
+    </div>
+</body>
+</html>
