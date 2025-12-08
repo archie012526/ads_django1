@@ -1,22 +1,25 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
 # =========================
 #        PROFILE
 # =========================
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
     full_name = models.CharField(max_length=255, blank=True, null=True)
-    phone_number = models.CharField(max_length=50, blank=True, null=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)
-    bio = models.TextField(blank=True, null=True)
-    company_name = models.CharField(max_length=255, blank=True, null=True)
-    role = models.CharField(max_length=255, blank=True, null=True)
-    image = models.ImageField(upload_to="profile_images/", blank=True, null=True)
+
+    city = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    zip_code = models.CharField(max_length=20, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+
+    image = models.ImageField(upload_to="profile_pics/", blank=True, null=True)
 
     def __str__(self):
-        return self.full_name or self.user.username
+        return self.user.username
 
 
 # =========================
@@ -54,6 +57,7 @@ class JobApplication(models.Model):
     resume = models.FileField(upload_to='resumes/')
     cover_letter = models.TextField(blank=True, null=True)
     applied_at = models.DateTimeField(auto_now_add=True)
+
     status = models.CharField(
         max_length=50,
         choices=[
@@ -107,4 +111,3 @@ class ContactSubmission(models.Model):
 
     def __str__(self):
         return f"Message from {self.name}"
-    

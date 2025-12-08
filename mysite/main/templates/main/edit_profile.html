@@ -2,156 +2,64 @@
 {% load static %}
 
 {% block content %}
-
 <link rel="stylesheet" href="{% static 'style/edit_profile.css' %}">
 
-<div class="settings-wrapper">
+<div class="edit-profile-wrapper">
 
-    <h1 class="settings-title">Edit Profile</h1>
-    <p class="settings-subtitle">Manage your profile</p>
+    <div class="profile-card">
 
-    <!-- TABS -->
-    <div class="edit-tabs">
-        <a class="tab" id="tab-profile">Edit Profile</a>
-        <a class="tab" id="tab-skills">Manage Skills</a>
-    </div>
+        <h2 class="title">Edit Profile</h2>
 
-    <!-- ========================= -->
-    <!--  EDIT PROFILE SECTION     -->
-    <!-- ========================= -->
-    <div id="section-profile">
-
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="edit-grid">
-
-                <!-- LEFT -->
-                <div class="card">
-                    <h2 class="card-title">Personal Info</h2>
-
-                    <div class="profile-photo-row">
-                        <img 
-                            src="{% if profile.image %}{{ profile.image.url }}{% else %}{% static 'images/default-pfp.png' %}{% endif %}" 
-                            class="pfp">
-
-                        <div class="photo-buttons">
-                            <input type="file" name="image" accept="image/*" class="file-input">
-                            <button class="btn-outline" name="delete_image" value="1">Delete</button>
-                        </div>
-                    </div>
-
-                    <label class="label">Name</label>
-                    <input type="text" name="full_name" class="input" value="{{ profile.full_name }}">
-
-                    <label class="label">Email</label>
-                    <input type="email" class="input" value="{{ request.user.email }}" disabled>
-                    <span class="note">Email cannot be changed</span>
-
-                    <label class="label">Bio</label>
-                    <textarea name="bio" class="textarea">{{ profile.bio }}</textarea>
-
-                    <button class="btn-purple save-btn" type="submit">Save personal info</button>
-
-                    <!-- Company Info -->
-                    <h2 class="card-title mt">Company Info</h2>
-
-                    <label class="label">Company name</label>
-                    <input type="text" name="company_name" class="input" value="{{ profile.company_name }}">
-
-                    <label class="label">Role</label>
-                    <input type="text" name="role" class="input" value="{{ profile.role }}">
-                </div>
-
-                <!-- RIGHT -->
-                <div class="card">
-                    <h2 class="card-title">Change password</h2>
-
-                    <label class="label">Old password</label>
-                    <input type="password" name="old_password" class="input">
-
-                    <label class="label">New password</label>
-                    <input type="password" name="new_password" class="input">
-                    <span class="note">Minimum 6 characters</span>
-
-                    <button class="btn-purple change-btn" name="change_password" value="1">Change</button>
-
-                    <button class="delete-account" name="delete_account" value="1">🗑 Delete account</button>
-                </div>
-
+        <div class="profile-picture-section">
+            <div class="picture-wrapper">
+                {% if profile.image %}
+                    <img src="{{ profile.image.url }}" class="profile-img">
+                {% else %}
+                    <img src="{% static 'img/default_profile.png' %}" class="profile-img">
+                {% endif %}
+                <label class="upload-btn">
+                    <input type="file" name="image" id="id_image">
+                </label>
             </div>
-        </form>
+        </div>
 
-    </div>
-
-    <!-- ========================= -->
-    <!--  MANAGE SKILLS SECTION    -->
-    <!-- ========================= -->
-    <div id="section-skills" style="display:none;">
-
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data" class="form-section">
             {% csrf_token %}
-            
-            <div class="card">
-                <h2 class="card-title">Manage Skills</h2>
 
-                <div class="skills-list">
-                    {% for skill in skills %}
-                        <span class="skill-tag">
-                            {{ skill.name }}
-                            <button name="remove_skill" value="{{ skill.id }}" class="remove-skill">×</button>
-                        </span>
-                    {% empty %}
-                        <p class="note">No skills added yet.</p>
-                    {% endfor %}
+            <label>Full Name</label>
+            {{ profile_form.full_name }}
+
+            <label>Email</label>
+            {{ user_form.email }}
+
+            <label>Number</label>
+            {{ profile_form.phone_number }}
+
+            <label>City</label>
+            {{ profile_form.city }}
+
+            <div class="row">
+                <div class="col">
+                    <label>State</label>
+                    {{ profile_form.state }}
                 </div>
+                <div class="col">
+                    <label>Zip Code</label>
+                    {{ profile_form.zip_code }}
+                </div>
+            </div>
 
-                <label class="label mt">Add New Skill</label>
-                <input type="text" class="input" name="new_skill" placeholder="Enter skill name">
+            <label>Country</label>
+            {{ profile_form.country }}
 
-                <button class="btn-purple save-btn mt" name="add_skill" value="1">Add Skill</button>
+            <div class="btn-wrapper">
+                <a href="{% url 'homepage' %}" class="btn-back">Back To Home</a>
+                <button class="btn-save" type="submit">Save Changes</button>
             </div>
 
         </form>
 
     </div>
-
 </div>
-
-<!-- ========================= -->
-<!--  AUTO TAB SCRIPT          -->
-<!-- ========================= -->
-<script>
-    const tabProfile = document.getElementById("tab-profile");
-    const tabSkills = document.getElementById("tab-skills");
-
-    const sectionProfile = document.getElementById("section-profile");
-    const sectionSkills = document.getElementById("section-skills");
-
-    function switchTab(tab) {
-        if (tab === "skills") {
-            tabSkills.classList.add("active");
-            tabProfile.classList.remove("active");
-            sectionSkills.style.display = "block";
-            sectionProfile.style.display = "none";
-        } else {
-            tabProfile.classList.add("active");
-            tabSkills.classList.remove("active");
-            sectionProfile.style.display = "block";
-            sectionSkills.style.display = "none";
-        }
-    }
-
-    // Manual clicking
-    tabProfile.onclick = () => switchTab("profile");
-    tabSkills.onclick = () => switchTab("skills");
-
-    // Auto-open tab based on URL
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("tab") === "skills") {
-        switchTab("skills");
-    } else {
-        switchTab("profile");
-    }
-</script>
 
 {% endblock %}
