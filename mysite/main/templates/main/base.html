@@ -1,15 +1,16 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ADS Project{% endblock %}</title>
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
 
-    
-
-    {% load static %}
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'style/base.css' %}">
     <link rel="stylesheet" href="{% static 'style/styles.css' %}">
     <link rel="stylesheet" href="{% static 'style/landing.css' %}">
@@ -22,48 +23,85 @@
 <!-- TOP NAV BAR -->
 <header class="top-navbar sticky top-0 z-50 bg-white shadow">
     <div class="nav-left">
-        <img src="{% static 'images/profile.png' %}" class="profile-icon" alt="Profile">
 
+        <!-- Profile Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="profile-icon" viewBox="0 0 24 24" stroke="currentColor" fill="none">
+            <circle cx="12" cy="7" r="4" stroke-width="2" />
+            <path d="M4 21c0-4 4-7 8-7s8 3 8 7" stroke-width="2" />
+        </svg>
+
+        <!-- Search Bar -->
         <div class="search-bar">
-            <span class="search-icon">🔍</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="11" cy="11" r="7" stroke-width="2"/>
+                <path d="M16 16l4 4" stroke-width="2"/>
+            </svg>
             <input type="text" placeholder="Search">
         </div>
     </div>
 
     <nav class="nav-center">
-        <a href="{% url 'homepage' %}" class="nav-link">
-            <img src="{% static 'images/home.png' %}" class="nav-icon" alt="">
-            Home
-        </a>
 
-
-
+        <!-- Home -->
         <div class="nav-item">
-            <img src="{% static 'images/jobs.png' %}" alt="">
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M3 10.5L12 4l9 6.5V21H3V10.5z" stroke-width="2"/>
+            </svg>
+            <a href="{% url 'homepage' %}" class="nav-link">Home</a>
+        </div>
+
+        <!-- Jobs -->
+        <div class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M3 7h18v13H3V7zm6-4h6v4H9V3z" stroke-width="2"/>
+            </svg>
             <a href="{% url 'find_job' %}"
-            class="{% if request.path == '/find-job/' %}nav-active{% endif %}">find jobs</a>
+               class="nav-link {% if request.path == '/find-job/' %}nav-active{% endif %}">
+               Find Jobs
+            </a>
         </div>
 
+        <!-- Messages -->
         <div class="nav-item">
-            <img src="{% static 'images/messages.png' %}" alt="">
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M4 5h16v10H7l-3 3V5z" stroke-width="2"/>
+            </svg>
             <a href="{% url 'messages' %}"
-                class="{% if request.path == '/messages/' %}nav-active{% endif %}">Messages</a>
+               class="nav-link {% if request.path == '/messages/' %}nav-active{% endif %}">
+               Messages
+            </a>
         </div>
 
+        <!-- Notifications -->
         <div class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M12 2a6 6 0 0 1 6 6v4l2 3H4l2-3V8a6 6 0 0 1 6-6zm0 19a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2z" stroke-width="2"/>
+            </svg>
             <a href="{% url 'notifications' %}"
-            class="{% if request.path == '/notifications/' %}nav-active{% endif %}">notifications</a>
+               class="nav-link {% if request.path == '/notifications/' %}nav-active{% endif %}">
+               Notifications
+            </a>
         </div>
 
-        <div class="nav-item" >
-            <img src="{% static 'images/me.png' %}" alt="">
+        <!-- Profile -->
+        <div class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="7" r="4" stroke-width="2"/>
+                <path d="M4 21c0-4 4-7 8-7s8 3 8 7" stroke-width="2"/>
+            </svg>
             <a href="{% url 'profile' %}"
-            class="{% if request.path == '/profile/' %}nav-active{% endif %}">Me</a>
+               class="nav-link {% if request.path == '/profile/' %}nav-active{% endif %}">
+               Me
+            </a>
         </div>
+
     </nav>
 
     <div class="nav-right">
-        <img src="{% static 'images/menu.png' %}" class="menu-icon" alt="Menu">
+        <!-- Menu Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M4 6h16M4 12h16M4 18h16" stroke-width="2"/>
+        </svg>
     </div>
 </header>
 
