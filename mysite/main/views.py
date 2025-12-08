@@ -145,3 +145,6 @@ def mark_all_as_read(request):
 
 def application(request):
     return render(request, "main/job_application.html")
+
+def location(request):
+    return render(request, "main/add_location.html")

@@ -16,7 +16,8 @@ urlpatterns = [
     path("notifications/", views.notifications_page, name="notifications"),
     path("mark-read/", views.mark_all_as_read, name="mark_all_as_read"),
     path("job-applications/", views.application, name="job_applications"),
-
+    path("add-location/", views.location, name="add_location"),
+    path("location/", views.location, name="location"),
 ]
 
 

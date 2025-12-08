@@ -8,7 +8,7 @@ html, body {
     gap: 24px;
 
     /* SAME WIDTH AS YOUR MESSAGES PAGE */
-    max-width: 1200px;    
+    max-width: 1200px; 
     width: 100%;
     margin: 30px auto;
 
@@ -27,7 +27,7 @@ body {
 /* ---------------------------- */
 
 .left-column {
-    position: relative;  /* or remove the whole block */
+    position: relative;
 }
 /* Reusable card styling */
 .card {
@@ -45,7 +45,7 @@ body {
     border: 1px solid #e6dfd3;
     box-shadow: 0 8px 22px rgba(0,0,0,0.15);
     overflow: hidden;
-    padding-bottom: 20px;
+    /* Removed padding-bottom: 20px; to be controlled by link spacing */
 }
 
 /* Banner - lighter but not blending */
@@ -55,7 +55,7 @@ body {
     width: 100%;
 }
 
-/* Profile Pic */
+/* Profile Pic (Large) */
 .profile-pic-placeholder {
     width: 75px;
     height: 75px;
@@ -65,45 +65,67 @@ body {
     border: 4px solid white;
 }
 
+/* Profile Pic (Small - used throughout) */
+.profile-pic-small {
+    width: 40px;
+    height: 40px;
+    background: #dfd7cd; /* Placeholder color */
+    border-radius: 50%;
+    flex-shrink: 0; /* Prevents shrinking in flex containers */
+}
+
+
 /* Name + Location */
-.profile-card .name {
+.profile-name-link {
+    display: block;
     text-align: center;
     font-size: 18px;
     font-weight: 700;
-    color: #533f36;
+    color: #000000;
+    text-decoration: none;
+    margin-top: 10px;
+}
+
+.profile-name-link:visited {
+    color: #000000;
 }
 
 .profile-card .location {
+    display: block; /* Ensures centering works */
     text-align: center;
     font-size: 13px;
     color: #85776d;
-    margin-bottom: 15px;
+    margin-bottom: 20px; /* Increased margin to separate from list */
+    text-decoration: none;
 }
 
 /* Links */
 .profile-links {
     list-style: none;
-    padding: 0 20px;
+    padding: 0; /* Removed padding from UL */
     margin: 0;
 }
 
 .profile-links li {
-    padding: 10px 0;
+    padding: 10px 20px; /* Added padding to LI for full-width click area */
     font-size: 14px;
     border-bottom: 1px solid #ece5dc;
     color: #5e463d;
     transition: 0.2s;
+    cursor: pointer;
 }
 
 .profile-links li:hover {
+    background: #fcf6ef; /* Highlight entire row on hover */
     color: #c79b46;
-    padding-left: 5px;
+    padding-left: 25px;
 }
 
 /* ---------------------------- */
 /* -------- CENTER COLUMN ------ */
 /* ---------------------------- */
 
+/* Card Styles */
 .create-post-card,
 .recommended-card,
 .post-card {
@@ -115,37 +137,74 @@ body {
     margin-bottom: 22px;
 }
 
-/* Input */
+/* Create Post Card Specifics */
+.create-post-card {
+    padding: 15px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.create-post-card .top-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .post-input {
+    flex: 1;
     width: 100%;
     background: #f3f0ea;
-    padding: 12px 15px;
-    border-radius: 30px;
+    padding: 12px 16px;
+    border-radius: 25px; /* Smoother radius */
     font-size: 15px;
     border: 1px solid #e0d7c9;
     outline: none;
+    box-sizing: border-box;
 }
 
-/* Options */
 .post-options {
     display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-    color: #8b7e75;
+    justify-content: space-around; /* Distribute evenly */
+    padding-top: 8px;
     font-size: 14px;
+    color: #7a6c62;
+}
+.post-options span {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.post-options span:hover {
+    color: #c79b46;
 }
 
 /* Recommended Users */
+.recommended-card h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #533f36;
+}
+
 .recommended-user {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 12px 0;
     border-bottom: 1px solid #f1ebe3;
+    justify-content: space-between; /* Spreads name and button */
 }
 
 .recommended-user:last-child {
     border-bottom: none;
+}
+
+.recommended-user .username {
+    flex-grow: 1; /* Pushes button to the right */
+    margin: 0;
+    font-weight: 500;
+    color: #5e463d;
 }
 
 .follow-btn {
@@ -154,6 +213,8 @@ body {
     background: #fffefc;
     border: 1px solid #c79b46;
     color: #a38140;
+    font-weight: 600;
+    cursor: pointer;
     transition: 0.2s;
 }
 
@@ -161,12 +222,43 @@ body {
     background: #f4e9d3;
 }
 
+.show-more {
+    text-align: left; /* Aligned left as per image */
+    font-size: 14px;
+    color: #7a6c62;
+    margin-top: 15px;
+    margin-bottom: 0;
+    cursor: pointer;
+}
+
 /* Posts */
+.post-card .post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.post-card .post-header .username {
+    margin: 0;
+    font-weight: 600;
+    color: #1f2937;
+}
+.post-card .post-header small {
+    display: block;
+    color: #9ca3af;
+    font-size: 12px;
+}
+.post-content {
+    margin-bottom: 15px;
+}
+
 .post-image-placeholder {
     width: 100%;
     height: 240px;
     background: #dfd7cd;
     border-radius: 12px;
+    margin-top: 10px;
 }
 
 .post-actions {
@@ -175,12 +267,19 @@ body {
     margin-top: 15px;
     color: #7a6c62;
     font-size: 14px;
+    border-top: 1px solid #f1ebe3;
+    padding-top: 10px;
 }
+.post-actions span {
+    cursor: pointer;
+}
+
 
 /* ---------------------------- */
 /* ------- RIGHT COLUMN ------- */
 /* ---------------------------- */
 
+/* Card Styles */
 .news-card,
 .feed-card {
     background: #ffffff;
@@ -190,79 +289,42 @@ body {
     box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 }
 
+.feed-card h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #533f36;
+}
+
 .feed-item {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 12px 0;
     border-bottom: 1px solid #f1ebe3;
+    justify-content: space-between; /* Distribute content */
 }
 
 .feed-item:last-child {
     border-bottom: none;
 }
-/* Create Post Card */
-.create-post-card {
-    background: #ffffff;
-    border-radius: 16px;
-    border: 1px solid #e6dfd3;
-    padding: 15px 18px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+.feed-item p {
+    flex-grow: 1;
+    margin: 0;
+    font-weight: 500;
+    color: #5e463d;
+}
+
+.news-card {
+    /* If you add news content, style it here */
+    height: 150px; /* Placeholder size */
     margin-bottom: 22px;
-
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    background: #f8f4ed; /* Slightly different background for visual separation */
 }
 
-/* Row with profile pic + input */
-.create-post-card .top-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
 
-/* Input bar */
-.post-input {
-    flex: 1;
-    padding: 12px 16px;
-    background: #f5f2ec;
-    border: 1px solid #e0d7c9;
-    border-radius: 25px;
-    font-size: 15px;
-    outline: none;
-
-    /* FIX: remove overflow effect */
-    box-sizing: border-box;
-}
-
-/* Options row */
-.post-options {
-    display: flex;
-    justify-content: space-between;
-    padding-top: 8px;
-    font-size: 14px;
-    color: #7a6c62;
-}
-.profile-name-link {
-    display: block;
-    text-align: center;
-    font-size: 18px;
-    font-weight: 700;
-    color: #000000;          /* Text stays black */
-    text-decoration: none;   /* Remove underline */
-    margin-top: 10px;
-}
-
-/* Prevent the link from ever turning purple after click */
-.profile-name-link:visited {
-    color: #000000;
-}
-
-/* Optional hover effect */
-.profile-name-link:hover {
-    color: #0073b1;
-}
+/* --- Responsive Design --- */
 
 /* When screen is smaller than 1200px, reduce side columns */
 @media (max-width: 1200px) {
@@ -285,6 +347,7 @@ body {
 @media (max-width: 768px) {
     .home-container {
         grid-template-columns: 1fr;
+        padding: 10px;
     }
     .left-column {
         display: none;
