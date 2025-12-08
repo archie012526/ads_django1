@@ -42,7 +42,8 @@
 
         <div class="nav-item">
             <img src="{% static 'images/messages.png' %}" alt="">
-            <span>Messages</span>
+            <a href="{% url 'messages' %}"
+                class="{% if request.path == '/messages/' %}nav-active{% endif %}">Messages</a>
         </div>
 
         <div class="nav-item">
