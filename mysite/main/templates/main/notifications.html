@@ -1,0 +1,53 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'style/notifications.css' %}">
+
+<div class="notif-container">
+
+    <a href="#" class="back-btn">← Back to Dashboard</a>
+
+    <h1>Notifications</h1>
+    <p class="subtitle">Stay updated with your latest activities and messages</p>
+
+    <div class="notif-header">
+        <input type="text" class="search-input" placeholder="Search notifications…">
+        
+        <div class="controls">
+            <button class="control-btn">Filter</button>
+            <button class="control-btn">Type</button>
+            <button class="control-btn">Analytics</button>
+            <a href="{% url 'mark_all_as_read' %}" class="mark-read-btn">Mark All as Read</a>
+        </div>
+    </div>
+
+    <div class="notif-list">
+        {% for notif in notifications %}
+        <div class="notif-item {% if notif.status == 'unread' %}unread{% endif %}">
+            <div class="notif-icon {{ notif.color }}"></div>
+
+            <div class="notif-content">
+                <h3>{{ notif.title }}</h3>
+                <p>{{ notif.description }}</p>
+            </div>
+
+            <span class="notif-type">{{ notif.type }}</span>
+            <span class="notif-time">
+                {{ notif.time_created|timesince }} ago
+            </span>
+
+            <span class="notif-status 
+                {% if notif.status == 'unread' %}unread-badge{% else %}read-badge{% endif %}">
+                {{ notif.status }}
+            </span>
+        </div>
+        {% empty %}
+        <p class="no-notifs">You have no notifications.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

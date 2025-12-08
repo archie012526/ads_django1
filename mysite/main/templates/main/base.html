@@ -51,8 +51,8 @@
         </div>
 
         <div class="nav-item">
-            <img src="{% static 'images/notification.png' %}" alt="">
-            <span>Notification</span>
+            <a href="{% url 'notifications' %}"
+            class="{% if request.path == '/notifications/' %}nav-active{% endif %}">notifications</a>
         </div>
 
         <div class="nav-item" >
