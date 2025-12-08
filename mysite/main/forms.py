@@ -10,4 +10,13 @@ class UserForm(forms.ModelForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ["bio", "company_name", "role", "profile_picture"]
+        fields = [
+            'full_name',
+            'phone_number',
+            'location',
+            'bio',
+            'company_name',
+            'role',
+            'image',   # <-- correct name (NOT profile_picture)
+        ]
+
