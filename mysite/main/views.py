@@ -94,3 +94,5 @@ def profile_page(request):
         "job_suggestions": suggestions,
     })
 
+def _messages(request):
+    return render(request, "main/messages.html")
