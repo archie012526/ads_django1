@@ -228,6 +228,8 @@ def mark_all_as_read(request):
 def job_applications_page(request):
     return render(request, "main/job_applications.html")
 
+def location(request):
+    return render(request, "main/add_location.html")
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Profile, Skill
