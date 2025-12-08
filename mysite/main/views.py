@@ -95,8 +95,5 @@ def profile_page(request):
     })
 
 def _messages(request):
-<<<<<<< HEAD
     return render(request, "main/messages.html")
-=======
-    return render(request, "main/messages.html")
->>>>>>> 13be9fd25703ccc4580c78f614775794fea98bdb
+

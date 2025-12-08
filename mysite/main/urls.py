@@ -13,10 +13,7 @@ urlpatterns = [
     path("profile/", views.profile_page, name="profile"),
     path("profile/edit/", views.edit_profile_page, name="edit_profile"),
     path("messages/", views._messages, name="messages"),
-<<<<<<< HEAD
-=======
-
->>>>>>> 13be9fd25703ccc4580c78f614775794fea98bdb
+    
 ]
 
 
