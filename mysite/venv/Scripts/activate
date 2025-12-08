@@ -35,7 +35,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\Archie king\Documents\ads_proj1\mysite\venv"
+VIRTUAL_ENV="C:\Users\Archie king\Documents\ads_django1\mysite\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
