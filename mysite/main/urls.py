@@ -21,5 +21,6 @@ urlpatterns = [
     path("location/", views.location, name="location"),
 
     path("profile/edit/", views.edit_profile_page, name="edit_profile"),
+    path ("skills/", views.skills, name= "skills"),
 
 ]

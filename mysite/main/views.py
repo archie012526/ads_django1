@@ -212,3 +212,7 @@ def edit_profile_page(request):
         "user_form": user_form,
         "profile_form": profile_form,
     })
+
+def skills(request):
+    return render(request, "main/skills.html", {
+    })
