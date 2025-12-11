@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Profile
+from .models import Profile, Skill
 
 class UserForm(forms.ModelForm):
     class Meta:
@@ -21,4 +21,14 @@ class ProfileForm(forms.ModelForm):
             "phone_number": forms.TextInput(attrs={"class": "input-field"}),
             "location": forms.TextInput(attrs={"class": "input-field"}),
             "bio": forms.Textarea(attrs={"class": "input-field h-24 resize-none"}),
+        }
+
+class SkillForm(forms.ModelForm):
+    class Meta:
+        model = Skill
+        fields = ["name", "level", "description"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "input"}),
+            "level": forms.TextInput(attrs={"class": "input"}),
+            "description": forms.Textarea(attrs={"class": "input"}),
         }

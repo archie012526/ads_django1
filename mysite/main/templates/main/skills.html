@@ -1,1 +1,97 @@
 {% extends "main/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="min-h-screen bg-gray-100 flex">
+
+    <!-- SIDEBAR -->
+    <div class="w-64 bg-white shadow-md p-6">
+        <ul class="space-y-4 text-gray-700">
+
+            <li class="hover:text-purple-600 cursor-pointer">Setting</li>
+            <li class="hover:text-purple-600 cursor-pointer">Notification</li>
+
+            <li>
+                <a href="{% url 'edit_profile' %}" class="hover:text-purple-600 cursor-pointer">
+                    Edit Profile
+                </a>
+            </li>
+
+            <li class="bg-purple-600 text-white py-2 px-3 rounded-lg shadow">
+                Skills
+            </li>
+
+            <li class="hover:text-purple-600 cursor-pointer">Security</li>
+
+            <li class="pt-10 text-red-500 cursor-pointer">Log Out</li>
+        </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 p-10">
+
+        <h2 class="text-2xl font-semibold mb-8">Your Skills</h2>
+
+        <!-- ADD SKILL FORM -->
+        <div class="bg-white shadow p-6 rounded-xl mb-8">
+            <h3 class="text-lg font-semibold mb-4">Add a New Skill</h3>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {{ form.name }}
+                    {{ form.level }}
+                </div>
+
+                <div class="mt-4">
+                    {{ form.description }}
+                </div>
+
+                <button class="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                    Add Skill
+                </button>
+            </form>
+        </div>
+
+        <!-- LIST OF SKILLS -->
+        <div class="bg-white p-6 rounded-xl shadow">
+
+            <h3 class="text-lg font-semibold mb-4">Your Current Skills</h3>
+
+            {% if skills %}
+                <ul class="space-y-4">
+                    {% for skill in skills %}
+                    <li class="p-4 border rounded-lg flex justify-between items-center">
+
+                        <div>
+                            <p class="font-semibold text-gray-800">{{ skill.name }}</p>
+                            {% if skill.level %}
+                                <p class="text-gray-600 text-sm">Level: {{ skill.level }}</p>
+                            {% endif %}
+                            {% if skill.description %}
+                                <p class="text-gray-600 text-sm">{{ skill.description }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="space-x-3">
+                            <a href="{% url 'edit_skill' skill.id %}" class="text-blue-500 hover:underline">
+                                Edit
+                            </a>
+                            <a href="{% url 'delete_skill' skill.id %}" class="text-red-500 hover:underline">
+                                Delete
+                            </a>
+                        </div>
+
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-gray-500">You have no skills added yet.</p>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
