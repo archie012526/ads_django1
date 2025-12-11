@@ -21,6 +21,8 @@ urlpatterns = [
     path("location/", views.location, name="location"),
 
     path("profile/edit/", views.edit_profile_page, name="edit_profile"),
-    path ("skills/", views.skills, name= "skills"),
+    path("skills/", views.skills_page, name="skills"),
+    path("skills/<int:skill_id>/edit/", views.edit_skill, name="edit_skill"),
+    path("skills/<int:skill_id>/delete/", views.delete_skill, name="delete_skill"),
 
 ]

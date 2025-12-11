@@ -1,12 +1,12 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from .forms import SkillForm, UserForm, ProfileForm, Skill 
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from django.contrib.auth.models import User
 
 from .models import Profile, Job, JobApplication, Notification
-from .forms import ProfileForm, UserForm
 
 
 # ============================
@@ -213,6 +213,40 @@ def edit_profile_page(request):
         "profile_form": profile_form,
     })
 
-def skills(request):
-    return render(request, "main/skills.html", {
-    })
+def skills_page(request):
+    skills = Skill.objects.filter(user=request.user)
+
+    form = SkillForm()
+
+    if request.method == "POST":
+        form = SkillForm(request.POST)
+        if form.is_valid():
+            skill = form.save(commit=False)
+            skill.user = request.user
+            skill.save()
+            return redirect("skills")
+
+    context = {
+        "skills": skills,
+        "form": form
+    }
+    return render(request, "main/skills.html", context)
+
+
+def edit_skill(request, skill_id):
+    skill = get_object_or_404(Skill, id=skill_id, user=request.user)
+    form = SkillForm(instance=skill)
+
+    if request.method == "POST":
+        form = SkillForm(request.POST, instance=skill)
+        if form.is_valid():
+            form.save()
+            return redirect("skills")
+
+    return render(request, "main/edit_skill.html", {"form": form})
+
+
+def delete_skill(request, skill_id):
+    skill = get_object_or_404(Skill, id=skill_id, user=request.user)
+    skill.delete()
+    return redirect("skills")
