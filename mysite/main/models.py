@@ -96,10 +96,22 @@ class ContactSubmission(models.Model):
         return f"Message from {self.name}"
 
 class Skill(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="skills")
-    name = models.CharField(max_length=100)
-    level = models.CharField(max_length=50, blank=True, null=True)  # optional
+
+    LEVEL_CHOICES = [
+        ("Beginner", "Beginner"),
+        ("Intermediate", "Intermediate"),
+        ("Advanced", "Advanced"),
+        ("Expert", "Expert"),
+    ]
+
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="skills")
+    name = models.CharField(max_length=255)
+    level = models.CharField(
+    max_length=50,
+    choices=LEVEL_CHOICES,
+    default="Beginner"
+)
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.level})"

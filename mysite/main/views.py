@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from .forms import SkillForm, UserForm, ProfileForm, Skill 
+from .forms import SkillForm, UserForm, ProfileForm, Skill, SKILL_OPTIONS
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -214,23 +214,15 @@ def edit_profile_page(request):
     })
 
 def skills_page(request):
-    skills = Skill.objects.filter(user=request.user)
+    profile = request.user.profile  # <-- IMPORTANT FIX
+    skills = Skill.objects.filter(user=profile)
 
     form = SkillForm()
 
-    if request.method == "POST":
-        form = SkillForm(request.POST)
-        if form.is_valid():
-            skill = form.save(commit=False)
-            skill.user = request.user
-            skill.save()
-            return redirect("skills")
-
-    context = {
+    return render(request, "main/skills.html", {
         "skills": skills,
-        "form": form
-    }
-    return render(request, "main/skills.html", context)
+        "form": form,
+    })
 
 
 def edit_skill(request, skill_id):
