@@ -23,12 +23,61 @@ class ProfileForm(forms.ModelForm):
             "bio": forms.Textarea(attrs={"class": "input-field h-24 resize-none"}),
         }
 
+SKILL_OPTIONS = [
+    ("Communication", "Communication"),
+    ("Teamwork", "Teamwork"),
+    ("Leadership", "Leadership"),
+    ("Problem Solving", "Problem Solving"),
+    ("Time Management", "Time Management"),
+    ("Critical Thinking", "Critical Thinking"),
+
+    ("Customer Service", "Customer Service"),
+    ("Sales", "Sales"),
+    ("Marketing", "Marketing"),
+    ("Negotiation", "Negotiation"),
+
+    ("Project Management", "Project Management"),
+    ("Data Entry", "Data Entry"),
+    ("Typing", "Typing"),
+    ("Computer Literacy", "Computer Literacy"),
+
+    ("Creativity", "Creativity"),
+    ("Public Speaking", "Public Speaking"),
+    ("Writing", "Writing"),
+    ("Research", "Research"),
+    ("Organizational Skills", "Organizational Skills"),
+
+    ("HTML", "HTML"),
+    ("CSS", "CSS"),
+    ("JavaScript", "JavaScript"),
+    ("Python", "Python"),
+    ("Django", "Django"),
+    ("Database Management", "Database Management"),
+
+    ("Patient Care", "Patient Care"),
+    ("Medical Terminology", "Medical Terminology"),
+
+    ("Food Preparation", "Food Preparation"),
+    ("Housekeeping", "Housekeeping"),
+
+    ("Welding", "Welding"),
+    ("Carpentry", "Carpentry"),
+    ("Electrical Work", "Electrical Work"),
+
+    ("Budgeting", "Budgeting"),
+    ("Bookkeeping", "Bookkeeping"),
+]
+
 class SkillForm(forms.ModelForm):
     class Meta:
         model = Skill
         fields = ["name", "level", "description"]
         widgets = {
-            "name": forms.TextInput(attrs={"class": "input"}),
-            "level": forms.TextInput(attrs={"class": "input"}),
+            "name": forms.TextInput(attrs={
+                "class": "input",
+                "list": "skill-options",  # key for datalist autocomplete
+                "placeholder": "Type a skill"
+            }),
+            "level": forms.Select(choices=Skill.LEVEL_CHOICES, attrs={"class": "input"}),
             "description": forms.Textarea(attrs={"class": "input"}),
         }

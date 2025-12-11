@@ -33,6 +33,13 @@
 
         <h2 class="text-2xl font-semibold mb-8">Your Skills</h2>
 
+        <datalist id="skill-options">
+        {% for value, label in SKILL_OPTIONS %}
+            <option value="{{ label }}"></option>
+        {% endfor %}
+        </datalist>
+
+
         <!-- ADD SKILL FORM -->
         <div class="bg-white shadow p-6 rounded-xl mb-8">
             <h3 class="text-lg font-semibold mb-4">Add a New Skill</h3>
