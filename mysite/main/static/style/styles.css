@@ -1,0 +1,6 @@
+/* Minimal fallback stylesheet to avoid 404s */
+/* Add project-wide utility styles here as needed */
+
+.empty-placeholder {
+  background: #f3f4f6;
+}
