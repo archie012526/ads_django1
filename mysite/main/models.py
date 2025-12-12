@@ -21,16 +21,47 @@ class Profile(models.Model):
 #         JOBS
 # =========================
 class Job(models.Model):
+    JOB_TYPES = [
+        ("Full time", "Full time"),
+        ("Part-time", "Part-time"),
+        ("Internship", "Internship"),
+        ("Project work", "Project work"),
+        ("Volunteering", "Volunteering"),
+    ]
+
+    EMPLOYMENT_TYPES = [
+        ("Full day", "Full day"),
+        ("Flexible schedule", "Flexible schedule"),
+        ("Shift work", "Shift work"),
+    ]
+
     title = models.CharField(max_length=255)
     company = models.CharField(max_length=255)
+    location = models.CharField(max_length=255)
+
+    job_type = models.CharField(
+        max_length=50, 
+        choices=JOB_TYPES,
+        default="Full time"
+    )
+
+    employment_type = models.CharField(
+        max_length=50, 
+        choices=EMPLOYMENT_TYPES,
+        default="Full day"
+    )
+
+    skills = models.CharField(
+        max_length=255,
+        default=""  # prevents migration errors
+    )
+
+    salary = models.CharField(max_length=50, default="Not specified")
     description = models.TextField()
-    location = models.CharField(max_length=150)
-    salary = models.CharField(max_length=100, blank=True, null=True)
     posted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.title} at {self.company}"
-
+        return self.title
 
 # =========================
 #     JOB APPLICATIONS
