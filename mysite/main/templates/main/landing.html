@@ -193,13 +193,13 @@ Search jobs, submit applications, and manage recruitment effortlessly—all in o
             // IMPORTANT: You must ensure 'landing1.jpg', 'landing2.jpg', and 'landing3.jpg' 
             // exist in your main/static/images/ folder.
             const imageSources = [
-                "{% static 'images/landing1.jpg' %}", 
-                "{% static 'images/landing2.jpg' %}",
-                "{% static 'images/landing3.jpg' %}"
+                "{% static 'media/landing1.jpg' %}", 
+                "{% static 'media/landing2.jpg' %}",
+                "{% static 'media/landing3.jpg' %}"
             ];
 
             let currentImageIndex = 0;
-            // 5500 milliseconds = 5.5 seconds
+            
             const intervalTime = 5500; 
 
             function changeImage() {
