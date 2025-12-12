@@ -11,7 +11,8 @@ urlpatterns = [
     path("register/", views.signup_page, name="signup"),
     path("profile/", views.profile_page, name="profile"),
 
-    path("messages/", views._messages, name="messages"),
+    path("messages/", views.messages_inbox, name="messages"),
+    path("messages/<int:user_id>/", views.conversation_view, name="conversation"),
     path("notifications/", views.notifications_page, name="notifications"),
     path("mark-read/", views.mark_all_as_read, name="mark_all_as_read"),
 

@@ -1,8 +1,11 @@
+from mailbox import Message
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.db.models import Q
+
 
 from django.contrib.auth import update_session_auth_hash
 
@@ -143,8 +146,73 @@ def profile_page(request):
 # ============================
 # MESSAGES PAGE
 # ============================
-def _messages(request):
-    return render(request, "main/messages.html")
+@login_required
+def messages_inbox(request):
+    # find recent conversations (ordered by last message)
+    msgs = Message.objects.filter(Q(sender=request.user) | Q(receiver=request.user)).order_by('-sent_at')
+
+    partners = []
+    seen = set()
+    for m in msgs:
+        other = m.receiver if m.sender == request.user else m.sender
+        if other.id in seen:
+            continue
+        seen.add(other.id)
+        # unread count for this conversation
+        unread_count = Message.objects.filter(sender=other, receiver=request.user, is_read=False).count()
+        # safe avatar and display name
+        profile = getattr(other, 'profile', None)
+        avatar = None
+        if profile and getattr(profile, 'profile_image'):
+            avatar = profile.profile_image.url
+
+        display_name = other.get_full_name() or other.username
+
+        partners.append({
+            'user': other,
+            'last_message': m,
+            'unread_count': unread_count,
+            'avatar_url': avatar,
+            'display_name': display_name,
+        })
+
+    return render(request, "main/messages.html", {
+        'conversations': partners,
+    })
+
+
+@login_required
+def conversation_view(request, user_id):
+    other = get_object_or_404(User, id=user_id)
+
+    # POST -> send message
+    if request.method == 'POST':
+        content = request.POST.get('message')
+        if content:
+            Message.objects.create(sender=request.user, receiver=other, content=content)
+        return redirect('conversation', user_id=other.id)
+
+    # fetch conversation messages
+    convo = Message.objects.filter(
+        Q(sender=request.user, receiver=other) | Q(sender=other, receiver=request.user)
+    ).order_by('sent_at')
+
+    # mark incoming messages as read
+    Message.objects.filter(sender=other, receiver=request.user, is_read=False).update(is_read=True)
+
+    # conversation user safe fields
+    conv_profile = getattr(other, 'profile', None)
+    conv_avatar = None
+    if conv_profile and getattr(conv_profile, 'profile_image'):
+        conv_avatar = conv_profile.profile_image.url
+
+    return render(request, "main/messages.html", {
+        'conversation_user': other,
+        'conversation_user_avatar': conv_avatar,
+        'conversation_user_display': other.get_full_name() or other.username,
+        'messages_qs': convo,
+        'conversations': [],
+    })
 
 
 # ============================
