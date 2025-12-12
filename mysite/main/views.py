@@ -1,4 +1,4 @@
-from mailbox import Message
+# removed accidental mailbox.Message import which shadowed our model
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -10,7 +10,7 @@ from django.db.models import Q
 from django.contrib.auth import update_session_auth_hash
 
 from .forms import JobForm, SkillForm, UserForm, ProfileForm
-from .models import Profile, Job, JobApplication, Notification, Skill
+from .models import Profile, Job, JobApplication, Notification, Skill, Message
 
 import requests
 import os

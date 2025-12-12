@@ -99,31 +99,88 @@
         </div>
 
         <!-- JOB CARDS -->
-        {% for job in jobs %}
-        <div class="bg-white p-6 rounded-2xl shadow">
-            <p class="text-xs text-gray-500 mb-2">{{ job.employer_name }}</p>
+        <div id="jobs-list">
+            {% for job in jobs %}
+            <div class="bg-white p-6 rounded-2xl shadow mb-4 job-card">
+                <p class="text-xs text-gray-500 mb-2">{{ job.employer_name }}</p>
 
-            <h3 class="font-bold text-lg">
-                {{ job.job_title }}
-            </h3>
+                <h3 class="font-bold text-lg">
+                    {{ job.job_title }}
+                </h3>
 
-            <p class="text-gray-600">
-                {{ job.job_city }}, {{ job.job_country }}
-            </p>
+                <p class="text-gray-600">
+                    {{ job.job_city }}, {{ job.job_country }}
+                </p>
 
-            <p class="font-semibold text-lg mt-2">
-                {{ job.job_min_salary }} - {{ job.job_max_salary }}
-            </p>
+                <p class="font-semibold text-lg mt-2">
+                    {{ job.job_min_salary }} - {{ job.job_max_salary }}
+                </p>
 
-            <a href="{{ job.job_apply_link }}" target="_blank">
-                <button class="w-full bg-black text-white py-2 rounded-xl mt-4">
-                    Apply
-                </button>
-            </a>
+                <a href="{{ job.job_apply_link }}" target="_blank">
+                    <button class="w-full bg-black text-white py-2 rounded-xl mt-4">
+                        Apply
+                    </button>
+                </a>
+            </div>
+            {% endfor %}
+            {% if not jobs %}
+                <p>No jobs found.</p>
+            {% endif %}
         </div>
-        {% empty %}
-        <p>No jobs found.</p>
-        {% endfor %}
+
+        <script>
+            // WebSocket to receive real-time popular jobs
+            (function() {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const socket = new WebSocket(protocol + '//' + window.location.host + '/ws/popular_jobs/');
+
+                socket.onmessage = function(e) {
+                    try {
+                        const data = JSON.parse(e.data);
+                        if (data.type === 'jobs.update') {
+                            renderJobs(data.jobs || []);
+                        }
+                    } catch (err) {
+                        console.error('Invalid jobs update', err);
+                    }
+                };
+
+                socket.onopen = function() {
+                    console.log('Connected to popular_jobs websocket');
+                };
+
+                socket.onclose = function() {
+                    console.log('popular_jobs websocket closed, will not reconnect automatically');
+                };
+
+                function renderJobs(jobs) {
+                    const list = document.getElementById('jobs-list');
+                    if (!list) return;
+                    list.innerHTML = '';
+                    if (!jobs || jobs.length === 0) {
+                        list.innerHTML = '<p>No jobs found.</p>';
+                        return;
+                    }
+
+                    jobs.forEach(job => {
+                        const el = document.createElement('div');
+                        el.className = 'bg-white p-6 rounded-2xl shadow mb-4 job-card';
+                        el.innerHTML = `
+                            <p class="text-xs text-gray-500 mb-2">${escapeHtml(job.employer_name || '')}</p>
+                            <h3 class="font-bold text-lg">${escapeHtml(job.job_title || '')}</h3>
+                            <p class="text-gray-600">${escapeHtml((job.job_city||'') + ', ' + (job.job_country||''))}</p>
+                            <p class="font-semibold text-lg mt-2">${escapeHtml(job.job_min_salary||'')} - ${escapeHtml(job.job_max_salary||'')}</p>
+                            <a href="${job.job_apply_link||'#'}" target="_blank"><button class="w-full bg-black text-white py-2 rounded-xl mt-4">Apply</button></a>
+                        `;
+                        list.appendChild(el);
+                    });
+                }
+
+                function escapeHtml(s) {
+                    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+                }
+            })();
+        </script>
     </section>
 </main>
 

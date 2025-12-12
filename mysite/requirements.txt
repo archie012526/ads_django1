@@ -6,3 +6,5 @@ tzdata==2025.2
 channels==4.0.0
 channels-redis==4.1.0
 daphne==4.0.0
+python-dotenv==1.0.0
+requests==2.31.0
