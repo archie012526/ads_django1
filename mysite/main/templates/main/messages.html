@@ -78,7 +78,7 @@
                 </div>
             </div>
 
-            <div class="flex-grow p-5 space-y-4 overflow-y-auto bg-gray-50">
+            <div class="flex-grow p-5 space-y-4 overflow-y-auto bg-gray-50" id="messages-container">
                 {% if messages_qs %}
                     {% for m in messages_qs %}
                         {% if m.sender == request.user %}
@@ -104,12 +104,14 @@
 
             <div class="p-4 border-t border-gray-200 bg-white">
                 {% if conversation_user %}
-                <form method="post" action="{% url 'conversation' conversation_user.id %}">
+                <form id="message-form" class="form" method="post" action="{% url 'conversation' conversation_user.id %}">
                     {% csrf_token %}
                     <div class="flex items-end gap-3">
                         <button class="text-gray-500 p-2 hover:text-blue-500" type="button">📎</button>
                         <button class="text-gray-500 p-2 hover:text-blue-500" type="button">📋</button>
-                        <textarea name="message"
+                        <textarea 
+                            id="message-textarea"
+                            name="message"
                             placeholder="Send a message to {{ conversation_user.get_full_name|default:conversation_user.username }}..."
                             rows="1"
                             class="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-400 focus:border-blue-400 resize-none outline-none"
@@ -129,5 +131,123 @@
         </section>
     </div>
 </div>
+
+<script>
+    const conversationUserId = "{{ conversation_user.id }}";
+    const currentUserId = {{ request.user.id }};
+    const currentUserName = "{{ request.user.get_full_name|default:request.user.username }}";
+    let chatSocket = null;
+
+    // Initialize WebSocket only if in a conversation
+    if (conversationUserId && conversationUserId !== "") {
+        initializeWebSocket();
+    }
+
+    function initializeWebSocket() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        chatSocket = new WebSocket(
+            protocol + '//' + window.location.host + '/ws/messages/' + conversationUserId + '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'message') {
+                displayMessage(data);
+                // If we sent this message, clear textarea
+                if (data.sender_id === currentUserId) {
+                    document.getElementById('message-textarea').value = '';
+                }
+            }
+        };
+
+        chatSocket.onerror = function(error) {
+            console.error('WebSocket error:', error);
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('WebSocket closed unexpectedly');
+            // Attempt to reconnect after 3 seconds
+            setTimeout(initializeWebSocket, 3000);
+        };
+    }
+
+    function displayMessage(data) {
+        const container = document.getElementById('messages-container');
+        const isCurrentUser = data.sender_id === currentUserId;
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`;
+        
+        const bubbleDiv = document.createElement('div');
+        bubbleDiv.className = `p-3 rounded-xl max-w-md shadow-${isCurrentUser ? 'md' : 'sm'} ${
+            isCurrentUser 
+                ? 'bg-blue-500 text-white rounded-tr-sm' 
+                : 'bg-gray-200 rounded-tl-sm'
+        }`;
+        
+        bubbleDiv.innerHTML = `
+            <p class="text-sm">${escapeHtml(data.message)}</p>
+            <span class="text-xs ${isCurrentUser ? 'text-blue-200' : 'text-gray-500'} block text-right mt-1">
+                ${data.timestamp}
+            </span>
+        `;
+        
+        messageDiv.appendChild(bubbleDiv);
+        container.appendChild(messageDiv);
+        
+        // Auto-scroll to bottom
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // Handle form submission via AJAX
+    document.getElementById('message-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const textarea = document.getElementById('message-textarea');
+        const message = textarea.value.trim();
+        
+        if (!message) return;
+        
+        // Send via WebSocket if connected
+        if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+        } else {
+            // Fallback: send via AJAX
+            sendMessageViaAjax(message);
+        }
+    });
+
+    function sendMessageViaAjax(message) {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch(`/messages/${conversationUserId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: `message=${encodeURIComponent(message)}`
+        })
+        .then(response => {
+            if (response.ok) {
+                document.getElementById('message-textarea').value = '';
+                // Reload messages
+                location.reload();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
 
 {% endblock content %}
