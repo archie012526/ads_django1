@@ -72,12 +72,21 @@ class SkillForm(forms.ModelForm):
     class Meta:
         model = Skill
         fields = ["name", "level", "description"]
+
         widgets = {
-            "name": forms.TextInput(attrs={
-                "class": "input",
-                "list": "skill-options",  # key for datalist autocomplete
-                "placeholder": "Type a skill"
-            }),
-            "level": forms.Select(choices=Skill.LEVEL_CHOICES, attrs={"class": "input"}),
-            "description": forms.Textarea(attrs={"class": "input"}),
+            "name": forms.Select(
+                choices=SKILL_OPTIONS,
+                attrs={"class": "input"}
+            ),
+            "level": forms.Select(
+                choices=Skill.LEVEL_CHOICES,
+                attrs={"class": "input"}
+            ),
+            "description": forms.Textarea(
+                attrs={
+                    "class": "input",
+                    "rows": 3,
+                    "placeholder": "Describe your skill (optional)"
+                }
+            ),
         }
