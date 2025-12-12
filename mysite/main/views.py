@@ -167,9 +167,24 @@ def mark_all_as_read(request):
 def job_applications_page(request):
     return render(request, "main/job_applications.html")
 
+def find_jobs(request):
+    query = request.GET.get("q", "")
+
+    jobs = Job.objects.all()
+
+    if query:
+        jobs = jobs.filter(title__icontains=query)
+
+    return render(request, "main/findjobs.html", {"jobs": jobs, "query": query})
+
 
 def location(request):
     return render(request, "main/add_location.html")
+
+
+# ============================
+# profile PAGE
+# ============================
 
 @login_required
 def edit_profile_page(request):

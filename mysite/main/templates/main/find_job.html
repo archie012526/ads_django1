@@ -1,5 +1,6 @@
 {% extends "main/base.html" %}
 {% load static %}
+{% load custom_filters %}
 
 {% block extra_head %}
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,13 +13,15 @@
 <header class="w-full bg-white shadow-sm p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
 
     <!-- Search Bar -->
-    <div class="w-full md:w-1/2">
-        <input
-            type="text"
-            placeholder="Search jobs, companies, or keywords"
-            class="w-full px-5 py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-blue-400 outline-none"
-        />
-    </div>
+<form method="get">
+    <input
+        type="text"
+        name="q"
+        value="{{ query }}"
+        placeholder="Search jobs…"
+        class="w-full px-5 py-3 rounded-full border"
+    />
+</form>
 
    
 
@@ -99,78 +102,26 @@
         </div>
 
         <!-- JOB CARDS -->
-        <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            {% for job in jobs %}
+        <div class="bg-white p-6 rounded-2xl shadow">
+            <p class="text-xs text-gray-500 mb-2">{{ job.company }}</p>
+            <h3 class="font-bold text-lg">{{ job.title }}</h3>
+            <p class="text-gray-600">{{ job.location }}</p>
 
-            <!-- Cards kept exactly as you wrote them -->
-            <!-- CARD 1 -->
-            <div class="bg-blue-50 p-6 rounded-2xl shadow">
-                <p class="text-xs text-gray-500 mb-2">AV Ely • 10/15</p>
-                <h3 class="font-bold text-lg">Senior Data Scientist</h3>
-                <p class="text-gray-600">Danioles</p>
-
-                <div class="flex flex-wrap gap-2 my-3">
-                    <span class="px-3 py-1 bg-white shadow rounded-full text-sm">Data</span>
-                    <span class="px-3 py-1 bg-white shadow rounded-full text-sm">ML</span>
-                    <span class="px-3 py-1 bg-white shadow rounded-full text-sm">Visualization</span>
-                </div>
-
-                <p class="font-semibold text-lg">$300/hr</p>
-                <p class="text-xs text-gray-500">$Hand9 AM</p>
-
-                <a href="{% url 'job_applications' %}">
-                <button class="w-full bg-black text-white py-2 rounded-xl mt-4">
-                    Apply
-                </button>
-</a>
+            <div class="flex flex-wrap gap-2 my-3">
+                {% for tag in job.skills|split:"," %}
+    <span class="px-3 py-1 bg-blue-100 rounded-full text-sm">{{ tag }}</span>
+{% endfor %}
             </div>
 
-            <!-- CARD 2 -->
-            <div class="bg-pink-50 p-6 rounded-2xl shadow">
-                <p class="text-xs text-gray-500 mb-2">8BHS • 20055</p>
-                <h3 class="font-bold text-lg">Software Engineer</h3>
-                <p class="text-gray-600">Samions</p>
+            <p class="font-semibold text-lg">{{ job.salary }}</p>
 
-                <div class="flex flex-wrap gap-2 my-3">
-                    <span class="px-3 py-1 bg-white shadow rounded-full text-sm">GIC</span>
-                    <span class="px-3 py-1 bg-white shadow rounded-full text-sm">Testing</span>
-                    <span class="px-3 py-1 bg-white shadow rounded-full text-sm">Cloud</span>
-                </div>
-
-                <p class="font-semibold text-lg">$176/hr</p>
-                <p class="text-xs text-gray-500">$9tan09 AM</p>
-
-                <a href="{% url 'job_applications' %}">
-                <button class="w-full bg-black text-white py-2 rounded-xl mt-4">
-                    Apply
-                </button>
-</a>
-
-            </div>
-
-            <!-- CARD 3 -->
-            <div class="bg-orange-50 p-6 rounded-2xl shadow">
-                <p class="text-xs text-gray-500 mb-2">S5 Daly • 2035</p>
-                <h3 class="font-bold text-lg">Mid-level DevOps Engineer</h3>
-                <p class="text-gray-600">Samieles</p>
-
-                <div class="flex flex-wrap gap-2 my-3">
-                    <span class="px-3 py-1 bg-white shadow rounded-full text-sm">Docker</span>
-                    <span class="px-3 py-1 bg-white shadow rounded-full text-sm">CI/CD</span>
-                    <span class="px-3 py-1 bg-white shadow rounded-full text-sm">Linux</span>
-                </div>
-
-                <p class="font-semibold text-lg">$190/hr</p>
-                <p class="text-xs text-gray-500">$4an0 PM</p>
-
-                <a href="{% url 'job_applications' %}">
-                <button class="w-full bg-black text-white py-2 rounded-xl mt-4">
-                    Apply
-                </button>
-</a>
-            </div>
-
+            <a href="{% url 'job_applications' %}">
+                <button class="w-full bg-black text-white py-2 rounded-xl mt-4">Apply</button>
+            </a>
         </div>
-    </section>
+        {% endfor %}
+            </section>
 </main>
 
 {% endblock content %}
