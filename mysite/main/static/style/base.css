@@ -33,20 +33,24 @@ body {
     background: white;
 }
 
-.logo-circle .logo-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Logo image */
-.logo-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.logo-circle {
+    width: 48px;
+    height: 48px;
+    background: white;
     border-radius: 50%;
+    border: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 3px 6px rgba(0,0,0,0.15);
 }
 
+/* Logo Image */
+.logo-img {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+}
 
 /* Search bar */
 .search-box {

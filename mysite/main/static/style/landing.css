@@ -42,12 +42,11 @@ body {
     box-shadow: 0px 3px 6px rgba(0,0,0,0.15);
 }
 
-/* Logo image */
+/* Logo Image */
 .logo-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;      /* fills circle perfectly */
-    border-radius: 50%;     /* makes the image itself circular */
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
 }
 
 
