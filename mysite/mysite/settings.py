@@ -14,6 +14,14 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
 
+import os
+
+# RapidAPI settings
+RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "")
+RAPIDAPI_HOST = "jsearch.p.rapidapi.com"
+# Cache timeout for popular jobs (seconds). Tune as needed.
+POPULAR_JOBS_CACHE_TIMEOUT = 300  # 5 minutes
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
