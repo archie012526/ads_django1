@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Profile, Skill
+from .models import Profile, Skill, Job
 
 class UserForm(forms.ModelForm):
     class Meta:
@@ -90,3 +90,16 @@ class SkillForm(forms.ModelForm):
                 }
             ),
         }
+class JobForm(forms.ModelForm):
+    class Meta:
+        model = Job
+        fields = [
+            "title",
+            "company",
+            "location",
+            "job_type",
+            "employment_type",
+            "skills",
+            "salary",
+            "description",
+        ]

@@ -67,35 +67,20 @@
             <p class="show-more">Show more →</p>
         </div>
 
-        <!-- Job Posts (from Job model) -->
-        {% for job in jobs %}
-        <div class="post-card">
+        <!-- REAL-TIME POPULAR JOBS FROM API -->
+        <h3 style="margin-top: 20px;">Popular Jobs</h3>
 
-            <div class="post-header">
-                <div class="profile-pic-small"></div>
-                <div>
-                    <p class="username">{{ job.company }}</p>
-                    <small>{{ job.location }}</small>
-                </div>
+        {% if popular_jobs %}
+            {% for job in popular_jobs %}
+            <div class="job-card">
+                <h3>{{ job.job_title }}</h3>
+                <p>{{ job.employer_name }}</p>
+                <p>{{ job.job_city }}, {{ job.job_country }}</p>
             </div>
-
-            <div class="post-content">
-                <p style="padding: 10px 0; font-weight: 500;">
-                    {{ job.title }}
-                </p>
-                <p>{{ job.description|truncatewords:20 }}</p>
-            </div>
-
-            <div class="post-actions">
-                <a href="{% url 'job_application' job.id %}">
-                    <span>📝 Apply</span>
-                </a>
-            </div>
-
-        </div>
-        {% empty %}
-        <p style="text-align:center; margin-top:20px;">No jobs yet.</p>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            <p>No jobs available right now.</p>
+        {% endif %}
 
     </div>
 
