@@ -2,6 +2,13 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+import requests
+from django.conf import settings
+from django.shortcuts import render
+from django.core.cache import cache
+import logging
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -17,6 +24,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 # ============================
 # HOME PAGE
@@ -77,8 +85,6 @@ def landingpage(request):
 def about_page(request):
     return render(request, "main/about.html")
 
-def find_job_page(request):
-    return render(request, "main/find_job.html")
 
 def contact_us_page(request):
     return render(request, "main/contact_us.html")
@@ -355,3 +361,74 @@ def location(request):
 
 def job_applications_page(request):
     return render(request, "main/job_applications.html")
+
+def broadcast_popular_jobs(jobs):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "popular_jobs",
+        {
+            "type": "jobs.update",
+            "jobs": jobs
+        }
+    )
+
+def fetch_popular_jobs_from_rapidapi(query="popular jobs", num_pages=1):
+    """
+    Calls JSearch (RapidAPI) and returns a list of normalized job dicts.
+    Caches results at the view level (see caller).
+    """
+    if not settings.RAPIDAPI_KEY:
+        logger.warning("RAPIDAPI_KEY not set in settings")
+        return []
+
+    url = "https://jsearch.p.rapidapi.com/search"
+    headers = {
+        "X-RapidAPI-Key": settings.RAPIDAPI_KEY,
+        "X-RapidAPI-Host": settings.RAPIDAPI_HOST,
+    }
+    params = {
+        "query": query,
+        "num_pages": num_pages
+    }
+
+    try:
+        resp = requests.get(url, headers=headers, params=params, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:
+        logger.exception("Error fetching jobs from RapidAPI: %s", e)
+        return []
+
+    results = []
+    for item in data.get("data", []):
+        # Map fields from the API to the structure your template expects
+        results.append({
+            "job_title": item.get("job_title") or item.get("title") or "",
+            "employer_name": item.get("employer_name") or item.get("company_name") or "",
+            "job_city": item.get("job_city") or item.get("location") or "",
+            "job_country": item.get("job_country") or "",
+            "job_min_salary": item.get("min_salary") or item.get("salary") or "",
+            "job_max_salary": item.get("max_salary") or "",
+            "job_apply_link": item.get("job_apply_link") or item.get("url") or "#",
+        })
+
+    return results
+
+def find_job(request):
+    """
+    Main view that serves your popular jobs page.
+    - Accepts optional ?q= search query from your template search input.
+    - Caches the API response for POPULAR_JOBS_CACHE_TIMEOUT seconds.
+    """
+    query = request.GET.get("q") or "popular jobs"
+    cache_key = f"popular_jobs::{query}"
+
+    jobs = cache.get(cache_key)
+    if jobs is None:
+        # fetch from RapidAPI
+        jobs = fetch_popular_jobs_from_rapidapi(query=query, num_pages=1)
+        # cache results (avoid exceeding RapidAPI rate limits)
+        cache.set(cache_key, jobs, getattr(settings, "POPULAR_JOBS_CACHE_TIMEOUT", 300))
+
+    # Render your existing template (adjust template name if different)
+    return render(request, "main/find_job.html", {"jobs": jobs, "query": query})
