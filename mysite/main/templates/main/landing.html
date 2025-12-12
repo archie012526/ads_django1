@@ -2,7 +2,7 @@
 
 {% block head_extra %}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'style/landing.css' %}?v=1">
+<link rel="stylesheet" href="{% static 'style/landing.css' %}?v=2">
 {% endblock head_extra %}
 
 {% block content %}
@@ -12,10 +12,7 @@
     <header class="header">
         <div class="left-side">
             <div class="logo-circle">
-                <svg class="logo-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                </svg>
+                <img src="{% static 'media/logo_jobbridge.jpg' %}" class="logo-img">
             </div>
             <span class="logo-text">JobBridge</span>
         </div>
@@ -28,8 +25,10 @@
     <!-- Hero Section -->
     <main class="hero">
         <h1>Connect Talent and Opportunity</h1>
-        <p class="subtitle">A faster way to match employers with skilled applicants.
-Search jobs, submit applications, and manage recruitment effortlessly—all in one streamlined system.</p>
+        <p class="subtitle">
+            A faster way to match employers with skilled applicants.
+            Search jobs, submit applications, and manage recruitment effortlessly—all in one streamlined system.
+        </p>
 
         <div class="buttons">
             <a href="{% url 'about' %}" class="btn-light">about</a>

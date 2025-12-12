@@ -21,13 +21,32 @@ body {
 
     z-index: 50;
 }
-
-.nav-left, 
-.nav-center, 
-.nav-right {
+/* Circular Logo - same as Landing Page */
+.logo-circle {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    overflow: hidden;
     display: flex;
+    justify-content: center;
     align-items: center;
+    background: white;
 }
+
+.logo-circle .logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Logo image */
+.logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
 
 /* Search bar */
 .search-box {
@@ -53,11 +72,7 @@ body {
     width: 18px;
 }
 
-/* Profile icon */
-.profile-img {
-    width: 40px;
-    border-radius: 50%;
-}
+
 
 .profile-icon img {
     width: 32px;
