@@ -1,171 +1,476 @@
-/* Global page settings */
+/* GLOBAL STYLES */
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #f7f7f7;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: #333;
+    background-color: #ffffff;
 }
 
-/* Main container */
 .main-container {
-    max-width: 1280px;
-    margin: 40px auto;
-    background-color: white;
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    overflow-x: hidden;
 }
 
-/* Header */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* HEADER/NAVBAR */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 15px 40px;
+    background-color: #2c3e50; /* Dark Blue */
+    color: #ffffff;
 }
 
-/* Left side */
 .left-side {
     display: flex;
     align-items: center;
-    gap: 12px;
 }
 
-/* Fixed Logo Circle */
-/* Circle container */
 .logo-circle {
-    width: 60px;
-    height: 60px;
+    width: 35px;
+    height: 35px;
+    background-color: #34495e; /* Medium Blue Accent (was pink) */
     border-radius: 50%;
-    overflow: hidden;       /* forces the logo to become circular */
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0px 3px 6px rgba(0,0,0,0.15);
+    margin-right: 10px;
 }
 
-/* Logo Image */
-.logo-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
+.logo-icon {
+    width: 20px;
+    height: 20px;
+    color: #ffffff;
 }
-
 
 .logo-text {
-    font-size: 20px;
-    font-weight: 600;
-    color: #333;
-}
-
-/* Navigation links (if needed later) */
-.nav-links {
-    display: flex;
-    gap: 30px;
-}
-
-.nav-links a {
-    text-decoration: none;
-    font-weight: 500;
-    color: #555;
-}
-
-.nav-links a:hover {
-    color: #2563eb;
-}
-
-/* Right side */
-.right-side {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+    font-size: 1.5em;
+    font-weight: 700;
 }
 
 .login-btn {
-    background: black;
-    color: white;
-    padding: 10px 26px;
-    border-radius: 999px;
-    font-weight: 500;
     text-decoration: none;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    color: #ffffff;
+    background-color: #2c3e50;
+    padding: 8px 16px;
+    border: 2px solid #ffffff; /* Added border for contrast */
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
 }
 
 .login-btn:hover {
-    background: #333;
+    background-color: #34495e; /* Medium Blue hover */
 }
 
-/* Hero Section */
+/* HERO SECTION */
 .hero {
+    padding: 80px 40px;
     text-align: center;
-    padding: 60px 20px 40px;
+    background-color: #f4f6f8; /* Light Grey */
 }
 
 .hero h1 {
-    font-size: 48px;
-    font-weight: 800;
-    color: #111;
-    max-width: 700px;
-    margin: 0 auto 20px;
+    font-size: 3.5em;
+    font-weight: 900;
+    color: #2c3e50;
+    margin-bottom: 15px;
 }
 
-.subtitle {
-    font-size: 18px;
+.hero .subtitle {
+    font-size: 1.2em;
+    max-width: 800px;
+    margin: 0 auto 30px;
     color: #555;
-    margin-bottom: 35px;
 }
 
-/* Buttons */
-.buttons {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-
-.btn-light,
-.btn-dark {
-    padding: 14px 40px;
-    border-radius: 999px;
+.buttons a {
     text-decoration: none;
-    font-weight: 500;
-    transition: 0.2s ease;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin: 0 10px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: inline-block;
 }
 
 .btn-light {
-    background: #eaeaea;
-    color: #444;
-}
-
-.btn-light:hover {
-    background: #d5d5d5;
+    background-color: #ffffff;
+    color: #2c3e50;
+    border: 2px solid #2c3e50;
 }
 
 .btn-dark {
-    background: #111;
-    color: white;
+    background-color: #2c3e50; /* Dark Blue (was pink) */
+    color: #ffffff;
+    border: 2px solid #2c3e50; /* Dark Blue (was pink) */
+}
+
+.btn-light:hover {
+    background-color: #34495e; /* Medium Blue hover */
+    color: #ffffff;
+    border-color: #34495e;
+    transform: translateY(-2px);
 }
 
 .btn-dark:hover {
-    background: #000;
+    background-color: #34495e; /* Slightly darker blue hover */
+    border-color: #34495e;
+    transform: translateY(-2px);
 }
 
-/* Design Placeholder */
+/* PLACEHOLDER IMAGE SECTION */
 .placeholder {
-    margin-top: 60px;
+    padding: 40px 0;
+    background-color: #ffffff;
 }
 
 .placeholder-box {
-    width: 95%;
-    height: 50vh;
-    background: #d6d3d1;
+    max-width: 1000px;
     margin: 0 auto;
-    border-radius: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-.placeholder-box p {
-    font-size: 36px;
+.design-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* --- ABOUT US SECTION STYLES --- */
+.our-story {
+    padding: 60px 20px;
+    text-align: center;
+    background-color: #f4f6f8;
+}
+
+.our-story h2 {
+    font-size: 2.5em;
+    font-weight: 800;
+    color: #2c3e50;
+    margin-bottom: 50px;
+}
+
+.story-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    text-align: left;
+}
+
+.story-card {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.story-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.story-card h3 {
+    color: #2c3e50; /* Dark Blue (was pink) */
+    font-size: 1.4em;
     font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.story-card p {
+    color: #666;
+    line-height: 1.6;
+}
+
+/* --- CONTACT US SECTION STYLES --- */
+
+/* The main section container */
+.contact-us {
+    padding: 60px 0;
+    background-color: #ffffff; 
+}
+
+/* Style for the main title (if present) */
+.contact-us .section-title {
+    font-size: 2.5em;
+    font-weight: 800;
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 40px;
+}
+
+/* Grid Layout for the info card and form card */
+.contact-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 2fr; 
+    gap: 30px;
+    align-items: flex-start;
+}
+
+@media (max-width: 900px) {
+    .contact-container {
+        grid-template-columns: 1fr; /* Stack columns on smaller screens */
+    }
+}
+
+/* Card Styling (applies to both info and form) */
+.contact-us .card {
+    background: #f8f9fa; 
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+    border: 1px solid #eee;
+}
+
+.contact-us .card-header {
+    padding: 25px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    background-color: #2c3e50; 
+}
+
+.contact-us .pink-bg {
+    background-color: #2c3e50; /* Dark Blue (was pink) */
+}
+
+.contact-us .icon-large {
+    font-size: 2.5em;
+    margin-right: 15px;
+}
+
+.contact-us .card-header h2 {
+    margin: 0;
+    font-size: 1.8em;
+    font-weight: 700;
+}
+
+.contact-us .card-body {
+    padding: 25px;
+}
+
+.contact-us .intro-text {
+    font-size: 1.05em;
+    margin-bottom: 30px;
+    color: #555;
+}
+
+/* Contact Info Card Specific Styles */
+.contact-info-card {
+    position: sticky; 
+    top: 20px;
+}
+
+.contact-us .info-heading {
+    font-size: 1.3em;
+    color: #2c3e50;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #2c3e50; /* Dark Blue (was pink) */
+    padding-bottom: 5px;
+}
+
+.contact-us .info-group {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.contact-us .info-group i {
+    color: #2c3e50; /* Dark Blue (was pink) */
+    font-size: 1.2em;
+    margin-right: 15px;
+    padding-top: 2px;
+}
+
+.contact-us .info-label {
+    font-weight: 600;
     color: #333;
-    letter-spacing: 2px;
+    margin-bottom: 2px;
+}
+
+.contact-us .info-detail {
+    margin: 0;
+    color: #666;
+}
+
+.contact-us .pink-link {
+    color: #2c3e50; /* Dark Blue (was pink) */
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.contact-us .pink-link:hover {
+    text-decoration: underline;
+    color: #34495e; /* Medium Blue hover */
+}
+
+.contact-us hr {
+    border: 0;
+    border-top: 1px solid #ddd;
+    margin: 25px 0;
+}
+
+/* Social Links */
+.contact-us .social-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding-top: 10px;
+}
+
+.contact-us .social-links a {
+    color: #2c3e50;
+    font-size: 1.5em;
+    transition: color 0.3s ease;
+}
+
+.contact-us .social-links a:hover {
+    color: #34495e; /* Medium Blue hover (was pink) */
+}
+
+/* Contact Form Card Specific Styles */
+.contact-form-card .form-header {
+    background-color: #2c3e50; 
+}
+
+.contact-us .form-group {
+    margin-bottom: 20px;
+}
+
+.contact-us label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.contact-us input[type="text"],
+.contact-us input[type="email"],
+.contact-us textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.contact-us input:focus,
+.contact-us textarea:focus {
+    border-color: #2c3e50; /* Dark Blue (was pink) */
+    box-shadow: 0 0 5px rgba(44, 62, 80, 0.5); /* Blue shadow (was pink) */
+    outline: none;
+}
+
+.contact-us textarea {
+    resize: vertical;
+    min-height: 150px;
+}
+
+.contact-us .submit-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px 25px;
+    background-color: #2c3e50; /* Dark Blue (was pink) */
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-transform: uppercase;
+}
+
+.contact-us .submit-button:hover {
+    background-color: #34495e; /* Medium Blue hover (was pink) */
+}
+
+.contact-us .submit-button i {
+    margin-right: 10px;
+}
+
+/* --- FOOTER STYLES --- */
+.site-footer {
+    background-color: #2c3e50;
+    color: #ffffff;
+    padding: 40px 0;
+    font-size: 0.9em;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 30px;
+}
+
+@media (max-width: 768px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .footer-brand {
+        margin-bottom: 20px;
+    }
+
+    .footer-links a {
+        display: block;
+        margin: 5px 0;
+    }
+}
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.footer-brand .logo-circle.small {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8em;
+    margin-bottom: 10px;
+}
+
+.footer-brand p {
+    margin: 0;
+}
+
+.footer-links a {
+    color: #ccc;
+    text-decoration: none;
+    margin-right: 15px;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: #34495e; /* Medium Blue hover (was pink) */
+}
+
+.footer-contact p {
+    margin: 5px 0;
+}
+
+.footer-contact a {
+    color: #34495e; /* Medium Blue (was pink) */
+    text-decoration: none;
 }
