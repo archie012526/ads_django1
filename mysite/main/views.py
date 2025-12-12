@@ -1,14 +1,22 @@
+from mailbox import Message
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from .forms import SkillForm, UserForm, ProfileForm, Skill, SKILL_OPTIONS
-from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from django.contrib.auth.models import User
-
-from .models import Profile, Job, JobApplication, Notification, Message
 from django.db.models import Q
 
+
+from django.contrib.auth import update_session_auth_hash
+
+from .forms import JobForm, SkillForm, UserForm, ProfileForm
+from .models import Profile, Job, JobApplication, Notification, Skill
+
+import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ============================
 # HOME PAGE
@@ -20,18 +28,36 @@ def home_page(request):
         defaults={"full_name": request.user.username}
     )
 
-    jobs = Job.objects.all().order_by('-posted_at')[:10]
+    # ======= REAL-TIME POPULAR JOBS =======
+    url = "https://jsearch.p.rapidapi.com/search"
+    params = {
+        "query": "popular jobs",
+        "page": "1",
+        "num_pages": "1"
+    }
+
+    headers = {
+        "x-rapidapi-key": os.getenv("RAPIDAPI_KEY"),
+        "x-rapidapi-host": "jsearch-api.p.rapidapi.com"   # FIXED
+    }
+
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        data = response.json()
+        popular_jobs = data.get("data", [])
+    except:
+        popular_jobs = []  # fail-safe
+
+    # ======= OTHER DATA =======
     recommended_users = User.objects.exclude(id=request.user.id)[:5]
     applications_count = JobApplication.objects.filter(user=request.user).count()
-    unread_notifications = Notification.objects.filter(
-        user=request.user, is_read=False
-    ).count()
+    unread_notifications = Notification.objects.filter(user=request.user, is_read=False).count()
 
     industries = ["Hotel Jobs", "Fast Food", "Management", "Retail"]
 
     context = {
         "profile": profile,
-        "jobs": jobs,
+        "popular_jobs": popular_jobs,
         "recommended_users": recommended_users,
         "applications_count": applications_count,
         "unread_notifications": unread_notifications,
@@ -195,7 +221,7 @@ def conversation_view(request, user_id):
 @login_required
 def notifications_page(request):
     sample_notifications = {
-        "user1": [
+        request.user.username: [
             {
                 "title": "New Job Recommendation",
                 "description": "3 new jobs match your skills.",
@@ -215,8 +241,7 @@ def notifications_page(request):
         ]
     }
 
-    username = request.user.username
-    notifications = sample_notifications.get(username, [])
+    notifications = sample_notifications.get(request.user.username, [])
 
     return render(request, "main/notifications.html", {
         "notifications": notifications
@@ -228,35 +253,42 @@ def mark_all_as_read(request):
 
 
 # ============================
-# JOB APPLICATION PAGE
+# FIND JOBS (API SEARCH)
 # ============================
-def job_applications_page(request):
-    return render(request, "main/job_applications.html")
-
 def find_jobs(request):
-    query = request.GET.get("q", "")
+    query = request.GET.get("q", "developer")
 
-    jobs = Job.objects.all()
+    url = "https://jsearch.p.rapidapi.com/search"
+    params = {
+        "query": query,
+        "page": "1",
+        "num_pages": "1"
+    }
 
-    if query:
-        jobs = jobs.filter(title__icontains=query)
+    headers = {
+        "x-rapidapi-key": os.getenv("RAPIDAPI_KEY"),
+        "x-rapidapi-host": "jsearch-api.p.rapidapi.com"  # FIXED
+    }
 
-    return render(request, "main/findjobs.html", {"jobs": jobs, "query": query})
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        data = response.json()
+        jobs = data.get("data", [])
+    except:
+        jobs = []
 
-
-def location(request):
-    return render(request, "main/add_location.html")
+    return render(request, "main/find_jobs.html", {
+        "jobs": jobs,
+        "query": query,
+    })
 
 
 # ============================
-# profile PAGE
+# EDIT PROFILE PAGE
 # ============================
-
 @login_required
 def edit_profile_page(request):
     user = request.user
-
-    # Create profile if user somehow doesn't have one yet
     profile, created = Profile.objects.get_or_create(user=user)
 
     if request.method == "POST":
@@ -266,7 +298,7 @@ def edit_profile_page(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            return redirect("profile")  # Redirect to profile page
+            return redirect("profile")
     else:
         user_form = UserForm(instance=user)
         profile_form = ProfileForm(instance=profile)
@@ -276,28 +308,14 @@ def edit_profile_page(request):
         "profile_form": profile_form,
     })
 
-def edit_profile_page(request):
-    user_form = UserForm(instance=request.user)
-    profile_form = ProfileForm(instance=request.user.profile)
 
-    if request.method == "POST":
-        user_form = UserForm(request.POST, instance=request.user)
-        profile_form = ProfileForm(request.POST, instance=request.user.profile)
-
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-            return redirect("profile")
-
-    return render(request, "main/edit_profile.html", {
-        "user_form": user_form,
-        "profile_form": profile_form,
-    })
-
+# ============================
+# SKILLS PAGE
+# ============================
+@login_required
 def skills_page(request):
-    profile = request.user.profile  # <-- IMPORTANT FIX
+    profile = request.user.profile
     skills = Skill.objects.filter(user=profile)
-
     form = SkillForm()
 
     return render(request, "main/skills.html", {
@@ -306,8 +324,9 @@ def skills_page(request):
     })
 
 
+@login_required
 def edit_skill(request, skill_id):
-    skill = get_object_or_404(Skill, id=skill_id, user=request.user)
+    skill = get_object_or_404(Skill, id=skill_id, user=request.user.profile)
     form = SkillForm(instance=skill)
 
     if request.method == "POST":
@@ -319,7 +338,20 @@ def edit_skill(request, skill_id):
     return render(request, "main/edit_skill.html", {"form": form})
 
 
+@login_required
 def delete_skill(request, skill_id):
-    skill = get_object_or_404(Skill, id=skill_id, user=request.user)
+    skill = get_object_or_404(Skill, id=skill_id, user=request.user.profile)
     skill.delete()
     return redirect("skills")
+
+
+# ============================
+# LOCATION PAGE
+# ============================
+def location(request):
+    return render(request, "main/add_location.html")
+
+
+
+def job_applications_page(request):
+    return render(request, "main/job_applications.html")
