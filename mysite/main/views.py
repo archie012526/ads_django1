@@ -264,10 +264,9 @@ def mark_all_as_read(request):
 # ============================
 def find_job(request):
     query = request.GET.get("q") or "developer"
-
     cache_key = f"jobs::{query}"
-    jobs = cache.get(cache_key)
 
+    jobs = cache.get(cache_key)
     if jobs is None:
         url = "https://jsearch.p.rapidapi.com/search"
 
@@ -290,6 +289,15 @@ def find_job(request):
             data = response.json()
 
             for job in data.get("data", []):
+                highlights = (
+                    job.get("job_highlights")
+                    or job.get("job_skills")
+                    or []
+                )
+
+                if isinstance(highlights, str):
+                    highlights = [highlights]
+
                 jobs.append({
                     "job_title": job.get("job_title"),
                     "employer_name": job.get("employer_name"),
@@ -298,38 +306,19 @@ def find_job(request):
                     "job_apply_link": job.get("job_apply_link"),
                     "job_min_salary": job.get("job_min_salary"),
                     "job_max_salary": job.get("job_max_salary"),
+                    "job_highlights": highlights,
+                    "job_employment_type": job.get("job_employment_type"),
                 })
 
-        for job in data.get("data", []):
-            # normalize highlights/employment type if present
-            highlights = job.get("job_highlights") or job.get("job_highlight") or job.get("job_skills") or []
-            # ensure highlights is a list
-            if isinstance(highlights, str):
-                highlights = [highlights]
+        except Exception as e:
+            print("Job API error:", e)
 
-            employment = job.get("job_employment_type") or job.get("job_employment_types") or job.get("job_type")
-
-            jobs.append({
-                "job_title": job.get("job_title"),
-                "employer_name": job.get("employer_name"),
-                "job_city": job.get("job_city"),
-                "job_country": job.get("job_country"),
-                "job_apply_link": job.get("job_apply_link"),
-                "job_min_salary": job.get("job_min_salary"),
-                "job_max_salary": job.get("job_max_salary"),
-                "job_highlights": highlights,
-                "job_employment_type": employment,
-            })
-
-        # cache results for 5 minutes
         cache.set(cache_key, jobs, 300)
 
     return render(request, "main/find_job.html", {
         "jobs": jobs,
         "query": query,
     })
-
-
 
 # ============================
 # EDIT PROFILE PAGE
