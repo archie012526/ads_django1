@@ -9,21 +9,21 @@
 
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tailwind form styling -->
-<style>
-    .input-field {
-        width: 100%;
-        margin-top: 0.25rem;
-        padding: 0.5rem 1rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        outline: none;
-    }
-    .input-field:focus {
-        border-color: #a855f7;
-        box-shadow: 0 0 0 3px rgb(168 85 247 / 0.3);
-    }
-</style>
+
+    <style>
+        .input-field {
+            width: 100%;
+            margin-top: 0.25rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            outline: none;
+        }
+        .input-field:focus {
+            border-color: #a855f7;
+            box-shadow: 0 0 0 3px rgb(168 85 247 / 0.3);
+        }
+    </style>
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'style/base.css' %}">
@@ -33,17 +33,17 @@
     {% block extra_head %}{% endblock %}
 </head>
 
-
-
 <body>
 
 <!-- TOP NAV BAR -->
 <header class="top-navbar sticky top-0 z-50 bg-white shadow">
     <div class="nav-left">
 
-        <!-- Logo Circle -->
+        <!-- Logo -->
         <div class="logo-circle">
-            <img src="{% static 'style/media/logo_jobbridge.jpg' %}" class="logo-img" alt="JobBridge Logo">
+            <a href="{% url 'homepage' %}">
+                <img src="{% static 'style/media/logo_jobbridge.jpg' %}" class="logo-img" alt="JobBridge Logo">
+            </a>
         </div>
 
         <!-- Search Bar -->
@@ -56,65 +56,59 @@
         </div>
     </div>
 
+    <!-- CENTER NAV -->
     <nav class="nav-center">
 
         <!-- Home -->
-        <div class="nav-item">
+        <a href="{% url 'homepage' %}"
+           class="nav-item nav-link flex items-center gap-1 {% if request.path == '/' %}nav-active{% endif %}">
             <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M3 10.5L12 4l9 6.5V21H3V10.5z" stroke-width="2"/>
             </svg>
-            <a href="{% url 'homepage' %}" class="nav-link">Home</a>
-        </div>
+            <span>Home</span>
+        </a>
 
-        <!-- Jobs -->
-        <div class="nav-item">
+        <!-- Find Jobs -->
+        <a href="{% url 'find_job' %}"
+           class="nav-item nav-link flex items-center gap-1 {% if request.path == '/find-job/' %}nav-active{% endif %}">
             <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M3 7h18v13H3V7zm6-4h6v4H9V3z" stroke-width="2"/>
             </svg>
-            <a href="{% url 'find_job' %}"
-               class="nav-link {% if request.path == '/find-job/' %}nav-active{% endif %}">
-               Find Jobs
-            </a>
-        </div>
+            <span>Find Jobs</span>
+        </a>
 
         <!-- Messages -->
-        <div class="nav-item">
+        <a href="{% url 'messages' %}"
+           class="nav-item nav-link flex items-center gap-1 {% if request.path == '/messages/' %}nav-active{% endif %}">
             <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M4 5h16v10H7l-3 3V5z" stroke-width="2"/>
             </svg>
-            <a href="{% url 'messages' %}"
-               class="nav-link {% if request.path == '/messages/' %}nav-active{% endif %}">
-               Messages
-            </a>
-        </div>
+            <span>Messages</span>
+        </a>
 
         <!-- Notifications -->
-        <div class="nav-item">
+        <a href="{% url 'notifications' %}"
+           class="nav-item nav-link flex items-center gap-1 {% if request.path == '/notifications/' %}nav-active{% endif %}">
             <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M12 2a6 6 0 0 1 6 6v4l2 3H4l2-3V8a6 6 0 0 1 6-6zm0 19a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2z" stroke-width="2"/>
             </svg>
-            <a href="{% url 'notifications' %}"
-               class="nav-link {% if request.path == '/notifications/' %}nav-active{% endif %}">
-               Notifications
-            </a>
-        </div>
+            <span>Notifications</span>
+        </a>
 
         <!-- Profile -->
-        <div class="nav-item">
+        <a href="{% url 'profile' %}"
+           class="nav-item nav-link flex items-center gap-1 {% if request.path == '/profile/' %}nav-active{% endif %}">
             <svg xmlns="http://www.w3.org/2000/svg" class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <circle cx="12" cy="7" r="4" stroke-width="2"/>
                 <path d="M4 21c0-4 4-7 8-7s8 3 8 7" stroke-width="2"/>
             </svg>
-            <a href="{% url 'profile' %}"
-               class="nav-link {% if request.path == '/profile/' %}nav-active{% endif %}">
-               Me
-            </a>
-        </div>
+            <span>Me</span>
+        </a>
 
     </nav>
 
+    <!-- RIGHT MENU ICON -->
     <div class="nav-right">
-        <!-- Menu Icon -->
         <svg xmlns="http://www.w3.org/2000/svg" class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M4 6h16M4 12h16M4 18h16" stroke-width="2"/>
         </svg>
@@ -123,11 +117,6 @@
 
 <!-- MAIN CONTENT -->
 <main class="main-container">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-
-
-
     {% block content %}{% endblock %}
 </main>
 
