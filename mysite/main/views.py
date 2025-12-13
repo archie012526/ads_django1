@@ -293,6 +293,14 @@ def find_job(request):
         data = response.json()
 
         for job in data.get("data", []):
+            # normalize highlights/employment type if present
+            highlights = job.get("job_highlights") or job.get("job_highlight") or job.get("job_skills") or []
+            # ensure highlights is a list
+            if isinstance(highlights, str):
+                highlights = [highlights]
+
+            employment = job.get("job_employment_type") or job.get("job_employment_types") or job.get("job_type")
+
             jobs.append({
                 "job_title": job.get("job_title"),
                 "employer_name": job.get("employer_name"),
@@ -301,6 +309,8 @@ def find_job(request):
                 "job_apply_link": job.get("job_apply_link"),
                 "job_min_salary": job.get("job_min_salary"),
                 "job_max_salary": job.get("job_max_salary"),
+                "job_highlights": highlights,
+                "job_employment_type": employment,
             })
 
     except Exception as e:

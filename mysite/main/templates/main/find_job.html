@@ -9,10 +9,8 @@
 
 {% block content %}
 
-<!-- HEADER -->
 <header class="w-full bg-white shadow-sm p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
 
-    <!-- Search Bar -->
     <form method="GET" action="{% url 'find_job' %}" class="flex gap-2 w-full max-w-xl">
         <input
             type="text"
@@ -23,7 +21,7 @@
         >
         <button
             type="submit"
-            class="px-5 py-2 bg-black text-white rounded-lg"
+            class="px-5 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition duration-150"
         >
             Search
         </button>
@@ -31,17 +29,14 @@
 
 </header>
 
-<!-- MAIN CONTENT GRID -->
 <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-    <!-- FILTERS (Desktop - UI only for now) -->
-<form method="GET" action="{% url 'find_job' %}">
+    <form method="GET" action="{% url 'find_job' %}">
     <input type="hidden" name="q" value="{{ query }}">
 
-    <aside class="hidden lg:block bg-white p-6 rounded-2xl shadow-sm h-fit">
+    <aside class="hidden lg:block bg-white p-6 rounded-2xl shadow-lg border border-gray-100 h-fit">
         <h2 class="text-xl font-bold mb-4">Filters</h2>
 
-        <!-- Working Schedule -->
         <div class="mb-6">
             <h3 class="font-semibold mb-2">Working Schedule</h3>
             <div class="space-y-2 text-sm">
@@ -71,7 +66,6 @@
             </div>
         </div>
 
-        <!-- Employment Type -->
         <div class="mb-6">
             <h3 class="font-semibold mb-2">Employment Type</h3>
             <div class="space-y-2 text-sm">
@@ -104,7 +98,6 @@
 </form>
 
 
-    <!-- JOB LIST -->
     <section class="lg:col-span-3">
 
         <div class="flex justify-between items-center mb-4">
@@ -123,36 +116,45 @@
             </select>
         </div>
 
-        <!-- JOB CARDS -->
         <div id="jobs-list">
             {% if jobs %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
                 {% for job in jobs %}
-                <div class="bg-white p-6 rounded-2xl shadow mb-4">
+                    {% if forloop.counter|divisibleby:"3" %}
+                        <div class="job-card job-card--highlight job-card-color-cycle">
+                    {% else %}
+                        <div class="job-card job-card-color-cycle">
+                    {% endif %}
 
-                    <p class="text-xs text-gray-500 mb-2">
-                        {{ job.employer_name|default:"Company not listed" }}
-                    </p>
+                        <p class="job-date">{% if job.created_at %}{{ job.created_at|date:"j M, Y" }}{% endif %}</p>
 
-                    <h3 class="font-bold text-lg">
-                        {{ job.job_title }}
-                    </h3>
+                        <h3 class="job-title">{{ job.job_title }}</h3>
 
-                    <p class="text-gray-600">
-                        {{ job.job_city|default:"" }} {{ job.job_country|default:"" }}
-                    </p>
+                        <p class="job-company">{{ job.employer_name|default:"Company not listed" }}</p>
 
-                    <p class="font-semibold text-lg mt-2">
-                        {{ job.job_min_salary|default:"—" }} - {{ job.job_max_salary|default:"—" }}
-                    </p>
+                        <div class="job-badges">
+                            {% if job.job_employment_type %}
+                                <span class="pill">{{ job.job_employment_type }}</span>
+                            {% endif %}
+                            {% if job.job_highlights %}
+                                {% for h in job.job_highlights|slice:":3" %}
+                                    <span class="pill">{{ h }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
 
-                    <a href="{{ job.job_apply_link }}" target="_blank">
-                        <button class="w-full bg-black text-white py-2 rounded-xl mt-4">
-                            Apply
-                        </button>
-                    </a>
+                        <p class="job-salary">{{ job.job_min_salary|default:"—" }}{% if job.job_max_salary %} - {{ job.job_max_salary }}{% endif %}</p>
 
-                </div>
+                        <p class="job-location">{{ job.job_city|default:"" }}{% if job.job_country %}, {{ job.job_country }}{% endif %}</p>
+
+                        <div class="mt-4">
+                            <a href="{{ job.job_apply_link }}" target="_blank" class="apply-btn">Apply</a>
+                        </div>
+
+                    </div>
                 {% endfor %}
+                </div>
             {% else %}
                 <p class="text-gray-500">No jobs found.</p>
             {% endif %}
