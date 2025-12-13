@@ -361,7 +361,8 @@ def skills_page(request):
 
 @login_required
 def edit_skill(request, skill_id):
-    skill = get_object_or_404(Skill, id=skill_id, user=request.user.profile)
+    skill = get_object_or_404(Skill, id=skill_id, user=request.user
+)
 
     if request.method == "POST":
         form = SkillForm(request.POST, instance=skill)
@@ -375,10 +376,17 @@ def edit_skill(request, skill_id):
 
 
 @login_required
+@login_required
 def delete_skill(request, skill_id):
-    skill = get_object_or_404(Skill, id=skill_id, user=request.user.profile)
+    skill = get_object_or_404(
+        Skill,
+        id=skill_id,
+        user=request.user  # ✅ FIX
+    )
+
     skill.delete()
     return redirect("skills")
+
 
 
 # ============================
@@ -471,3 +479,23 @@ def contact_email(request):
 def settings_page(request):
     # Replace 'settings.html' with the template you want to use
     return render(request, 'main/settings.html')
+
+@login_required
+def post_job(request):
+    # Allow ONLY employers
+    if request.user.profile.role != "employer":
+        return redirect("home")
+
+    if request.method == "POST":
+        form = JobForm(request.POST)
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.employer = request.user
+            job.save()
+            return redirect("dashboard")
+    else:
+        form = JobForm()
+
+    return render(request, "main/post_job.html", {
+        "form": form
+    })
