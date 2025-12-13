@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.core.mail import send_mail
 import requests
 from django.conf import settings
 from django.shortcuts import render
@@ -259,38 +260,45 @@ def mark_all_as_read(request):
 
 
 # ============================
-# FIND JOBS (API SEARCH)
+# FIND JOBS (SEARCH + CACHE)
 # ============================
 def find_job(request):
-    query = request.GET.get("q", "developer")
-    employment_type = request.GET.get("employment_type")
-    job_requirements = request.GET.get("job_requirements")
+    query = request.GET.get("q") or "developer"
 
-    url = "https://jsearch.p.rapidapi.com/search"
+    cache_key = f"jobs::{query}"
+    jobs = cache.get(cache_key)
 
-    params = {
-        "query": query,
-        "page": "1",
-        "num_pages": "1"
-    }
+    if jobs is None:
+        url = "https://jsearch.p.rapidapi.com/search"
 
-    # Apply filters ONLY if selected
-    if employment_type:
-        params["employment_types"] = employment_type
+        headers = {
+            "X-RapidAPI-Key": settings.RAPIDAPI_KEY,
+            "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
+        }
 
-    if job_requirements:
-        params["job_requirements"] = job_requirements
+        params = {
+            "query": query,
+            "page": "1",
+            "num_pages": "1",
+        }
 
-    headers = {
-        "X-RapidAPI-Key": settings.RAPIDAPI_KEY,
-        "X-RapidAPI-Host": "jsearch.p.rapidapi.com"
-    }
+        jobs = []
 
-    jobs = []
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=10)
+            response.raise_for_status()
+            data = response.json()
 
-    try:
-        response = requests.get(url, headers=headers, params=params, timeout=10)
-        data = response.json()
+            for job in data.get("data", []):
+                jobs.append({
+                    "job_title": job.get("job_title"),
+                    "employer_name": job.get("employer_name"),
+                    "job_city": job.get("job_city"),
+                    "job_country": job.get("job_country"),
+                    "job_apply_link": job.get("job_apply_link"),
+                    "job_min_salary": job.get("job_min_salary"),
+                    "job_max_salary": job.get("job_max_salary"),
+                })
 
         for job in data.get("data", []):
             # normalize highlights/employment type if present
@@ -313,13 +321,14 @@ def find_job(request):
                 "job_employment_type": employment,
             })
 
-    except Exception as e:
-        print("API ERROR:", e)
+        # cache results for 5 minutes
+        cache.set(cache_key, jobs, 300)
 
     return render(request, "main/find_job.html", {
         "jobs": jobs,
         "query": query,
     })
+
 
 
 # ============================
@@ -465,3 +474,31 @@ def find_job(request):
 
     # Render your existing template (adjust template name if different)
     return render(request, "main/find_job.html", {"jobs": jobs, "query": query})
+
+def contact_email(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        subject = request.POST.get("subject")
+        message = request.POST.get("message")
+
+        full_message = f"""
+From: {name}
+Email: {email}
+
+Message:
+{message}
+"""
+
+        send_mail(
+            subject,
+            full_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [settings.EMAIL_HOST_USER],
+            fail_silently=False,
+        )
+
+        messages.success(request, "Your message has been sent successfully!")
+        return redirect(request.META.get("HTTP_REFERER", "/"))
+
+    return redirect("/")

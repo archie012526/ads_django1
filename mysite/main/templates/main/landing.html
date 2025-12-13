@@ -3,13 +3,24 @@
 {% block head_extra %}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{% static 'style/landing.css' %}?v=1">
-{# IMPORTANT: Font Awesome link for icons in the Contact section #}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 {% endblock head_extra %}
 
 {% block content %}
 <div class="main-container">
 
+        {% if messages %}
+    <div class="messages-wrapper">
+        {% for message in messages %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+
+    <!-- HEADER -->
     <header class="header">
         <div class="left-side">
             <div class="logo-circle">
@@ -26,10 +37,13 @@
         </div>
     </header>
 
+    <!-- HERO -->
     <main class="hero">
         <h1>Connect Talent and Opportunity</h1>
-        <p class="subtitle">A faster way to match employers with skilled applicants.
-Search jobs, submit applications, and manage recruitment effortlessly—all in one streamlined system.</p>
+        <p class="subtitle">
+            A faster way to match employers with skilled applicants.
+            Search jobs, submit applications, and manage recruitment effortlessly—all in one streamlined system.
+        </p>
 
         <div class="buttons">
             <a href="#about-us" class="btn-light">About Us</a>
@@ -37,62 +51,85 @@ Search jobs, submit applications, and manage recruitment effortlessly—all in o
         </div>
     </main>
 
+    <!-- IMAGE -->
     <section class="placeholder">
-    <div class="placeholder-box">
-        {# MODIFICATION: Added ID for JavaScript targeting. Ensure 'landing1.jpg' exists. #}
-        <img src="{% static 'images/landing1.jpg' %}" alt="Landing Design" class="design-image" id="landing-image-slider">
-    </div>
+        <div class="placeholder-box">
+            <img src="{% static 'images/landing1.jpg' %}" alt="Landing Design"
+                 class="design-image" id="landing-image-slider">
+        </div>
     </section>
 
+    <!-- ABOUT -->
     <section class="our-story container" id="about-us">
         <h2 class="section-title">About Us</h2>
         <div class="story-grid">
             <div class="story-card">
                 <h3>History Of The Company</h3>
-                <p>JobBridge started with a simple idea: make the hiring process human, fast, and efficient. We built a lightweight platform that helps employers post jobs and applicants apply easily.</p>
+                <p>
+                    JobBridge started with a simple idea: make the hiring process human,
+                    fast, and efficient.
+                </p>
             </div>
 
             <div class="story-card">
                 <h3>Mission</h3>
-                <p>To empower job seekers and employers with tools that reduce friction and highlight fit — so the right people meet the right opportunities, faster.</p>
+                <p>
+                    To empower job seekers and employers with tools that reduce friction
+                    and highlight fit.
+                </p>
             </div>
 
             <div class="story-card">
                 <h3>Company Values</h3>
-                <p>Transparency, speed, and respect. We prioritize trusted employers, meaningful matches, and a clear application process for every candidate.</p>
+                <p>
+                    Transparency, speed, and respect. We prioritize meaningful matches
+                    and a clear application process.
+                </p>
             </div>
         </div>
     </section>
 
+    <!-- CONTACT -->
     <section class="contact-us" id="contact-us">
         <div class="container">
             <h2 class="section-title">Contact Us</h2>
+
             <div class="contact-container">
 
+                <!-- CONTACT INFO -->
                 <div class="card contact-info-card">
-                    
                     <div class="card-header accent-bg">
                         <i class="fas fa-headset icon-large"></i>
                         <h2>Get in Touch</h2>
                     </div>
 
                     <div class="card-body">
-                        <p class="intro-text">We're here to help! Reach out to us via the details below or use the form on the right.</p>
+                        <p class="intro-text">
+                            We're here to help! Reach out to us using the details below.
+                        </p>
 
                         <h3 class="info-heading">Contact Information</h3>
+
                         <div class="info-group">
                             <i class="fas fa-map-marker-alt icon-align-top"></i>
                             <div>
                                 <p class="info-label">Office Address:</p>
-                                <p class="info-detail">123 Business Lane, Suite 400<br>400, Newpark, CA 91834</p>
+                                <p class="info-detail">
+                                    123 Business Lane, Suite 400<br>
+                                    Newpark, CA 91834
+                                </p>
                             </div>
                         </div>
-                        
+
                         <div class="info-group">
                             <i class="fas fa-envelope icon-align-top"></i>
                             <div>
                                 <p class="info-label">Email Us:</p>
-                                <p class="info-detail"><a href="mailto:support@jobbridge.com" class="pink-link">support@jobbridge.com</a></p>
+                                <p class="info-detail">
+                                    <a href="mailto:jobbridge6767@gmail.com" class="pink-link">
+                                        jobbridge6767@gmail.com
+                                    </a>
+                                </p>
                             </div>
                         </div>
 
@@ -100,7 +137,7 @@ Search jobs, submit applications, and manage recruitment effortlessly—all in o
                             <i class="fas fa-phone icon-align-top"></i>
                             <div>
                                 <p class="info-label">Call Us:</p>
-                                <p class="info-detail">+1 (555) 123-4567</p>
+                                <p class="info-detail">+63 0991 700 2598</p>
                             </div>
                         </div>
 
@@ -108,113 +145,109 @@ Search jobs, submit applications, and manage recruitment effortlessly—all in o
                         <div class="info-group">
                             <i class="fas fa-clock icon-align-top"></i>
                             <div>
-                                <p class="info-detail">Monday - Friday: 9:00 AM - 5:00 PM EST</p>
+                                <p class="info-detail">
+                                    Monday - Friday: 9:00 AM - 5:00 PM EST
+                                </p>
                             </div>
                         </div>
 
                         <hr>
 
                         <div class="social-links">
-                            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
-                            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-facebook-f"></i></a>
                         </div>
-
                     </div>
                 </div>
 
+                <!-- CONTACT FORM -->
                 <div class="card contact-form-card">
                     <div class="card-header form-header">
                         <h2>Send Us a Message</h2>
                     </div>
                     <div class="card-body">
-                        <form action="#" method="POST">
-                            
+
+                        <form method="POST" action="{% url 'contact_email' %}">
+                            {% csrf_token %}
+
                             <div class="form-group">
-                                <label for="name">Your Name</label>
-                                <input type="text" id="name" name="name" required placeholder="John Doe">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="email">Your Email</label>
-                                <input type="email" id="email" name="email" required placeholder="you@example.com">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="subject">Subject</label>
-                                <input type="text" id="subject" name="subject" required placeholder="Regarding a job posting">
+                                <label>Your Name</label>
+                                <input type="text" name="name" required placeholder="John Doe">
                             </div>
 
                             <div class="form-group">
-                                <label for="message">Message</label>
-                                <textarea id="message" name="message" rows="7" required placeholder="Enter your detailed message here..."></textarea>
+                                <label>Your Email</label>
+                                <input type="email" name="email" required placeholder="you@example.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Subject</label>
+                                <input type="text" name="subject" required placeholder="Regarding a job posting">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Message</label>
+                                <textarea name="message" rows="7" required
+                                    placeholder="Enter your message here..."></textarea>
                             </div>
 
                             <button type="submit" class="submit-button">
                                 <i class="fas fa-paper-plane"></i> Send Message
                             </button>
                         </form>
+
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
 
+    <!-- FOOTER -->
     <footer class="site-footer">
         <div class="container footer-grid">
-          <div class="footer-brand">
-            <div class="logo-circle small">JB</div>
-            <p>&copy; <span id="year"></span> JobBridge — all rights reserved.</p>
-          </div>
+            <div class="footer-brand">
+                <div class="logo-circle small">JB</div>
+                <p>&copy; <span id="year"></span> JobBridge — all rights reserved.</p>
+            </div>
 
-          <div class="footer-links">
-            <a href="/">Home</a>
-            <a href="#about-us">About</a>
-            <a href="#contact-us">Contact</a>
-          </div>
+            <div class="footer-links">
+                <a href="/">Home</a>
+                <a href="#about-us">About</a>
+                <a href="#contact-us">Contact</a>
+            </div>
 
-          <div class="footer-contact">
-            <p><strong>Location</strong></p>
-            <p>City Hall Road, YourTown</p>
-            <p><a href="mailto:info@jobbridge.example">info@jobbridge.example</a></p>
-          </div>
+            <div class="footer-contact">
+                <p><strong>Location</strong></p>
+                <p>City Hall Road, YourTown</p>
+                <p>
+                    <a href="mailto:jobbridge6767@gmail.com">
+                        jobbridge6767@gmail.com
+                    </a>
+                </p>
+            </div>
         </div>
-      </footer>
+    </footer>
 
-      <script>
-        // small script for year
+    <!-- JS -->
+    <script>
         document.getElementById('year').textContent = new Date().getFullYear();
-        
-        // --- NEW IMAGE SLIDER SCRIPT ---
+
         const imageElement = document.getElementById('landing-image-slider');
-
         if (imageElement) {
-            // Define the array of image paths
-            // IMPORTANT: You must ensure 'landing1.jpg', 'landing2.jpg', and 'landing3.jpg' 
-            // exist in your main/static/images/ folder.
-            const imageSources = [
-                "{% static 'media/landing1.jpg' %}", 
-                "{% static 'media/landing2.jpg' %}",
-                "{% static 'media/landing3.avif' %}"
+            const images = [
+                "{% static 'images/landing1.jpg' %}",
+                "{% static 'images/landing2.jpg' %}",
+                "{% static 'images/landing3.avif' %}",
             ];
-
-            let currentImageIndex = 0;
-            
-            const intervalTime = 5500; 
-
-            function changeImage() {
-                // Increment the index, and loop back to 0 if it exceeds the array length
-                currentImageIndex = (currentImageIndex + 1) % imageSources.length;
-                
-                // Update the image source
-                imageElement.src = imageSources[currentImageIndex];
-            }
-
-            // Start the timer to change the image every 5.5 seconds
-            setInterval(changeImage, intervalTime);
+            let i = 0;
+            setInterval(() => {
+                i = (i + 1) % images.length;
+                imageElement.src = images[i];
+            }, 5500);
         }
-        // ---------------------------------
-      </script>
+    </script>
 
 </div>
 {% endblock content %}
