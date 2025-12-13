@@ -6,6 +6,17 @@ from django.contrib.auth.models import User
 # =========================
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    ROLE_CHOICES = (
+        ("job_seeker", "Job Seeker"),
+        ("employer", "Employer"),
+    )
+
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default="job_seeker"
+    )
     
     # Personal info
     full_name = models.CharField(max_length=255, blank=True, null=True)
