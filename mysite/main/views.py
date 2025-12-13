@@ -127,6 +127,141 @@ def profile_page(request):
 
 
 @login_required
+def conversation_view(request, user_id):
+    other = get_object_or_404(User, id=user_id)
+
+    # POST -> send message
+    if request.method == 'POST':
+        content = request.POST.get('message')
+        if content:
+            Message.objects.create(sender=request.user, receiver=other, content=content)
+        return redirect('conversation', user_id=other.id)
+
+    # fetch conversation messages
+    convo = Message.objects.filter(
+        Q(sender=request.user, receiver=other) | Q(sender=other, receiver=request.user)
+    ).order_by('sent_at')
+
+    # mark incoming messages as read
+    Message.objects.filter(sender=other, receiver=request.user, is_read=False).update(is_read=True)
+
+    # conversation user safe fields
+    conv_profile = getattr(other, 'profile', None)
+    conv_avatar = None
+    if conv_profile and getattr(conv_profile, 'profile_image'):
+        conv_avatar = conv_profile.profile_image.url
+
+    return render(request, "main/messages.html", {
+        'conversation_user': other,
+        'conversation_user_avatar': conv_avatar,
+        'conversation_user_display': other.get_full_name() or other.username,
+        'messages_qs': convo,
+        'conversations': [],
+    })
+
+
+# ============================
+# NOTIFICATIONS
+# ============================
+@login_required
+def notifications_page(request):
+    sample_notifications = {
+        request.user.username: [
+            {
+                "title": "New Job Recommendation",
+                "description": "3 new jobs match your skills.",
+                "type": "Job",
+                "time": "10 minutes ago",
+                "status": "unread",
+                "color": "blue",
+            },
+            {
+                "title": "Profile View",
+                "description": "An employer viewed your profile.",
+                "type": "Profile",
+                "time": "1 hour ago",
+                "status": "read",
+                "color": "green",
+            },
+        ]
+    }
+
+    notifications = sample_notifications.get(request.user.username, [])
+
+    return render(request, "main/notifications.html", {
+        "notifications": notifications
+    })
+
+
+def mark_all_as_read(request):
+    return redirect("notifications")
+
+
+# ============================
+# FIND JOBS (SEARCH + CACHE)
+# ============================
+def find_job(request):
+    query = request.GET.get("q") or "developer"
+    cache_key = f"jobs::{query}"
+
+    jobs = cache.get(cache_key)
+    if jobs is None:
+        url = "https://jsearch.p.rapidapi.com/search"
+
+        headers = {
+            "X-RapidAPI-Key": settings.RAPIDAPI_KEY,
+            "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
+        }
+
+        params = {
+            "query": query,
+            "page": "1",
+            "num_pages": "1",
+        }
+
+        jobs = []
+
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+
+            for job in data.get("data", []):
+                highlights = (
+                    job.get("job_highlights")
+                    or job.get("job_skills")
+                    or []
+                )
+
+                if isinstance(highlights, str):
+                    highlights = [highlights]
+
+                jobs.append({
+                    "job_title": job.get("job_title"),
+                    "employer_name": job.get("employer_name"),
+                    "job_city": job.get("job_city"),
+                    "job_country": job.get("job_country"),
+                    "job_apply_link": job.get("job_apply_link"),
+                    "job_min_salary": job.get("job_min_salary"),
+                    "job_max_salary": job.get("job_max_salary"),
+                    "job_highlights": highlights,
+                    "job_employment_type": job.get("job_employment_type"),
+                })
+
+        except Exception as e:
+            print("Job API error:", e)
+
+        cache.set(cache_key, jobs, 300)
+
+    return render(request, "main/find_job.html", {
+        "jobs": jobs,
+        "query": query,
+    })
+
+# ============================
+# EDIT PROFILE PAGE
+# ============================
+@login_required
 def edit_profile_page(request):
     user = request.user
     profile, _ = Profile.objects.get_or_create(user=user)
@@ -205,13 +340,24 @@ def job_applications_page(request):
 # ============================
 @login_required
 def skills_page(request):
-    skills = Skill.objects.filter(user=request.user.profile)
-    form = SkillForm()
+    profile = request.user
+
+    skills = Skill.objects.filter(user=request.user)
+
+    if request.method == "POST":
+        form = SkillForm(request.POST)
+        if form.is_valid():
+            skill = form.save(commit=False)
+            skill.user = request.user
+            skill.save()
+            return redirect("skills")
+    else:
+        form = SkillForm()
+
     return render(request, "main/skills.html", {
         "skills": skills,
         "form": form,
     })
-
 
 @login_required
 def edit_skill(request, skill_id):
