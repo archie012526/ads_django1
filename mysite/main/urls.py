@@ -38,4 +38,8 @@ urlpatterns = [
 
     # ✅ CONTACT FORM EMAIL (THIS IS STEP 4)
     path("contact/email/", views.contact_email, name="contact_email"),
+
+    path('settings/', views.settings_page, name='settings'),
+
 ]
+
