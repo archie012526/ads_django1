@@ -103,3 +103,5 @@ class JobForm(forms.ModelForm):
             "salary",
             "description",
         ]
+
+        

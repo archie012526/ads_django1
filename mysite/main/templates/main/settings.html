@@ -1,0 +1,77 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="flex min-h-screen bg-gray-100">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-md p-6">
+        <h2 class="text-2xl font-bold mb-6">Settings</h2>
+        <ul class="space-y-3">
+            <li><a href="#account" class="text-blue-600 hover:underline">Account</a></li>
+            <li><a href="#privacy" class="text-blue-600 hover:underline">Privacy</a></li>
+            <li><a href="Language & Appearance" class="text-blue-600 hover:underline">Language & Appearance</a></li>
+            <li><a href="#security" class="text-blue-600 hover:underline">Security</a></li>
+            <li><a href="#Data & Account Control" class="text-blue-600 hover:underline">Data & Account Control</a></li>
+            <li><a href="#Help & Support" class="text-blue-600 hover:underline">Help & Support</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+        <h1 class="text-3xl font-bold mb-6">Settings</h1>
+        
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Account -->
+            <section id="account">
+                <h2 class="text-xl font-semibold mb-3">Account</h2>
+                {{ form.phone_number.label_tag }}<br>
+                {{ form.phone_number }}<br>
+            </section>
+
+            <!-- Profile -->
+            <section id="profile">
+                <h2 class="text-xl font-semibold mb-3">Profile</h2>
+                {{ form.profile_picture.label_tag }}<br>
+                {{ form.profile_picture }}<br>
+                {{ form.bio.label_tag }}<br>
+                {{ form.bio }}<br>
+            </section>
+
+            <!-- Privacy -->
+            <section id="privacy">
+                <h2 class="text-xl font-semibold mb-3">Privacy</h2>
+                {{ form.profile_visibility.label_tag }}<br>
+                {{ form.profile_visibility }}<br>
+                {{ form.allow_contact.label_tag }}<br>
+                {{ form.allow_contact }}<br>
+            </section>
+
+            <!-- Notifications -->
+            <section id="notifications">
+                <h2 class="text-xl font-semibold mb-3">Notifications</h2>
+                {{ form.email_notifications.label_tag }} {{ form.email_notifications }}<br>
+                {{ form.push_notifications.label_tag }} {{ form.push_notifications }}<br>
+            </section>
+
+            <!-- Job Preferences -->
+            <section id="job-preferences">
+                <h2 class="text-xl font-semibold mb-3">Job Preferences</h2>
+                {{ form.preferred_job_titles.label_tag }}<br>
+                {{ form.preferred_job_titles }}<br>
+                {{ form.job_categories.label_tag }}<br>
+                {{ form.job_categories }}<br>
+                {{ form.employment_type.label_tag }}<br>
+                {{ form.employment_type }}<br>
+                {{ form.preferred_location.label_tag }}<br>
+                {{ form.preferred_location }}<br>
+            </section>
+
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded">Save Changes</button>
+        </form>
+    </main>
+
+</div>
+{% endblock content %}

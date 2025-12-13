@@ -9,7 +9,11 @@
     <div class="w-64 bg-white shadow-md p-6">
         <ul class="space-y-4 text-gray-700">
 
-            <li class="hover:text-purple-600 cursor-pointer">Setting</li>
+            <li>
+                <a href="{% url 'settings' %}" class="hover:text-purple-600 cursor-pointer">
+                    Settings
+                </a>
+            </li>
 
             <li>
                 <a href="{% url 'edit_profile' %}" class="hover:text-purple-600 cursor-pointer">
