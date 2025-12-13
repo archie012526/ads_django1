@@ -261,29 +261,52 @@ def mark_all_as_read(request):
 # ============================
 # FIND JOBS (API SEARCH)
 # ============================
-def find_jobs(request):
+def find_job(request):
     query = request.GET.get("q", "developer")
+    employment_type = request.GET.get("employment_type")
+    job_requirements = request.GET.get("job_requirements")
 
     url = "https://jsearch.p.rapidapi.com/search"
+
     params = {
         "query": query,
         "page": "1",
         "num_pages": "1"
     }
 
+    # Apply filters ONLY if selected
+    if employment_type:
+        params["employment_types"] = employment_type
+
+    if job_requirements:
+        params["job_requirements"] = job_requirements
+
     headers = {
-        "x-rapidapi-key": os.getenv("RAPIDAPI_KEY"),
-        "x-rapidapi-host": "jsearch-api.p.rapidapi.com"  # FIXED
+        "X-RapidAPI-Key": settings.RAPIDAPI_KEY,
+        "X-RapidAPI-Host": "jsearch.p.rapidapi.com"
     }
 
-    try:
-        response = requests.get(url, headers=headers, params=params)
-        data = response.json()
-        jobs = data.get("data", [])
-    except:
-        jobs = []
+    jobs = []
 
-    return render(request, "main/find_jobs.html", {
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        data = response.json()
+
+        for job in data.get("data", []):
+            jobs.append({
+                "job_title": job.get("job_title"),
+                "employer_name": job.get("employer_name"),
+                "job_city": job.get("job_city"),
+                "job_country": job.get("job_country"),
+                "job_apply_link": job.get("job_apply_link"),
+                "job_min_salary": job.get("job_min_salary"),
+                "job_max_salary": job.get("job_max_salary"),
+            })
+
+    except Exception as e:
+        print("API ERROR:", e)
+
+    return render(request, "main/find_job.html", {
         "jobs": jobs,
         "query": query,
     })

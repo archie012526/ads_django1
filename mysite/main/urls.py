@@ -17,7 +17,7 @@ urlpatterns = [
     path("mark-read/", views.mark_all_as_read, name="mark_all_as_read"),
 
     path("job-applications/", views.job_applications_page, name="job_applications"),
-    path("find-jobs/", views.find_jobs, name="find_jobs"),
+
 
     path("add-location/", views.location, name="add_location"),
     path("location/", views.location, name="location"),

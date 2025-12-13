@@ -17,6 +17,7 @@ load_dotenv()
 import os
 
 # RapidAPI settings
+RAPIDAPI_KEY = "YOUR_REAL_API_KEY"
 RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "")
 RAPIDAPI_HOST = "jsearch.p.rapidapi.com"
 # Cache timeout for popular jobs (seconds). Tune as needed.
