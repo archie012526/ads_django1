@@ -351,15 +351,24 @@ def edit_profile_page(request):
 # ============================
 @login_required
 def skills_page(request):
-    profile = request.user.profile
-    skills = Skill.objects.filter(user=profile)
-    form = SkillForm()
+    profile = request.user
+
+    skills = Skill.objects.filter(user=request.user)
+
+    if request.method == "POST":
+        form = SkillForm(request.POST)
+        if form.is_valid():
+            skill = form.save(commit=False)
+            skill.user = request.user
+            skill.save()
+            return redirect("skills")
+    else:
+        form = SkillForm()
 
     return render(request, "main/skills.html", {
         "skills": skills,
         "form": form,
     })
-
 
 @login_required
 def edit_skill(request, skill_id):

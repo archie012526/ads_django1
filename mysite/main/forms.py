@@ -23,7 +23,7 @@ class ProfileForm(forms.ModelForm):
             "bio": forms.Textarea(attrs={"class": "input-field h-24 resize-none"}),
         }
 
-SKILL_OPTIONS = [
+SKILL_CHOICES = [
     ("Communication", "Communication"),
     ("Teamwork", "Teamwork"),
     ("Leadership", "Leadership"),
@@ -68,28 +68,7 @@ SKILL_OPTIONS = [
     ("Bookkeeping", "Bookkeeping"),
 ]
 
-class SkillForm(forms.ModelForm):
-    class Meta:
-        model = Skill
-        fields = ["name", "level", "description"]
 
-        widgets = {
-            "name": forms.Select(
-                choices=SKILL_OPTIONS,
-                attrs={"class": "input"}
-            ),
-            "level": forms.Select(
-                choices=Skill.LEVEL_CHOICES,
-                attrs={"class": "input"}
-            ),
-            "description": forms.Textarea(
-                attrs={
-                    "class": "input",
-                    "rows": 3,
-                    "placeholder": "Describe your skill (optional)"
-                }
-            ),
-        }
 class JobForm(forms.ModelForm):
     class Meta:
         model = Job
@@ -103,3 +82,22 @@ class JobForm(forms.ModelForm):
             "salary",
             "description",
         ]
+
+class SkillForm(forms.ModelForm):
+    name = forms.ChoiceField(
+        choices=SKILL_CHOICES,
+        widget=forms.Select(attrs={
+            "class": "w-full p-2 border rounded"
+        })
+    )
+
+    level = forms.ChoiceField(
+        choices=Skill.LEVEL_CHOICES,
+        widget=forms.Select(attrs={
+            "class": "w-full p-2 border rounded"
+        })
+    )
+
+    class Meta:
+        model = Skill
+        fields = ["name", "level"]
