@@ -1,103 +1,113 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | JobBridge</title>
 
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'style/login.css' %}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body class="bg-gray-200 flex items-center justify-center min-h-screen">
 
-    <div class="bg-white shadow-2xl rounded-3xl p-8 w-[900px] flex relative">
+<body>
 
-        <!-- Left Image -->
-        <div class="w-1/2 pr-6">
-            <img src="{% static 'img/forest.jpg' %}" 
-                 class="w-full h-[500px] rounded-3xl object-cover shadow-xl">
-        </div>
+<a href="{% url 'landing' %}" class="go-back-top">
+    <i class="fa-solid fa-arrow-left"></i> Back to Home
+</a>
 
-        <!-- Right Side Form -->
-        <div class="w-1/2 pl-4 flex flex-col justify-center">
-                    {% if messages %}
-                        <div class="absolute top-4 right-4 z-50">
-                            {% for message in messages %}
-                                <div class="bg-red-500 text-white text-sm px-4 py-2 rounded-lg shadow-lg">
-                                    {{ message }}
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-            <h2 class="text-3xl font-bold mb-2">Welcome back</h2>
-            <p class="text-sm text-gray-500 mb-6">enter your email to access your account</p>
 
-            <!-- FORM -->
-            <form method="POST">
-                {% csrf_token %}
+<div class="container-wrapper">
+    <div class="login-container">
 
-                <input 
-                    type="email" 
-                    name="email"
-                    placeholder="Email"
-                    class="w-full bg-gray-100 rounded-xl px-4 py-3 mb-4 outline-none"
-                    required
-                >
+        <!-- LEFT PANEL -->
+        <div class="login-panel">
 
-                <input 
-                    type="password" 
-                    name="password"
-                    placeholder="Enter your password"
-                    class="w-full bg-gray-100 rounded-xl px-4 py-3 mb-2 outline-none"
-                    required
-                >
+            <header class="logo">
+                <img src="{% static 'media/JobBridge_icon.png' %}" class="logo-img">
+                JobBridge
+            </header>
 
-                <div class="flex items-center justify-between mb-4">
-                    <label class="flex items-center gap-2 text-sm">
-                        <input type="checkbox" class="accent-blue-500">
-                        Remember me
-                    </label>
-                    <a href="#" class="text-sm text-blue-600 hover:underline">Forgot your password?</a>
+            <div class="login-content-wrapper">
+
+                <div class="welcome-text">
+                    <h2>Sign into your account</h2>
                 </div>
 
-                <button 
-                    type="submit" 
-                    class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition">
-                    Login
-                </button>
+                <form method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
 
-            </form>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Enter email"
+                            required
+                        >
+                    </div>
 
-            <!-- Divider -->
-            <div class="flex items-center gap-3 my-5">
-                <div class="w-full h-px bg-gray-300"></div>
-                <span class="text-sm text-gray-500">or register with</span>
-                <div class="w-full h-px bg-gray-300"></div>
+                    <div class="form-group password-group">
+                        <label>Password</label>
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter password"
+                            required
+                        >
+
+                        <i class="fa-solid fa-eye password-toggle"></i>
+                    </div>
+
+                    <button type="submit" class="sign-in-button">
+                        Sign In
+                    </button>
+                </form>
+
+                <div class="social-login">
+                    <p class="social-label">Social Login</p>
+                    <div class="social-buttons">
+                        <button type="button"><i class="fab fa-google"></i></button>
+                        <button type="button"><i class="fab fa-facebook-f"></i></button>
+                    </div>
+                </div>
+
             </div>
 
-            <!-- Social Login -->
-            <div class="flex justify-center gap-6 mb-4">
-                <button class="bg-gray-100 px-6 py-3 rounded-xl shadow text-gray-800">
-                    <img src="{% static 'img/facebook.png' %}" class="w-6 inline-block">
-                </button>
-
-                <button class="bg-gray-100 px-6 py-3 rounded-xl shadow text-gray-800">
-                    <img src="{% static 'img/google.png' %}" class="w-6 inline-block">
-                </button>
+            <div class="create-account">
+                Don’t have an account?
+                <a href="{% url 'signup' %}">Sign up</a>
             </div>
-
-            <p class="text-sm text-center text-gray-600">
-                Don't have an account? 
-                <a href="{% url 'signup' %}" class="text-blue-600 hover:underline">signup now</a>
-            </p>
 
         </div>
+
+        <!-- RIGHT IMAGE PANEL -->
+        <div class="image-panel">
+            <img src="{% static 'media/landing2.jpg' %}"
+                 alt="Preview"
+                 class="dashboard-image">
+        </div>
+
     </div>
+</div>
+
+<script>
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.querySelector('.password-toggle');
+
+    if (passwordInput && toggleIcon) {
+        toggleIcon.addEventListener('click', () => {
+            const isHidden = passwordInput.type === 'password';
+            passwordInput.type = isHidden ? 'text' : 'password';
+
+            toggleIcon.classList.toggle('fa-eye');
+            toggleIcon.classList.toggle('fa-eye-slash');
+        });
+    }
+</script>
+
 </body>
 </html>

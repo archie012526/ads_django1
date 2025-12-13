@@ -1,0 +1,201 @@
+:root {
+    --color-dark-bg: #1F2937;
+    --color-text-secondary: #9CA3AF;
+    --color-white: #FFFFFF;
+    --color-accent-green: #10B981;
+    --color-border: #D1D5DB;
+    --color-social-bg: #E5E7EB;
+    --color-social-icon: #374151;
+    --color-container-bg: #F9FAFB;
+    --panel-border-radius: 20px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #6FB1C6, #F3E7D9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.go-back-top {
+    position: fixed; /* stays at top-left even when scrolling */
+    top: 20px;
+    left: 20px;
+    color: black;
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 1000; /* make sure it’s above everything */
+    transition: background 0.3s;
+}
+
+.go-back-top:hover {
+    color: black;
+    text-decoration: underline;
+}
+
+
+.login-container {
+    display: flex;
+    width: 1000px;
+    max-width: 95vw;
+    height: 600px;
+    background: white;
+    border-radius: var(--panel-border-radius);
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,.1);
+}
+
+/* LEFT PANEL */
+.login-panel {
+    width: 50%;
+    background: var(--color-dark-bg);
+    padding: 40px;
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.logo-img {
+    height: 30px;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+.login-content-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    padding-top: 30px;
+}
+
+.welcome-text h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    margin-bottom: 8px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 45px 12px 15px;
+    background: var(--color-dark-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    color: white;
+}
+
+/* 👁 Eye icon */
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 70%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--color-text-secondary);
+}
+
+.sign-in-button {
+    width: 100%;
+    padding: 15px;
+    background: #5a9ab3;
+    color: black;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.sign-in-button:hover {
+    background: #32718a;
+    color: white
+}
+
+.social-login {
+    margin-top: 30px;
+}
+
+.social-label {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.social-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.social-buttons button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: var(--color-social-bg);
+    cursor: pointer;
+}
+
+.create-account {
+    margin-top: auto;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+}
+
+.create-account a {
+    color: white;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.create-account a:hover {
+    text-decoration: underline;
+}
+
+/* RIGHT PANEL */
+.image-panel {
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.dashboard-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* MOBILE */
+@media (max-width: 1050px) {
+    .image-panel {
+        display: none;
+    }
+    .login-panel {
+        width: 100%;
+    }
+}
