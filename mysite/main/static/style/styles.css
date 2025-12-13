@@ -1,6 +1,168 @@
-/* Minimal fallback stylesheet to avoid 404s */
-/* Add project-wide utility styles here as needed */
-
+/* Minimal project-wide utility styles */
 .empty-placeholder {
   background: #f3f4f6;
+}
+
+/* --- LIGHT COLOR CYCLE DEFINITION --- */
+
+/* These are very light, subtle pastel colors */
+.job-card-color-cycle:nth-child(6n + 1) { background: #f7f7ff; /* Very Light Lavender */ }
+.job-card-color-cycle:nth-child(6n + 2) { background: #fff9f6; /* Very Light Peach */ }
+.job-card-color-cycle:nth-child(6n + 3) { background: #f6fff8; /* Very Light Mint */ }
+.job-card-color-cycle:nth-child(6n + 4) { background: #fffff0; /* Very Light Yellow */ }
+.job-card-color-cycle:nth-child(6n + 5) { background: #fcf9ff; /* Very Light Purple */ }
+.job-card-color-cycle:nth-child(6n + 6) { background: #f0f8ff; /* Very Light Sky Blue */ }
+
+/* --- JOB CARD STYLES --- */
+
+/* Base Job Card Style */
+.job-card {
+  /* Removed static background: #ffffff; to allow color cycle to take effect */
+  padding: 1.5rem; /* 24px */
+  border-radius: 18px; /* Modern rounded corners */
+  /* New, softer, and more pronounced shadow */
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05), 0 4px 8px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f3f4f6; /* Very light border for definition */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Pushes the button to the bottom */
+  min-height: 280px; /* Ensure cards have a consistent minimum height */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.job-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.08), 0 6px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Highlighted card (right column) - This overrides the cycle color */
+.job-card--highlight {
+  /* Softer, more vibrant highlight color */
+  background: #fff8e1; /* Keeps the original highlight color (Very Light Yellow/Cream) */
+  border: 1px solid #ffcc004d;
+  box-shadow: 0 12px 24px rgba(255, 187, 0, 0.08), 0 4px 8px rgba(255, 187, 0, 0.04);
+}
+
+.job-card--highlight .job-title {
+    color: #a05a00; /* Darker text for contrast on highlight */
+}
+
+/* --- REST OF THE STYLES (No Change) --- */
+
+.job-card p { margin: 0; }
+
+/* Job Title & Company */
+.job-card .job-title { 
+  font-size: 1.125rem; /* 18px */ 
+  font-weight: 800; /* Extra bold */ 
+  color: #1a202c; /* Near black */ 
+  margin-bottom: 4px;
+}
+.job-card .job-company { 
+  font-size: 0.95rem; /* 15px */ 
+  color: #4a5568; /* Slate gray */ 
+  margin-bottom: 10px; 
+}
+
+/* Job Date */
+.job-card p.job-date {
+  color: #a0aec0; /* Lighter date color */
+  font-size: 0.75rem; /* 12px */
+  margin-bottom: 6px;
+}
+
+/* Job Badges (Pills) */
+.job-card .job-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px; /* Gap between pills */
+    margin-top: 0.6rem; 
+    margin-bottom: 0.8rem;
+}
+.job-card .pill {
+  display: inline-block;
+  padding: 0.3rem 0.7rem; /* Adjusted padding */
+  border-radius: 9999px;
+  background: #edf2f7; /* Lighter, cleaner background */
+  color: #4a5568;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: none; /* Removed border */
+}
+
+/* Salary and Location */
+.job-card .job-salary {
+  font-weight: 700;
+  font-size: 1.25rem; /* 20px - more emphasis */
+  color: #1a202c;
+  margin-top: 8px;
+}
+
+.job-card .job-location {
+  color: #718096;
+  font-size: 0.9rem; /* 14px */
+}
+
+/* Details Button */
+.job-card .apply-btn {
+  display: block; /* Use 'block' for full width as in screenshot */
+  padding: 0.65rem 1rem;
+  height: 44px;
+  line-height: 22px;
+  border-radius: 12px;
+  background: #2c3e50; /* Darker, more professional black */
+  color: #ffffff;
+  text-align: center;
+  font-weight: 700;
+  text-decoration: none;
+  margin-top: 1.5rem; /* More space above the button */
+  box-shadow: 0 4px 10px rgba(26, 32, 44, 0.2);
+  transition: background 0.3s ease;
+}
+
+.job-card .details-btn:hover {
+    background: #2d3748; /* Slight hover effect */
+}
+
+
+/* MAIN LAYOUT TWEAKS (Filter & Header) */
+
+/* Filter Sidebar Enhancements */
+.lg\:block > h2 {
+    color: #1a202c;
+}
+.lg\:block h3 {
+    color: #2d3748;
+}
+
+/* Apply Filters Button in Sidebar */
+.lg\:block button[type="submit"] {
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: background 0.3s;
+}
+.lg\:block button[type="submit"]:hover {
+    background: #2d3748;
+}
+
+/* Job List Header & Sort Select */
+.lg\:col-span-3 h1 {
+    color: #1a202c;
+}
+.lg\:col-span-3 select {
+    border-radius: 12px;
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Ensure the grid alignment is clean */
+#jobs-list .grid {
+  align-items: stretch;
+}
+
+/* Responsive spacing for a better look on large screens */
+@media (min-width: 1024px) {
+  #jobs-list .grid {
+    gap: 32px;
+  }
 }
