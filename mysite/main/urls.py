@@ -40,6 +40,7 @@ urlpatterns = [
     path("contact/email/", views.contact_email, name="contact_email"),
 
     path('settings/', views.settings_page, name='settings'),
+    path("jobs/post/", views.post_job, name="post_job"),
 
 ]
 

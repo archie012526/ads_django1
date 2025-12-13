@@ -479,3 +479,23 @@ def contact_email(request):
 def settings_page(request):
     # Replace 'settings.html' with the template you want to use
     return render(request, 'main/settings.html')
+
+@login_required
+def post_job(request):
+    # Allow ONLY employers
+    if request.user.profile.role != "employer":
+        return redirect("home")
+
+    if request.method == "POST":
+        form = JobForm(request.POST)
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.employer = request.user
+            job.save()
+            return redirect("dashboard")
+    else:
+        form = JobForm()
+
+    return render(request, "main/post_job.html", {
+        "form": form
+    })
