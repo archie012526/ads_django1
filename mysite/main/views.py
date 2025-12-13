@@ -361,7 +361,8 @@ def skills_page(request):
 
 @login_required
 def edit_skill(request, skill_id):
-    skill = get_object_or_404(Skill, id=skill_id, user=request.user.profile)
+    skill = get_object_or_404(Skill, id=skill_id, user=request.user
+)
 
     if request.method == "POST":
         form = SkillForm(request.POST, instance=skill)
@@ -375,10 +376,17 @@ def edit_skill(request, skill_id):
 
 
 @login_required
+@login_required
 def delete_skill(request, skill_id):
-    skill = get_object_or_404(Skill, id=skill_id, user=request.user.profile)
+    skill = get_object_or_404(
+        Skill,
+        id=skill_id,
+        user=request.user  # ✅ FIX
+    )
+
     skill.delete()
     return redirect("skills")
+
 
 
 # ============================
