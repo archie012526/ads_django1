@@ -1,21 +1,64 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
 # =========================
 #        PROFILE
 # =========================
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    
+    # Personal info
     full_name = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(max_length=50, blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     company_name = models.CharField(max_length=255, blank=True, null=True)
     profile_image = models.ImageField(upload_to="profile_images/", blank=True, null=True)
+    
+    # Job preferences
+    preferred_job_titles = models.CharField(max_length=255, blank=True)
+    job_categories = models.CharField(max_length=255, blank=True)
+    employment_type = models.CharField(max_length=50, blank=True)
+    preferred_location = models.CharField(max_length=255, blank=True)
+    
+    # Privacy settings
+    profile_visibility = models.CharField(
+        max_length=20,
+        choices=[('public', 'Public'), ('employers', 'Employers Only'), ('private', 'Private')],
+        default='employers'
+    )
+    allow_contact = models.BooleanField(default=True)
+    
+    # Notifications
+    email_notifications = models.BooleanField(default=True)
+    push_notifications = models.BooleanField(default=False)
+    
+    # Timestamps
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username}'s profile"
+
+
+# =========================
+#         SKILLS
+# =========================
+class Skill(models.Model):
+    LEVEL_CHOICES = [
+        ("Beginner", "Beginner"),
+        ("Intermediate", "Intermediate"),
+        ("Advanced", "Advanced"),
+        ("Expert", "Expert"),
+    ]
+
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="skills")
+    name = models.CharField(max_length=255)
+    level = models.CharField(max_length=50, choices=LEVEL_CHOICES, default="Beginner")
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.level})"
+
 
 # =========================
 #         JOBS
@@ -38,30 +81,16 @@ class Job(models.Model):
     title = models.CharField(max_length=255)
     company = models.CharField(max_length=255)
     location = models.CharField(max_length=255)
-
-    job_type = models.CharField(
-        max_length=50, 
-        choices=JOB_TYPES,
-        default="Full time"
-    )
-
-    employment_type = models.CharField(
-        max_length=50, 
-        choices=EMPLOYMENT_TYPES,
-        default="Full day"
-    )
-
-    skills = models.CharField(
-        max_length=255,
-        default=""  # prevents migration errors
-    )
-
+    job_type = models.CharField(max_length=50, choices=JOB_TYPES, default="Full time")
+    employment_type = models.CharField(max_length=50, choices=EMPLOYMENT_TYPES, default="Full day")
+    skills = models.CharField(max_length=255, default="")
     salary = models.CharField(max_length=50, default="Not specified")
     description = models.TextField()
     posted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+
 
 # =========================
 #     JOB APPLICATIONS
@@ -127,22 +156,16 @@ class ContactSubmission(models.Model):
         return f"Message from {self.name}"
 
 class Skill(models.Model):
-
     LEVEL_CHOICES = [
         ("Beginner", "Beginner"),
         ("Intermediate", "Intermediate"),
         ("Advanced", "Advanced"),
-        ("Expert", "Expert"),
     ]
 
-    user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="skills")
-    name = models.CharField(max_length=255)
-    level = models.CharField(
-    max_length=50,
-    choices=LEVEL_CHOICES,
-    default="Beginner"
-)
-    description = models.TextField(blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
+    description = models.TextField(blank=True, null=True)  # ✅ FIX
 
     def __str__(self):
-        return f"{self.name} ({self.level})"
+        return f"{self.name} attaching a level"
