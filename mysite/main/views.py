@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Q
@@ -46,16 +47,12 @@ def login_page(request):
         email = request.POST.get("email")
         password = request.POST.get("password")
 
-        if not User.objects.filter(username=email).exists():
-            messages.error(request, "Account does not exist.")
-            return render(request, "main/login.html")
-
         user = authenticate(request, username=email, password=password)
         if user:
             login(request, user)
             return redirect("homepage")
 
-        messages.error(request, "Incorrect password.")
+        messages.error(request, "Invalid email or password.")
 
     return render(request, "main/login.html")
 
@@ -63,24 +60,26 @@ def login_page(request):
 def signup_page(request):
     if request.method == "POST":
         email = request.POST.get("email")
+        password = request.POST.get("password")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
 
-        if User.objects.filter(username=email).exists():
-            messages.error(request, "Account already exists.")
+        try:
+            User.objects.create_user(
+                username=email,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+            )
+        except IntegrityError:
+            messages.error(request, "Email already registered.")
             return render(request, "main/signup.html")
 
-        user = User.objects.create_user(
-            username=email,
-            email=email,
-            first_name=request.POST.get("first_name"),
-            last_name=request.POST.get("last_name"),
-            password=request.POST.get("password"),
-        )
-        login(request, user)
+        messages.success(request, "Account created successfully. Please log in.")
         return redirect("login")
 
     return render(request, "main/signup.html")
-
-
 # ============================
 # HOME
 # ============================
@@ -119,12 +118,6 @@ def home_page(request):
 # ============================
 # PROFILE
 # ============================
-@login_required
-def profile_page(request):
-    return render(request, "main/profile.html", {
-        "profile": request.user.profile
-    })
-
 
 @login_required
 def conversation_view(request, user_id):
@@ -158,6 +151,76 @@ def conversation_view(request, user_id):
         'messages_qs': convo,
         'conversations': [],
     })
+
+@login_required
+def profile_page(request):
+    profile = request.user.profile
+    skills = profile.skills.all()
+
+    suggested_jobs = []
+
+    if skills.exists():
+        skill_names = [s.name.lower() for s in skills]
+
+        # Use FIRST skill for search (more reliable)
+        query = skill_names[0]
+
+        jobs = fetch_popular_jobs_from_rapidapi(query)
+
+        for job in jobs:
+            text_blob = " ".join([
+                job.get("job_title", ""),
+                job.get("employer_name", ""),
+                str(job.get("job_highlights", "")),
+                str(job.get("job_description", "")),
+            ]).lower()
+
+            matched_skills = [
+                skill for skill in skill_names if skill in text_blob
+            ]
+
+            match_percent = int(
+                (len(matched_skills) / len(skill_names)) * 100
+            )
+
+            job["match_percent"] = match_percent
+            job["matched_skills"] = matched_skills
+
+            suggested_jobs.append(job)
+
+    return render(request, "main/profile.html", {
+        "profile": profile,
+        "suggested_jobs": suggested_jobs,
+    })
+
+
+
+
+def fetch_jobs_by_skills(skill_names):
+    if not os.getenv("RAPIDAPI_KEY"):
+        return []
+
+    query = " ".join(skill_names[:3])  # use top skills
+    url = "https://jsearch.p.rapidapi.com/search"
+
+    headers = {
+        "X-RapidAPI-Key": os.getenv("RAPIDAPI_KEY"),
+        "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
+    }
+
+    params = {
+        "query": query,
+        "page": "1",
+        "num_pages": "1",
+    }
+
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        response.raise_for_status()
+        return response.json().get("data", [])
+    except Exception as e:
+        logger.error("Job fetch error: %s", e)
+        return []
 
 
 # ============================
@@ -340,15 +403,13 @@ def job_applications_page(request):
 # ============================
 @login_required
 def skills_page(request):
-    profile = request.user
-
-    skills = Skill.objects.filter(user=request.user)
+    skills = Skill.objects.filter(user=request.user.profile)
 
     if request.method == "POST":
         form = SkillForm(request.POST)
         if form.is_valid():
             skill = form.save(commit=False)
-            skill.user = request.user
+            skill.user = request.user.profile   # ✅ PROFILE
             skill.save()
             return redirect("skills")
     else:
@@ -359,9 +420,14 @@ def skills_page(request):
         "form": form,
     })
 
+
 @login_required
 def edit_skill(request, skill_id):
-    skill = get_object_or_404(Skill, id=skill_id, user=request.user.profile)
+    skill = get_object_or_404(
+        Skill,
+        id=skill_id,
+        user=request.user.profile   # ✅ PROFILE
+    )
 
     if request.method == "POST":
         form = SkillForm(request.POST, instance=skill)
@@ -376,9 +442,15 @@ def edit_skill(request, skill_id):
 
 @login_required
 def delete_skill(request, skill_id):
-    skill = get_object_or_404(Skill, id=skill_id, user=request.user.profile)
+    skill = get_object_or_404(
+        Skill,
+        id=skill_id,
+        user=request.user.profile   # ✅ PROFILE INSTANCE
+    )
+
     skill.delete()
     return redirect("skills")
+
 
 
 # ============================
@@ -471,3 +543,23 @@ def contact_email(request):
 def settings_page(request):
     # Replace 'settings.html' with the template you want to use
     return render(request, 'main/settings.html')
+
+@login_required
+def post_job(request):
+    # Allow ONLY employers
+    if request.user.profile.role != "employer":
+        return redirect("home")
+
+    if request.method == "POST":
+        form = JobForm(request.POST)
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.employer = request.user
+            job.save()
+            return redirect("dashboard")
+    else:
+        form = JobForm()
+
+    return render(request, "main/post_job.html", {
+        "form": form
+    })

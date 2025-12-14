@@ -9,57 +9,103 @@
 {% block content %}
     <div class="profile-container">
 
-        <!-- Banner Header -->
         <div class="profile-banner">
-            <img src="{% static 'images/banner.jpg' %}" class="banner-img">
+             <img src="{% static 'images/banner.jpg' %}" class="banner-img">
         </div>
 
-        <!-- Profile Header -->
-        <div class="profile-header">
+        <div class="profile-layout-wrapper">
+            
+            <div class="profile-sidebar">
+                
+                <div class="profile-header">
+                    {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" class="profile-img">
+                    {% else %}
+                        <img src="{% static 'images/default-pfp.png' %}" class="profile-img">
+                    {% endif %}
 
-            {% if profile.profile_picture %}
-                <img src="{{ profile.profile_picture.url }}" class="profile-img">
-            {% else %}
-                <img src="{% static 'images/default-pfp.png' %}" class="profile-img">
-            {% endif %}
+                    <a href="{% url 'profile' %}" class="profile-name">{{ profile.full_name }}</a>
+                    <p class="profile-role">{{ profile.bio }}</p>
 
-            <a href="{% url 'profile' %}" class="profile-name">{{ profile.full_name }}</a>
-            <p class="profile-role">{{ profile.bio }}</p>
+                    <div class="profile-buttons">
+                        <a href="{% url 'edit_profile' %}" class="edit-btn">Edit Profile</a>
+                    </div>
+                </div>
 
-            <!-- Buttons -->
-            <div class="profile-buttons">
-                <a href="{% url 'edit_profile' %}" class="edit-btn">Edit Profile</a>
+                <div class="profile-info">
+                    <div class="info-card applications">
+                        <h3>Applications</h3>
+                        <p class="info-number">12</p>
+                    </div>
+
+                    <div class="info-card interviews">
+                        <h3>Interviews</h3>
+                        <p class="info-number">4</p>
+                    </div>
+
+                    <div class="info-card status">
+                        <h3>Status</h3>
+                        <p class="info-number status-good">Active</p>
+                    </div>
+                </div>
+
             </div>
+            <div class="profile-main-content">
 
-        </div>
+    <!-- SKILLS -->
+    <div class="skills-section">
+        <h2>Skills & Competencies</h2>
 
-        <!-- Info Cards -->
-        <div class="profile-info">
-            <div class="info-card">
-                <h3>Applications</h3>
-                <p class="info-number">12</p>
-            </div>
-
-            <div class="info-card">
-                <h3>Interviews</h3>
-                <p class="info-number">4</p>
-            </div>
-
-            <div class="info-card">
-                <h3>Status</h3>
-                <p class="info-number status-good">Active</p>
-            </div>
-        </div>
-
-        <!-- Skills Section -->
-        <div class="skills-section">
-            <h2>Skills</h2>
-            <div class="skills-list">
-                {% for skill in skills %}
-                    <span class="skill-tag">{{ skill.name }}</span>
-                {% empty %}
-                    <p class="note">No skills added yet.</p>
+        {% if profile.skills.exists %}
+            <ul>
+                {% for skill in profile.skills.all %}
+                    <li>
+                        <strong>{{ skill.name }}</strong> — {{ skill.level }}
+                    </li>
                 {% endfor %}
+            </ul>
+        {% else %}
+            <p>No skills added yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- ✅ ADD JOB SUGGESTIONS RIGHT HERE -->
+    <div class="job-suggestions">
+    <h2 class="section-title">Job Suggestions for You</h2>
+    <p class="suggestion-intro">Matches based on your skills</p>
+
+    {% if suggested_jobs %}
+        <div class="job-list">
+            {% for job in suggested_jobs %}
+                <div class="job-card">
+                    <div class="job-info">
+                        <h3 class="job-title">{{ job.job_title }}</h3>
+                        <p class="job-company">{{ job.employer_name }}</p>
+                        <p class="job-location">
+                            {{ job.job_city|default:"Remote" }},
+                            {{ job.job_country|default:"" }}
+                        </p>
+                    </div>
+
+                    <div class="job-match">
+                        <span>Skill Match</span>
+                        <strong>{{ job.match_percent }}%</strong>
+                    </div>
+
+                    <div class="job-action">
+                        <a href="{{ job.job_apply_link }}"
+                           target="_blank"
+                           class="apply-btn">
+                            Apply Now
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No job suggestions yet.</p>
+    {% endif %}
+</div>
             </div>
         </div>
     </div>
