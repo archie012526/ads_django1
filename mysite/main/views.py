@@ -154,42 +154,46 @@ def conversation_view(request, user_id):
     })
 
 @login_required
-@login_required
 def profile_page(request):
     profile = request.user.profile
-    skills_qs = profile.skills.all()
+    skills = profile.skills.all()
 
     suggested_jobs = []
 
-    # If user has skills → fetch real-time jobs
-    if skills_qs.exists():
-        # Build search query from skills
-        skill_names = [skill.name for skill in skills_qs]
-        query = " ".join(skill_names[:3])  # limit to avoid API overload
+    if skills.exists():
+        skill_names = [s.name.lower() for s in skills]
 
-        url = "https://jsearch.p.rapidapi.com/search"
-        headers = {
-            "X-RapidAPI-Key": settings.RAPIDAPI_KEY,
-            "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
-        }
-        params = {
-            "query": query,
-            "page": "1",
-            "num_pages": "1",
-        }
+        # Use FIRST skill for search (more reliable)
+        query = skill_names[0]
 
-        try:
-            response = requests.get(url, headers=headers, params=params, timeout=10)
-            response.raise_for_status()
-            suggested_jobs = response.json().get("data", [])
-        except Exception as e:
-            print("Job suggestion error:", e)
-            suggested_jobs = []
+        jobs = fetch_popular_jobs_from_rapidapi(query)
+
+        for job in jobs:
+            text_blob = " ".join([
+                job.get("job_title", ""),
+                job.get("employer_name", ""),
+                str(job.get("job_highlights", "")),
+                str(job.get("job_description", "")),
+            ]).lower()
+
+            matched_skills = [
+                skill for skill in skill_names if skill in text_blob
+            ]
+
+            match_percent = int(
+                (len(matched_skills) / len(skill_names)) * 100
+            )
+
+            job["match_percent"] = match_percent
+            job["matched_skills"] = matched_skills
+
+            suggested_jobs.append(job)
 
     return render(request, "main/profile.html", {
         "profile": profile,
         "suggested_jobs": suggested_jobs,
     })
+
 
 
 
