@@ -5,3 +5,14 @@ __pycache__/
 # SQLite database file
 *.sqlite3
 db.sqlite3
+
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
