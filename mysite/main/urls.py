@@ -54,5 +54,7 @@ urlpatterns = [
     path('language/', views.language, name='language'),
     path('privacy/', views.privacy, name='privacy'),
     path('security/', views.security, name='security'),
+
+    path("search/", views.job_search, name="job_search"),
 ]   
 

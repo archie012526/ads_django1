@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Search Results{% if query %} for "{{ query }}"{% endif %}</h2>
+
+{% if jobs %}
+    <ul>
+        {% for job in jobs %}
+            <li>
+                <strong>{{ job.title }}</strong><br>
+                {{ job.company }} — {{ job.location }}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No jobs found.</p>
+{% endif %}
+{% endblock %}
