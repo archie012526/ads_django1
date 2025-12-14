@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Q
@@ -46,16 +47,12 @@ def login_page(request):
         email = request.POST.get("email")
         password = request.POST.get("password")
 
-        if not User.objects.filter(username=email).exists():
-            messages.error(request, "Account does not exist.")
-            return render(request, "main/login.html")
-
         user = authenticate(request, username=email, password=password)
         if user:
             login(request, user)
             return redirect("homepage")
 
-        messages.error(request, "Incorrect password.")
+        messages.error(request, "Invalid email or password.")
 
     return render(request, "main/login.html")
 
@@ -63,24 +60,26 @@ def login_page(request):
 def signup_page(request):
     if request.method == "POST":
         email = request.POST.get("email")
+        password = request.POST.get("password")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
 
-        if User.objects.filter(username=email).exists():
-            messages.error(request, "Account already exists.")
+        try:
+            User.objects.create_user(
+                username=email,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+            )
+        except IntegrityError:
+            messages.error(request, "Email already registered.")
             return render(request, "main/signup.html")
 
-        user = User.objects.create_user(
-            username=email,
-            email=email,
-            first_name=request.POST.get("first_name"),
-            last_name=request.POST.get("last_name"),
-            password=request.POST.get("password"),
-        )
-        login(request, user)
+        messages.success(request, "Account created successfully. Please log in.")
         return redirect("login")
 
     return render(request, "main/signup.html")
-
-
 # ============================
 # HOME
 # ============================

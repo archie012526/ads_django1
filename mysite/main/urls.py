@@ -7,9 +7,10 @@ urlpatterns = [
     path("about/", views.about_page, name="about"),
     path("contact-us/", views.contact_us_page, name="contact_us"),
 
-    # Auth
+   # Auth
     path("login/", views.login_page, name="login"),
     path("register/", views.signup_page, name="signup"),
+
 
     # Home & Jobs
     path("home/", views.home_page, name="homepage"),
