@@ -6,99 +6,111 @@
 {% endblock %}
 
 {% block content %}
-   <!-- SIDEBAR -->
+
+<div class="min-h-screen bg-gray-100 flex">
+
+    <!-- LEFT SIDEBAR -->
     <div class="w-64 bg-white shadow-md p-6">
         <ul class="space-y-4 text-gray-700">
-        <h2 class="text-2xl font-bold mb-6">Settings</h2>
-        <ul class="space-y-3">
-            <li><a href="{% url 'settings_account' %}" class="text-blue-600 hover:underline">Account</a></li>
-            <li><a href="{% url 'settings_privacy' %}" class="text-blue-600 hover:underline">Privacy</a></li>
-            <li><a href="{% url 'settings_language' %}" class="text-blue-600 hover:underline">Language &amp; Appearance</a></li>
-            <li><a href="{% url 'settings_security' %}" class="text-blue-600 hover:underline">Security</a></li>
-            <li><a href="{% url 'settings_data_control' %}" class="text-blue-600 hover:underline">Data &amp; Account Control</a></li>
-            <li><a href="{% url 'settings_help' %}" class="text-blue-600 hover:underline">Help &amp; Support</a></li>
+            <li>
+                <a href="{% url 'profile' %}" class="hover:text-purple-600 cursor-pointer">
+                    Profile
+                </a>
+            </li>
+
+            <li class="bg-purple-600 text-white py-2 px-3 rounded-lg shadow">
+                Settings
+            </li>
+
+            <li>
+                <a href="{% url 'edit_profile' %}" class="hover:text-purple-600 cursor-pointer">
+                    Edit Profile
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'skills' %}" class="hover:text-purple-600 cursor-pointer">
+                    Skills
+                </a>
+            </li>
+
+            <li class="pt-10 text-red-500 cursor-pointer">Log Out</li>
         </ul>
-    </aside>
+    </div>
 
-    <!-- Main Content -->
-    <main class="flex-1 p-8">
-        <h1 class="text-3xl font-bold mb-6">Settings</h1>
-        
-        <form method="POST" enctype="multipart/form-data" class="space-y-6">
-            {% csrf_token %}
-            
-            <!-- Account -->
-            <section id="account">
-                <h2 class="text-xl font-semibold mb-3">Account</h2>
-                {{ form.phone_number.label_tag }}<br>
-                {{ form.phone_number }}<br>
-            </section>
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 p-10">
+        <h2 class="text-2xl font-semibold mb-8">Settings</h2>
 
-            <!-- Profile -->
-            <section id="profile">
-                <h2 class="text-xl font-semibold mb-3">Profile</h2>
-                {{ form.profile_image.label_tag }}<br>
-                {{ form.profile_image }}<br>
-                {{ form.bio.label_tag }}<br>
-                {{ form.bio }}<br>
-            </section>
+        <div class="bg-white rounded-xl shadow-md p-10 relative overflow-hidden">
 
-            <!-- Privacy -->
-            <section id="privacy">
-                <h2 class="text-xl font-semibold mb-3">Privacy</h2>
-                {{ form.profile_visibility.label_tag }}<br>
-                {{ form.profile_visibility }}<br>
-                {{ form.allow_contact.label_tag }}<br>
-                {{ form.allow_contact }}<br>
-            </section>
+            <!-- Settings Links with Descriptions -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <!-- Notifications -->
-            <section id="notifications">
-                <h2 class="text-xl font-semibold mb-3">Notifications</h2>
-                {{ form.email_notifications.label_tag }} {{ form.email_notifications }}<br>
-                {{ form.push_notifications.label_tag }} {{ form.push_notifications }}<br>
-            </section>
+                <!-- Account -->
+                <div class="md:col-span-2">
+                    <h3 class="text-xl font-semibold mb-1">
+                        <a href="{% url 'settings_account' %}" class="text-blue-600 hover:underline">
+                            Account
+                        </a>
+                    </h3>
+                    <p class="text-gray-600">Manage your phone number, email, and account details.</p>
+                </div>
 
-            <!-- Job Preferences -->
-            <section id="job-preferences">
-                <h2 class="text-xl font-semibold mb-3">Job Preferences</h2>
-                {{ form.preferred_job_titles.label_tag }}<br>
-                {{ form.preferred_job_titles }}<br>
-                {{ form.job_categories.label_tag }}<br>
-                {{ form.job_categories }}<br>
-                {{ form.employment_type.label_tag }}<br>
-                {{ form.employment_type }}<br>
-                {{ form.preferred_location.label_tag }}<br>
-                {{ form.preferred_location }}<br>
-            </section>
+                <!-- Privacy -->
+                <div class="md:col-span-2">
+                    <h3 class="text-xl font-semibold mb-1">
+                        <a href="{% url 'settings_privacy' %}" class="text-blue-600 hover:underline">
+                            Privacy
+                        </a>
+                    </h3>
+                    <p class="text-gray-600">Control who can see your profile and contact you.</p>
+                </div>
 
-            <!-- Language & Appearance -->
-            <section id="language">
-                <h2 class="text-xl font-semibold mb-3">Language &amp; Appearance</h2>
-                <p>Choose language and appearance preferences.</p>
-            </section>
+                <!-- Language & Appearance -->
+                <div class="md:col-span-2">
+                    <h3 class="text-xl font-semibold mb-1">
+                        <a href="{% url 'settings_language' %}" class="text-blue-600 hover:underline">
+                            Language &amp; Appearance
+                        </a>
+                    </h3>
+                    <p class="text-gray-600">Choose your preferred language and display settings.</p>
+                </div>
 
-            <!-- Security -->
-            <section id="security">
-                <h2 class="text-xl font-semibold mb-3">Security</h2>
-                <p>Change password, enable two-factor authentication and review sessions.</p>
-            </section>
+                <!-- Security -->
+                <div class="md:col-span-2">
+                    <h3 class="text-xl font-semibold mb-1">
+                        <a href="{% url 'settings_security' %}" class="text-blue-600 hover:underline">
+                            Security
+                        </a>
+                    </h3>
+                    <p class="text-gray-600">Change your password, enable two-factor authentication, and review sessions.</p>
+                </div>
 
-            <!-- Data & Account Control -->
-            <section id="data-control">
-                <h2 class="text-xl font-semibold mb-3">Data &amp; Account Control</h2>
-                <p>Download data, deactivate or delete your account.</p>
-            </section>
+                <!-- Data & Account Control -->
+                <div class="md:col-span-2">
+                    <h3 class="text-xl font-semibold mb-1">
+                        <a href="{% url 'settings_data_control' %}" class="text-blue-600 hover:underline">
+                            Data &amp; Account Control
+                        </a>
+                    </h3>
+                    <p class="text-gray-600">Download your data or deactivate/delete your account.</p>
+                </div>
 
-            <!-- Help & Support -->
-            <section id="help">
-                <h2 class="text-xl font-semibold mb-3">Help &amp; Support</h2>
-                <p>Get help articles and contact support.</p>
-            </section>
+                <!-- Help & Support -->
+                <div class="md:col-span-2">
+                    <h3 class="text-xl font-semibold mb-1">
+                        <a href="{% url 'settings_help' %}" class="text-blue-600 hover:underline">
+                            Help &amp; Support
+                        </a>
+                    </h3>
+                    <p class="text-gray-600">Find help articles or contact support for assistance.</p>
+                </div>
 
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded">Save Changes</button>
-        </form>
-    </main>
+            </div>
 
+        </div>
+    </div>
 </div>
+
 {% endblock content %}
