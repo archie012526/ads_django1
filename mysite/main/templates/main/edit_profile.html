@@ -2,53 +2,60 @@
 {% load static %}
 
 {% block content %}
+{% block extra_head %}
 
-<div class="min-h-screen bg-gray-100 flex">
+<link rel="stylesheet" href="{% static 'style/edit_profile.css' %}">
+{% endblock %}
+
+
+<div class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex">
 
     <!-- LEFT SIDEBAR -->
-    <div class="w-64 bg-white shadow-md p-6">
+    <div class="w-64 bg-white shadow-lg p-6 border-r border-gray-100">
         <ul class="space-y-4 text-gray-700">
             <li>
-                <a href="{% url 'profile' %}" class="hover:text-purple-600 cursor-pointer">
+                <a href="{% url 'profile' %}" class="hover:text-purple-600 transition">
                     Profile
                 </a>
             </li>
 
             <li>
-                <a href="{% url 'settings' %}" class="hover:text-purple-600 cursor-pointer">
+                <a href="{% url 'settings' %}" class="hover:text-purple-600 transition">
                     Settings
                 </a>
             </li>
-            <li class="bg-purple-600 text-white py-2 px-3 rounded-lg shadow">
+
+            <li class="bg-gradient-to-r from-purple-600 to-purple-500 text-white py-2 px-4 rounded-xl shadow-md font-medium">
                 Edit Profile
             </li>
 
-            <!-- Skills now clickable -->
             <li>
-                <a href="{% url 'skills' %}" class="hover:text-purple-600 cursor-pointer">
+                <a href="{% url 'skills' %}" class="hover:text-purple-600 transition">
                     Skills
                 </a>
             </li>
 
-            <li class="pt-10 text-red-500 cursor-pointer">Log Out</li>
+            <li class="pt-10 text-red-500 hover:text-red-600 cursor-pointer transition">
+                Log Out
+            </li>
         </ul>
     </div>
 
     <!-- MAIN CONTENT -->
     <div class="flex-1 p-10">
 
-        <h2 class="text-2xl font-semibold mb-8">Edit Profile</h2>
+        <h2 class="text-2xl font-semibold mb-8 text-gray-800">Edit Profile</h2>
 
-        <div class="bg-white rounded-xl shadow-md p-10 relative overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-lg p-10 border border-gray-100 relative overflow-hidden">
 
             <!-- PROFILE PHOTO -->
-            <div class="flex justify-center mb-8 relative">
+            <div class="flex justify-center mb-10">
                 <div class="relative">
                     <img src="{% static 'images/default_profile.svg' %}"
-                         class="w-28 h-28 rounded-full border-4 border-purple-200">
+                         class="w-28 h-28 rounded-full border-4 border-purple-200 shadow-md ring-4 ring-purple-100">
 
                     <button
-                        class="absolute bottom-1 right-1 bg-purple-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm">
+                        class="absolute bottom-1 right-1 bg-purple-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm shadow hover:bg-purple-700 transition">
                         ✎
                     </button>
                 </div>
@@ -57,48 +64,49 @@
             <form method="POST">
                 {% csrf_token %}
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
                     <!-- FULL NAME -->
                     <div>
-                        <label class="font-medium">Full Name</label>
+                        <label class="font-medium text-gray-700 block mb-2">Full Name</label>
                         {{ profile_form.full_name }}
                     </div>
 
                     <!-- EMAIL -->
                     <div>
-                        <label class="font-medium">Email</label>
+                        <label class="font-medium text-gray-700 block mb-2">Email</label>
                         {{ user_form.email }}
                     </div>
 
-                    <!-- NUMBER -->
+                    <!-- PHONE NUMBER -->
                     <div>
-                        <label class="font-medium">Phone Number</label>
+                        <label class="font-medium text-gray-700 block mb-2">Phone Number</label>
                         {{ profile_form.phone_number }}
                     </div>
 
                     <!-- LOCATION -->
                     <div class="md:col-span-2">
-                        <label class="font-medium">Location</label>
+                        <label class="font-medium text-gray-700 block mb-2">Location</label>
                         {{ profile_form.location }}
                     </div>
 
                     <!-- BIO -->
                     <div class="md:col-span-2">
-                        <label class="font-medium">Bio</label>
+                        <label class="font-medium text-gray-700 block mb-2">Bio</label>
                         {{ profile_form.bio }}
                     </div>
 
                 </div>
 
                 <!-- BUTTONS -->
-                <div class="flex justify-end mt-10 space-x-4">
+                <div class="flex justify-end mt-12 space-x-4">
                     <a href="{% url 'profile' %}"
-                       class="px-6 py-2 border rounded-lg hover:bg-gray-100">
+                       class="px-6 py-2 border border-gray-300 rounded-xl hover:bg-gray-100 transition">
                         Back To Home
                     </a>
 
-                    <button class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                    <button type="submit"
+                            class="px-7 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-xl shadow hover:shadow-lg hover:scale-[1.02] transition">
                         Save Changes
                     </button>
                 </div>

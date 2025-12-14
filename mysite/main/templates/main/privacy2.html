@@ -1,35 +1,68 @@
 {% extends "main/base.html" %}
 {% load static %}
 
+{% block title %}Settings: Privacy{% endblock %}
+
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'style/settings.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="settings-container">
+
+    <!-- SIDEBAR -->
     <aside class="settings-nav">
-        <h1>Settings</h1>
-        <ul>
-            <li><a href="{% url 'settings_account' %}">Account</a></li>
-            <li><a href="{% url 'settings_privacy' %}" class="active-link">Privacy</a></li>
-            <li><a href="{% url 'settings_language' %}">Language &amp; Appearance</a></li>
-            <li><a href="{% url 'settings_security' %}">Security</a></li>
-            <li><a href="{% url 'settings_data_control' %}">Data &amp; Account Control</a></li>
-            <li><a href="{% url 'settings_help' %}">Help &amp; Support</a></li>
+        <h1 class="settings-title">Settings</h1>
+
+        <ul class="nav-links">
+            <li>
+                <a href="{% url 'settings_account' %}">
+                    Account
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'settings_privacy' %}" class="sidebar-highlight-bg">
+                    Privacy
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'settings_language' %}">
+                    Language &amp; Appearance
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'settings_security' %}">
+                    Security
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'settings_data_control' %}">
+                    Data &amp; Account Control
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'settings_help' %}">
+                    Help &amp; Support
+                </a>
+            </li>
         </ul>
     </aside>
 
+    <!-- MAIN CONTENT -->
     <main class="settings-content">
-        <h2>Privacy & Visibility</h2>
+        <h2 class="page-title">Privacy &amp; Visibility</h2>
         <p><strong>Purpose:</strong> Control who can see what about your profile and activity.</p>
 
-        <form method="post" class="space-y-4">
+        <form method="post" class="settings-form">
             {% csrf_token %}
+
             <label>Profile visibility</label>
             {{ form.profile_visibility }}
 
-            <label>Allow recruiters to contact me</label>
-            {{ form.allow_contact }}
+            <label class="checkbox-group">
+                {{ form.allow_contact }}
+                Allow recruiters to contact me
+            </label>
 
             <label>Show email to employers</label>
             <p>If you allow, employers may see your email address.</p>
@@ -37,8 +70,11 @@
             <label>Search engine indexing</label>
             <p>Enable or disable external search engine indexing for your profile.</p>
 
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded">Save Privacy Settings</button>
+            <button type="submit" class="save-changes-btn">
+                Save Privacy Settings
+            </button>
         </form>
     </main>
+
 </div>
 {% endblock %}

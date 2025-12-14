@@ -1,84 +1,101 @@
-/* General reset and font */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0; /* Remove body padding so the main container can manage it */
-    background-color: #f4f4f9;
+/* ===============================
+   GLOBAL RESET & BASE
+================================ */
+* {
+    box-sizing: border-box;
 }
 
-/* Main Layout Container */
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #f4f4f9, #eef1f7);
+    color: #1f2937;
+}
+
+/* ===============================
+   MAIN LAYOUT CONTAINER
+================================ */
 .settings-container {
     display: flex;
-    max-width: 1200px; /* Increased max-width for better spacing */
-    margin: 20px auto; /* Add margin around the container */
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    min-height: 80vh; /* Make it take up more vertical space */
+    max-width: 1200px;
+    margin: 30px auto;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    min-height: 80vh;
+    overflow: hidden;
 }
 
-/* Left Navigation Pane (Sidebar) */
+/* ===============================
+   SIDEBAR / NAVIGATION
+================================ */
 .settings-nav {
-    flex: 0 0 220px; /* Fixed width for navigation to match the screenshot better */
-    padding: 20px 0; /* Vertical padding */
-    border-right: 1px solid #eee;
-    background-color: #f8f8f8; /* Slight background to distinguish the sidebar */
+    flex: 0 0 240px;
+    padding: 25px 0;
+    border-right: 1px solid #e5e7eb;
+    background: #fafafa;
 }
 
-/* Main Sidebar Links (Profile, Settings, Edit Profile, Skills, Log Out) */
 .settings-nav .nav-links {
     list-style: none;
-    padding: 0 0 20px 0;
+    padding: 0;
     margin: 0;
 }
 
 .settings-nav .nav-links li {
-    margin-bottom: 0;
+    margin: 4px 0;
 }
 
 .settings-nav .nav-links a {
     text-decoration: none;
-    color: #333; 
-    font-size: 16px;
+    color: #374151;
+    font-size: 15px;
     display: block;
-    padding: 10px 30px; /* Horizontal padding for spacing */
-    transition: background-color 0.2s, color 0.2s;
+    padding: 12px 28px;
+    border-radius: 12px;
+    transition: all 0.25s ease;
 }
 
-/* Style for the active/highlighted link (e.g., 'Edit Profile' or 'Settings') */
+/* Hover */
+.settings-nav .nav-links a:hover:not(.sidebar-highlight-bg) {
+    background-color: #f3f4f6;
+    color: #6d28d9;
+}
+
+/* Active / Highlighted */
 .settings-nav .nav-links a.sidebar-highlight-bg {
-    background-color: #7f52ff; /* The purple color from the screenshot */
-    color: white;
+    background: linear-gradient(to right, #7c3aed, #8b5cf6);
+    color: #ffffff;
     font-weight: 600;
+    box-shadow: 0 10px 25px rgba(124, 58, 237, 0.25);
 }
 
 .settings-nav .nav-links a.sidebar-highlight-bg:hover {
-    background-color: #6a3adb; /* Darker purple on hover */
+    opacity: 0.95;
 }
 
-.settings-nav .nav-links a:hover:not(.sidebar-highlight-bg) {
-    background-color: #eee;
-}
-
-/* Log Out Link (Red text) */
+/* Log Out */
 .settings-nav .nav-links .logout-link {
-    color: #dc3545; /* Red for log out */
-    padding-top: 20px; /* Separation from other links */
-    border-top: 1px solid #eee;
+    color: #dc2626;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
 }
 
 .settings-nav .nav-links .logout-link:hover {
-    color: #b02a37;
     background-color: transparent;
+    color: #b91c1c;
 }
 
-
-/* Nested Settings Links (Account, Privacy, Security, etc.) */
+/* ===============================
+   NESTED SETTINGS LINKS
+================================ */
 .settings-nav .sub-heading {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
-    margin: 15px 30px 10px 30px;
-    color: #333;
+    margin: 20px 28px 10px;
+    color: #111827;
 }
 
 .settings-nav .nested-links {
@@ -87,133 +104,163 @@ body {
     margin: 0;
 }
 
-.settings-nav .nested-links li {
-    margin-bottom: 0;
-}
-
 .settings-nav .nested-links a {
     text-decoration: none;
-    color: #007bff;
+    color: #6b7280;
     font-size: 14px;
     display: block;
-    padding: 5px 30px;
+    padding: 6px 28px;
+    transition: color 0.2s;
 }
 
 .settings-nav .nested-links a:hover,
 .settings-nav .nested-links a.active-sub-link {
+    color: #7c3aed;
     text-decoration: underline;
-    color: #0056b3;
 }
 
-/* Right Content Area */
+/* ===============================
+   CONTENT AREA
+================================ */
 .settings-content {
     flex-grow: 1;
-    padding: 30px;
+    padding: 40px;
 }
 
 .settings-content .page-title {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
-    margin-top: 0;
-    margin-bottom: 30px;
-    color: #000;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 15px;
+    margin: 0 0 30px;
+    color: #111827;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 14px;
 }
 
 .settings-content .section-title {
-    font-size: 24px;
-    color: #333;
-    padding-bottom: 5px;
-    margin-top: 40px;
+    font-size: 22px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-top: 45px;
     margin-bottom: 20px;
 }
 
 .settings-content p {
-    line-height: 1.6;
+    line-height: 1.7;
     margin-bottom: 20px;
+    color: #4b5563;
 }
 
-/* --- Form Specific Styles --- */
-
+/* ===============================
+   FORM STYLES
+================================ */
 .settings-form {
     padding-top: 10px;
 }
 
-/* Input fields, select, and textarea */
+.settings-content label {
+    display: block;
+    font-weight: 600;
+    margin-top: 18px;
+    margin-bottom: 6px;
+    color: #374151;
+    font-size: 14px;
+}
+
+/* Inputs */
 .settings-content input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 .settings-content select,
 .settings-content textarea {
     width: 100%;
-    margin-top: 4px;
-    margin-bottom: 15px;
-    padding: 0.75rem 1rem;
+    padding: 12px 14px;
     border: 1px solid #d1d5db;
-    border-radius: 4px; 
-    box-sizing: border-box;
-    font-size: 1rem;
-    color: #333;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    border-radius: 12px;
+    font-size: 14px;
+    background-color: #fafafa;
+    color: #111827;
+    transition: all 0.25s ease;
+}
+
+.settings-content input::placeholder,
+.settings-content textarea::placeholder {
+    color: #9ca3af;
 }
 
 .settings-content input:focus,
 .settings-content select:focus,
 .settings-content textarea:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 1px #007bff;
+    outline: none;
+    background-color: #ffffff;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
 }
 
-/* Styles for file input */
+/* File input */
 .settings-content input[type="file"] {
-    padding: 0;
     border: none;
+    padding: 0;
+    background: transparent;
     cursor: pointer;
-    display: block; /* Ensures it takes full width for consistency */
 }
 
-/* Labels */
-.settings-content label {
-    display: block;
-    font-weight: 600;
-    margin-top: 15px;
-    color: #555;
-}
-
-/* Checkbox specific styling for better layout */
+/* ===============================
+   CHECKBOX GROUP
+================================ */
 .checkbox-group {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    margin-top: 12px;
 }
-.checkbox-group label {
-    font-weight: normal;
-    margin-top: 0;
+
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
     margin-right: 10px;
     cursor: pointer;
 }
-.checkbox-group input[type="checkbox"] {
-    width: auto;
-    height: 18px;
+
+.checkbox-group label {
     margin: 0;
+    font-weight: normal;
+    cursor: pointer;
 }
 
-
-/* Save Changes Button (Blue button style) */
+/* ===============================
+   SAVE BUTTON
+================================ */
 .save-changes-btn {
     display: inline-block;
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
+    background: linear-gradient(to right, #2563eb, #3b82f6);
+    color: #ffffff;
+    padding: 12px 26px;
     border: none;
-    border-radius: 4px;
-    font-size: 1rem;
+    border-radius: 12px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    margin-top: 25px;
-    transition: background-color 0.2s;
+    margin-top: 30px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .save-changes-btn:hover {
-    background-color: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 25px rgba(37, 99, 235, 0.3);
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+@media (max-width: 900px) {
+    .settings-container {
+        flex-direction: column;
+    }
+
+    .settings-nav {
+        flex: unset;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .settings-content {
+        padding: 25px;
+    }
 }

@@ -1,21 +1,51 @@
 {% extends "main/base.html" %}
 {% load static %}
 
+{% block title %}Settings: Help & Support{% endblock %}
+
+
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'style/settings.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="settings-container">
+
+    <!-- SIDEBAR -->
     <aside class="settings-nav">
-        <h1>Settings</h1>
-        <ul>
-            <li><a href="{% url 'settings_account' %}">Account</a></li>
-            <li><a href="{% url 'settings_privacy' %}">Privacy</a></li>
-            <li><a href="{% url 'settings_language' %}">Language &amp; Appearance</a></li>
-            <li><a href="{% url 'settings_security' %}">Security</a></li>
-            <li><a href="{% url 'settings_data_control' %}">Data &amp; Account Control</a></li>
-            <li><a href="{% url 'settings_help' %}" class="active-link">Help &amp; Support</a></li>
+        <h1 class="settings-title">Settings</h1>
+
+        <ul class="nav-links">
+            <li>
+                <a href="{% url 'settings_account' %}">
+                    Account
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'settings_privacy' %}" class="sidebar-highlight-bg">
+                    Privacy
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'settings_language' %}">
+                    Language &amp; Appearance
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'settings_security' %}">
+                    Security
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'settings_data_control' %}">
+                    Data &amp; Account Control
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'settings_help' %}">
+                    Help &amp; Support
+                </a>
+            </li>
         </ul>
     </aside>
 
