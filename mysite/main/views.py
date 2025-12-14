@@ -20,6 +20,7 @@ import logging
 import os
 from dotenv import load_dotenv
 
+from django.db import models
 load_dotenv()
 logger = logging.getLogger(__name__)
 
@@ -396,6 +397,24 @@ def job_applications_page(request):
     return render(request, "main/job_applications.html", {
         "applications": applications
     })
+def job_search(request):
+    query = request.GET.get("q", "")
+
+    jobs = Job.objects.all()
+
+    if query:
+        jobs = jobs.filter(
+            title__icontains=query
+            | models.Q(company__icontains=query)
+            | models.Q(location__icontains=query)
+        )
+
+    context = {
+        "jobs": jobs,
+        "query": query,
+    }
+
+    return render(request, "main/job_search.html", context)
 
 
 # ============================
