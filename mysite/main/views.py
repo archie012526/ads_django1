@@ -561,7 +561,11 @@ def contact_email(request):
 
 @login_required
 def settings_page(request):
-    profile = getattr(request.user, 'profile', None)
+    profile, _ = Profile.objects.get_or_create(
+        user=request.user,
+        defaults={"full_name": request.user.get_full_name() or request.user.username},
+    )
+
     if request.method == 'POST':
         form = SettingsForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
@@ -635,7 +639,10 @@ def security(request):
 @login_required
 def account_settings(request):
     user = request.user
-    profile = getattr(user, 'profile', None)
+    profile, _ = Profile.objects.get_or_create(
+        user=user,
+        defaults={"full_name": user.get_full_name() or user.username},
+    )
 
     if request.method == 'POST':
         user_form = UserForm(request.POST, instance=user)
