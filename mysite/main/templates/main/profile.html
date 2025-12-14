@@ -50,34 +50,66 @@
                 </div>
 
             </div> <div class="profile-main-content">
-                
-                <div class="skills-section">
-                    <h2>Skills & Competencies</h2>
-                    <div class="skills-list">
-                        {% for skill in skills %}
-                            <span class="skill-tag">{{ skill.name }}</span>
-                        {% empty %}
-                            <p class="note">No skills added yet.</p>
-                        {% endfor %}
-                    </div>
-                </div>
+                    <div class="skills-section">
+                        <h2>Skills & Competencies</h2>
 
-                <div class="job-suggestions">
-                    <h2 class="section-title">Job Suggestions for You</h2>
-                    <p class="suggestion-intro">Matches based on your profile and skills.</p>
-                    <div class="suggestion-list">
-                        <div class="suggestion-item">
-                            <h3>Senior UI/UX Designer</h3>
-                            <p class="skill-match">High Match (90%)</p>
-                            <a href="#" class="apply-btn">Apply Now</a>
-                        </div>
-                        <div class="suggestion-item">
-                            <h3>Front-End Developer</h3>
-                            <p class="skill-match">Medium Match (65%)</p>
-                            <a href="#" class="apply-btn">View Details</a>
-                        </div>
+                        {% if profile.skills.exists %}
+                            <ul>
+                                {% for skill in profile.skills.all %}
+                                    <li>
+                                        <strong>{{ skill.name }}</strong>
+                                        — {{ skill.level }}
+
+                                        {% if skill.description %}
+                                            <br>
+                                            <small>{{ skill.description }}</small>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>No skills added yet.</p>
+                        {% endif %}
                     </div>
-                </div>
+                            {% if suggested_jobs %}
+                            <h2 class="text-xl font-semibold mt-6">Suggested Jobs</h2>
+
+                            {% for job in suggested_jobs %}
+                                <div class="border p-4 rounded mb-3">
+                                <h3 class="font-bold">{{ job.job_title }}</h3>
+                                <p>{{ job.employer_name }}</p>
+                                <p>{{ job.job_city }}, {{ job.job_country }}</p>
+
+                                <a href="{{ job.job_apply_link }}"
+                                    target="_blank"
+                                    class="text-blue-600 underline">
+                                    Apply
+                                </a>
+                                </div>
+                            {% endfor %}
+                            {% else %}
+                                {% if suggested_jobs %}
+                                    <h2 class="text-xl font-semibold mt-6">Suggested Jobs</h2>
+
+                                    {% for job in suggested_jobs %}
+                                        <div class="border p-4 rounded mb-3">
+                                            <h3 class="font-bold">{{ job.job_title }}</h3>
+                                            <p>{{ job.employer_name }}</p>
+                                            <p>{{ job.job_city }}, {{ job.job_country }}</p>
+
+                                            <a href="{{ job.job_apply_link }}"
+                                            target="_blank"
+                                            class="text-blue-600 underline">
+                                                Apply
+                                            </a>
+                                        </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p>No job matches found yet.</p>
+                                {% endif %}
+                            {% endif %}
+
+
 
             </div> </div> </div>
 {% endblock content %}
