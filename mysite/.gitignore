@@ -1,7 +1,30 @@
-# Compiled Python files
-*.pyc
+# Python
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-# SQLite database file
-*.sqlite3
+# Virtual environment
+.venv/
+venv/
+
+# Django
 db.sqlite3
+staticfiles/
+
+# OS
+.DS_Store
+Thumbs.db
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Django
+db.sqlite3
+/staticfiles/
+
+# Environment variables
+.env
