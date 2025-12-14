@@ -1,0 +1,56 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'style/settings.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <aside class="settings-nav">
+        <h1>Settings</h1>
+        <ul>
+            <li><a href="{% url 'settings_account' %}">Account</a></li>
+            <li><a href="{% url 'settings_privacy' %}">Privacy</a></li>
+            <li><a href="{% url 'settings_language' %}" class="active-link">Language &amp; Appearance</a></li>
+            <li><a href="{% url 'settings_security' %}">Security</a></li>
+            <li><a href="{% url 'settings_data_control' %}">Data &amp; Account Control</a></li>
+            <li><a href="{% url 'settings_help' %}">Help &amp; Support</a></li>
+        </ul>
+    </aside>
+
+    <main class="settings-content">
+        <h2>Language &amp; Appearance</h2>
+        <p><strong>Purpose:</strong> User comfort and customization.</p>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <label>Language selection</label>
+            <select name="language">
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+            </select>
+
+            <label>Time zone</label>
+            <select name="timezone">
+                <option value="UTC">UTC</option>
+                <option value="Asia/Manila">Asia/Manila</option>
+            </select>
+
+            <label>Theme</label>
+            <select name="theme">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+            </select>
+
+            <label>Accessibility options</label>
+            <p>
+                <input type="checkbox" name="large_font"> Large font<br>
+                <input type="checkbox" name="high_contrast"> High contrast mode
+            </p>
+
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded">Save</button>
+        </form>
+    </main>
+</div>
+{% endblock %}

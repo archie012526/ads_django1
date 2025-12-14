@@ -1,6 +1,10 @@
 {% extends "main/base.html" %}
 {% load static %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'style/settings.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="flex min-h-screen bg-gray-100">
     
@@ -8,12 +12,12 @@
     <aside class="w-64 bg-white shadow-md p-6">
         <h2 class="text-2xl font-bold mb-6">Settings</h2>
         <ul class="space-y-3">
-            <li><a href="#account" class="text-blue-600 hover:underline">Account</a></li>
-            <li><a href="#privacy" class="text-blue-600 hover:underline">Privacy</a></li>
-            <li><a href="Language & Appearance" class="text-blue-600 hover:underline">Language & Appearance</a></li>
-            <li><a href="#security" class="text-blue-600 hover:underline">Security</a></li>
-            <li><a href="#Data & Account Control" class="text-blue-600 hover:underline">Data & Account Control</a></li>
-            <li><a href="#Help & Support" class="text-blue-600 hover:underline">Help & Support</a></li>
+            <li><a href="{% url 'settings_account' %}" class="text-blue-600 hover:underline">Account</a></li>
+            <li><a href="{% url 'settings_privacy' %}" class="text-blue-600 hover:underline">Privacy</a></li>
+            <li><a href="{% url 'settings_language' %}" class="text-blue-600 hover:underline">Language &amp; Appearance</a></li>
+            <li><a href="{% url 'settings_security' %}" class="text-blue-600 hover:underline">Security</a></li>
+            <li><a href="{% url 'settings_data_control' %}" class="text-blue-600 hover:underline">Data &amp; Account Control</a></li>
+            <li><a href="{% url 'settings_help' %}" class="text-blue-600 hover:underline">Help &amp; Support</a></li>
         </ul>
     </aside>
 
@@ -34,8 +38,8 @@
             <!-- Profile -->
             <section id="profile">
                 <h2 class="text-xl font-semibold mb-3">Profile</h2>
-                {{ form.profile_picture.label_tag }}<br>
-                {{ form.profile_picture }}<br>
+                {{ form.profile_image.label_tag }}<br>
+                {{ form.profile_image }}<br>
                 {{ form.bio.label_tag }}<br>
                 {{ form.bio }}<br>
             </section>
@@ -67,6 +71,30 @@
                 {{ form.employment_type }}<br>
                 {{ form.preferred_location.label_tag }}<br>
                 {{ form.preferred_location }}<br>
+            </section>
+
+            <!-- Language & Appearance -->
+            <section id="language">
+                <h2 class="text-xl font-semibold mb-3">Language &amp; Appearance</h2>
+                <p>Choose language and appearance preferences.</p>
+            </section>
+
+            <!-- Security -->
+            <section id="security">
+                <h2 class="text-xl font-semibold mb-3">Security</h2>
+                <p>Change password, enable two-factor authentication and review sessions.</p>
+            </section>
+
+            <!-- Data & Account Control -->
+            <section id="data-control">
+                <h2 class="text-xl font-semibold mb-3">Data &amp; Account Control</h2>
+                <p>Download data, deactivate or delete your account.</p>
+            </section>
+
+            <!-- Help & Support -->
+            <section id="help">
+                <h2 class="text-xl font-semibold mb-3">Help &amp; Support</h2>
+                <p>Get help articles and contact support.</p>
             </section>
 
             <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded">Save Changes</button>

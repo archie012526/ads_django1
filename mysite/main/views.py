@@ -11,7 +11,7 @@ from django.core.mail import send_mail
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
-from .forms import JobForm, SkillForm, UserForm, ProfileForm
+from .forms import JobForm, SkillForm, UserForm, ProfileForm, SettingsForm
 from .models import Profile, Job, JobApplication, Notification, Skill, Message
 
 import requests
@@ -541,9 +541,21 @@ def contact_email(request):
         messages.success(request, "Message sent!")
     return redirect("/")
 
+@login_required
 def settings_page(request):
-    # Replace 'settings.html' with the template you want to use
-    return render(request, 'main/settings.html')
+    profile = getattr(request.user, 'profile', None)
+    if request.method == 'POST':
+        form = SettingsForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Settings updated.')
+            return redirect('settings')
+    else:
+        form = SettingsForm(instance=profile)
+
+    return render(request, 'main/settings.html', {
+        'form': form,
+    })
 
 @login_required
 def post_job(request):
@@ -563,4 +575,56 @@ def post_job(request):
 
     return render(request, "main/post_job.html", {
         "form": form
+    })
+
+
+def data_control(request):
+    return render(request, 'main/data-control2.html')
+
+def help_page(request):
+    return render(request, 'main/help2.html')
+
+def language(request):
+    return render(request, 'main/language2.html')
+
+@login_required
+def privacy(request):
+    profile = getattr(request.user, 'profile', None)
+    if request.method == 'POST':
+        form = SettingsForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Privacy settings updated.')
+            return redirect('settings_privacy')
+    else:
+        form = SettingsForm(instance=profile)
+
+    return render(request, 'main/privacy2.html', {
+        'form': form,
+    })
+
+def security(request):
+    return render(request, 'main/security2.html')
+
+
+@login_required
+def account_settings(request):
+    user = request.user
+    profile = getattr(user, 'profile', None)
+
+    if request.method == 'POST':
+        user_form = UserForm(request.POST, instance=user)
+        settings_form = SettingsForm(request.POST, request.FILES, instance=profile)
+        if user_form.is_valid() and settings_form.is_valid():
+            user_form.save()
+            settings_form.save()
+            messages.success(request, 'Account settings updated.')
+            return redirect('settings_account')
+    else:
+        user_form = UserForm(instance=user)
+        settings_form = SettingsForm(instance=profile)
+
+    return render(request, 'main/account.html', {
+        'user_form': user_form,
+        'form': settings_form,
     })

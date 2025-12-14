@@ -1,0 +1,60 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings: Account</title> 
+    <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+
+    <div class="settings-container">
+        <aside class="settings-nav">
+
+            {% block extra_head %}
+            <link rel="stylesheet" href="{% static 'style/settings.css' %}">
+            {% endblock %}
+
+            {% block content %}
+            <div class="settings-container">
+                <aside class="settings-nav">
+                    <h1>Settings</h1>
+                    <ul>
+                        <li><a href="{% url 'settings_account' %}" class="active-link">Account</a></li>
+                        <li><a href="{% url 'settings_privacy' %}">Privacy</a></li>
+                        <li><a href="{% url 'settings_language' %}">Language &amp; Appearance</a></li>
+                        <li><a href="{% url 'settings_security' %}">Security</a></li>
+                        <li><a href="{% url 'settings_data_control' %}">Data &amp; Account Control</a></li>
+                        <li><a href="{% url 'settings_help' %}">Help &amp; Support</a></li>
+                    </ul>
+                </aside>
+
+                <main class="settings-content">
+                    <h2>Account Settings</h2>
+                    <p><strong>Purpose:</strong> Basic account control (view & change account details).</p>
+
+                    <form method="post" enctype="multipart/form-data" class="space-y-6">
+                        {% csrf_token %}
+
+                        <h3 class="text-lg font-semibold mt-4">Account</h3>
+                        <label>Username / Email</label>
+                        {{ user_form.email }}
+
+                        <h3 class="text-lg font-semibold mt-4">Profile</h3>
+                        <label>Phone number</label>
+                        {{ form.phone_number }}
+                        <label>Profile image</label>
+                        {{ form.profile_image }}
+                        <label>Bio</label>
+                        {{ form.bio }}
+
+                    
+
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded mt-4">Save Changes</button>
+                    </form>
+                </main>
+            </div>
+            {% endblock %}
