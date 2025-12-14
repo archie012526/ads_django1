@@ -41,7 +41,18 @@ urlpatterns = [
     path("contact/email/", views.contact_email, name="contact_email"),
 
     path('settings/', views.settings_page, name='settings'),
+    path('settings/account/', views.account_settings, name='settings_account'),
+    path('settings/privacy/', views.privacy, name='settings_privacy'),
+    path('settings/security/', views.security, name='settings_security'),
+    path('settings/language/', views.language, name='settings_language'),
+    path('settings/data-control/', views.data_control, name='settings_data_control'),
+    path('settings/help/', views.help_page, name='settings_help'),
     path("jobs/post/", views.post_job, name="post_job"),
 
-]
+    path('data-control/', views.data_control, name='data_control'),
+    path('help/', views.help_page, name='help'),
+    path('language/', views.language, name='language'),
+    path('privacy/', views.privacy, name='privacy'),
+    path('security/', views.security, name='security'),
+]   
 

@@ -1,0 +1,34 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'style/settings.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <aside class="settings-nav">
+        <h1>Settings</h1>
+        <ul>
+            <li><a href="{% url 'settings_account' %}">Account</a></li>
+            <li><a href="{% url 'settings_privacy' %}">Privacy</a></li>
+            <li><a href="{% url 'settings_language' %}">Language &amp; Appearance</a></li>
+            <li><a href="{% url 'settings_security' %}">Security</a></li>
+            <li><a href="{% url 'settings_data_control' %}">Data &amp; Account Control</a></li>
+            <li><a href="{% url 'settings_help' %}" class="active-link">Help &amp; Support</a></li>
+        </ul>
+    </aside>
+
+    <main class="settings-content">
+        <h2>Help &amp; Support</h2>
+        <p><strong>Purpose:</strong> User assistance and legal documents.</p>
+
+        <ul>
+            <li><a href="#">FAQ</a></li>
+            <li><a href="{% url 'contact_us' %}">Contact support</a></li>
+            <li><a href="#">Report a problem</a></li>
+            <li><a href="#">Terms of Service</a> / <a href="#">Privacy Policy</a></li>
+        </ul>
+    </main>
+</div>
+{% endblock %}

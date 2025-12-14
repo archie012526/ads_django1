@@ -1,0 +1,19 @@
+<aside class="app-sidebar">
+    <ul class="sidebar-list">
+        <li>
+            <a href="{% url 'profile' %}" class="sidebar-link {% if request.path == '/profile/' %}active{% endif %}">Profile</a>
+        </li>
+        <li>
+            <a href="{% url 'settings_account' %}" class="sidebar-link {% if request.path|slice:":9" == '/settings' %}active{% endif %}">Setting</a>
+        </li>
+        <li>
+            <a href="{% url 'edit_profile' %}" class="sidebar-link">Edit Profile</a>
+        </li>
+        <li>
+            <a href="{% url 'skills' %}" class="sidebar-link sidebar-pill {% if request.path == '/skills/' %}active{% endif %}">Skills</a>
+        </li>
+        <li>
+            <a href="/logout/" class="sidebar-link logout-link">Log Out</a>
+        </li>
+    </ul>
+</aside>

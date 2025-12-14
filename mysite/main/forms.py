@@ -15,6 +15,27 @@ class ProfileForm(forms.ModelForm):
         fields = ["full_name", "phone_number", "location", "bio"]
 
 
+class SettingsForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = [
+            "phone_number",
+            "profile_image",
+            "bio",
+            "profile_visibility",
+            "allow_contact",
+            "email_notifications",
+            "push_notifications",
+            "preferred_job_titles",
+            "job_categories",
+            "employment_type",
+            "preferred_location",
+        ]
+        widgets = {
+            "bio": forms.Textarea(attrs={"rows": 3}),
+        }
+
+
 SKILL_CHOICES = [
     ("Communication", "Communication"),
     ("Teamwork", "Teamwork"),

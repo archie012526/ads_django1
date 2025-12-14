@@ -1,0 +1,148 @@
+/* General reset and font */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f9;
+}
+
+/* Main Layout Container */
+.settings-container {
+    display: flex;
+    max-width: 1000px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-height: 500px;
+}
+
+/* Left Navigation Pane (Settings Menu) */
+.settings-nav {
+    flex: 0 0 250px; /* Fixed width for navigation */
+    padding: 30px 20px 20px 30px;
+    border-right: 1px solid #eee;
+}
+
+.settings-nav h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 30px;
+    color: #000;
+}
+
+.settings-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.settings-nav li {
+    margin-bottom: 15px;
+}
+
+.settings-nav a {
+    text-decoration: none;
+    color: #007bff; /* Blue color for links, matching the image */
+    font-size: 16px;
+    display: block;
+    padding: 5px 0;
+    transition: color 0.2s;
+}
+
+/* Use a special class 'active-link' to show which page the user is on */
+.settings-nav a:hover,
+.settings-nav a.active-link {
+    color: #0056b3; /* Darker blue on hover/active */
+    font-weight: 500;
+}
+
+/* Right Content Area */
+.settings-content {
+    flex-grow: 1;
+    padding: 30px;
+}
+
+.settings-content h2 {
+    font-size: 24px;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.settings-content p {
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* --- Form Specific Styles --- */
+
+/* Input fields, select, and textarea */
+.settings-content input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.settings-content select,
+.settings-content textarea {
+    width: 100%;
+    margin-top: 4px; /* Space from label */
+    margin-bottom: 15px; /* Space between fields */
+    padding: 0.75rem 1rem; /* Slightly larger padding for better touch targets */
+    border: 1px solid #d1d5db;
+    border-radius: 4px; 
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    font-size: 1rem;
+    color: #333;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.settings-content input:focus,
+.settings-content select:focus,
+.settings-content textarea:focus {
+    border-color: #007bff; /* Use primary blue on focus */
+    box-shadow: 0 0 0 1px #007bff;
+}
+
+/* Styles for file input, which is harder to style directly, using a visual cue based on the image */
+.settings-content input[type="file"] {
+    padding: 0; /* Remove standard padding */
+    border: none;
+    cursor: pointer;
+}
+
+/* Labels */
+.settings-content label {
+    display: block;
+    font-weight: 600;
+    margin-top: 15px;
+    color: #555;
+}
+
+/* Form Sections */
+.settings-content .form-section h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 25px;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+/* Save Changes Button (Blue button style) */
+.save-changes-btn {
+    display: inline-block;
+    background-color: #007bff; /* Matching the blue button in the screenshot */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 25px; /* Space above the button */
+    transition: background-color 0.2s;
+}
+
+.save-changes-btn:hover {
+    background-color: #0056b3;
+}
