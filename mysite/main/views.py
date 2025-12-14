@@ -604,7 +604,14 @@ def privacy(request):
     })
 
 def security(request):
-    return render(request, 'main/security2.html')
+    # Keep simple rendering for now; security actions (logout all etc.) can be handled here
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'logout_all':
+            # Implement logout-all logic if desired (requires session tracking)
+            messages.success(request, 'All sessions logged out (simulated).')
+            return redirect('settings_security')
+    return render(request, 'main/security.html')
 
 
 @login_required

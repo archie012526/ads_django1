@@ -1,24 +1,58 @@
-<div class="settings-container">
-        <aside class="settings-nav">
-            <h1>Settings</h1>
-            <ul>
-                <li><a href="account.html">Account</a></li>
-                <li><a href="privacy.html">Privacy</a></li>
-                <li><a href="language.html">Language & Appearance</a></li>
-                <li><a href="security.html" class="active-link">Security</a></li>
-                <li><a href="data-control.html">Data & Account Control</a></li>
-                <li><a href="help.html">Help & Support</a></li>
-            </ul>
-        </aside>
+{% extends "main/base.html" %}
+{% load static %}
 
-        <main class="settings-content">
-            <h2>Security Settings</h2>
-            <p><strong>Purpose:</strong> Account protection and monitoring.</p>
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'style/settings.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    {% include 'main/_settings_sidebar.html' %}
+
+    <main class="settings-content">
+        <h2>Security Settings</h2>
+        <p><strong>Purpose:</strong> Account protection and monitoring.</p>
+
+        <section>
+            <h3>Login activity</h3>
+            <p>Recent logins from devices and locations will be listed here.</p>
+            <!-- Example list (replace with real data) -->
             <ul>
-                <li>Login activity history</li>
-                <li>Active sessions (Logout from all devices)</li>
-                <li>Password last changed date</li>
-                <li>Security alerts</li>
+                <li>Chrome on Windows — Manila, PH — 2 hours ago</li>
+                <li>Mobile app — Cebu, PH — 3 days ago</li>
             </ul>
-        </main>
-    </div>
+        </section>
+
+        <section>
+            <h3>Active sessions</h3>
+            <p>Manage devices currently logged into your account.</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" name="action" value="logout_all" class="px-4 py-2 bg-red-600 text-white rounded">Logout from all devices</button>
+            </form>
+        </section>
+
+        <section>
+            <h3>Password</h3>
+            <p>Last changed: {% if request.user.password %} — {% else %} — {% endif %}</p>
+            <p><a href="{% url 'profile' %}">Change password</a></p>
+        </section>
+
+        <section>
+            <h3>Security alerts</h3>
+            <p>Configure how you receive security alerts (email/SMS).</p>
+            <form method="post">
+                {% csrf_token %}
+                <label>Email alerts</label>
+                <input type="checkbox" name="email_alerts" {% if request.user.email %}checked{% endif %}>
+                <br>
+                <label>SMS alerts</label>
+                <input type="checkbox" name="sms_alerts">
+                <p>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
+                </p>
+            </form>
+        </section>
+    </main>
+</div>
+{% endblock %}
