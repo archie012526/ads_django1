@@ -49,67 +49,64 @@
                     </div>
                 </div>
 
-            </div> <div class="profile-main-content">
-                    <div class="skills-section">
-                        <h2>Skills & Competencies</h2>
+            </div>
+            <div class="profile-main-content">
 
-                        {% if profile.skills.exists %}
-                            <ul>
-                                {% for skill in profile.skills.all %}
-                                    <li>
-                                        <strong>{{ skill.name }}</strong>
-                                        — {{ skill.level }}
+    <!-- SKILLS -->
+    <div class="skills-section">
+        <h2>Skills & Competencies</h2>
 
-                                        {% if skill.description %}
-                                            <br>
-                                            <small>{{ skill.description }}</small>
-                                        {% endif %}
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p>No skills added yet.</p>
-                        {% endif %}
+        {% if profile.skills.exists %}
+            <ul>
+                {% for skill in profile.skills.all %}
+                    <li>
+                        <strong>{{ skill.name }}</strong> — {{ skill.level }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No skills added yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- ✅ ADD JOB SUGGESTIONS RIGHT HERE -->
+    <div class="job-suggestions">
+    <h2 class="section-title">Job Suggestions for You</h2>
+    <p class="suggestion-intro">Matches based on your skills</p>
+
+    {% if suggested_jobs %}
+        <div class="job-list">
+            {% for job in suggested_jobs %}
+                <div class="job-card">
+                    <div class="job-info">
+                        <h3 class="job-title">{{ job.job_title }}</h3>
+                        <p class="job-company">{{ job.employer_name }}</p>
+                        <p class="job-location">
+                            {{ job.job_city|default:"Remote" }},
+                            {{ job.job_country|default:"" }}
+                        </p>
                     </div>
-                            {% if suggested_jobs %}
-                            <h2 class="text-xl font-semibold mt-6">Suggested Jobs</h2>
 
-                            {% for job in suggested_jobs %}
-                                <div class="border p-4 rounded mb-3">
-                                <h3 class="font-bold">{{ job.job_title }}</h3>
-                                <p>{{ job.employer_name }}</p>
-                                <p>{{ job.job_city }}, {{ job.job_country }}</p>
+                    <div class="job-match">
+                        <span>Skill Match</span>
+                        <strong>{{ job.match_percent }}%</strong>
+                    </div>
 
-                                <a href="{{ job.job_apply_link }}"
-                                    target="_blank"
-                                    class="text-blue-600 underline">
-                                    Apply
-                                </a>
-                                </div>
-                            {% endfor %}
-                            {% else %}
-                                {% if suggested_jobs %}
-                                    <h2 class="text-xl font-semibold mt-6">Suggested Jobs</h2>
-
-                                    {% for job in suggested_jobs %}
-                                        <div class="border p-4 rounded mb-3">
-                                            <h3 class="font-bold">{{ job.job_title }}</h3>
-                                            <p>{{ job.employer_name }}</p>
-                                            <p>{{ job.job_city }}, {{ job.job_country }}</p>
-
-                                            <a href="{{ job.job_apply_link }}"
-                                            target="_blank"
-                                            class="text-blue-600 underline">
-                                                Apply
-                                            </a>
-                                        </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <p>No job matches found yet.</p>
-                                {% endif %}
-                            {% endif %}
-
-
-
-            </div> </div> </div>
+                    <div class="job-action">
+                        <a href="{{ job.job_apply_link }}"
+                           target="_blank"
+                           class="apply-btn">
+                            Apply Now
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No job suggestions yet.</p>
+    {% endif %}
+</div>
+            </div>
+        </div>
+    </div>
 {% endblock content %}
