@@ -1,60 +1,89 @@
 {% extends "main/base.html" %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings: Account</title> 
-    <link rel="stylesheet" href="settings.css">
-</head>
-<body>
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'style/settings.css' %}">
+{% endblock %}
 
-    <div class="settings-container">
-        <aside class="settings-nav">
+{% block content %}
 
-            {% block extra_head %}
-            <link rel="stylesheet" href="{% static 'style/settings.css' %}">
-            {% endblock %}
+<div class="min-h-screen bg-gray-100 flex">
 
-            {% block content %}
-            <div class="settings-container">
-                <aside class="settings-nav">
-                    <h1>Settings</h1>
-                    <ul>
-                        <li><a href="{% url 'settings_account' %}" class="active-link">Account</a></li>
-                        <li><a href="{% url 'settings_privacy' %}">Privacy</a></li>
-                        <li><a href="{% url 'settings_language' %}">Language &amp; Appearance</a></li>
-                        <li><a href="{% url 'settings_security' %}">Security</a></li>
-                        <li><a href="{% url 'settings_data_control' %}">Data &amp; Account Control</a></li>
-                        <li><a href="{% url 'settings_help' %}">Help &amp; Support</a></li>
-                    </ul>
-                </aside>
+    <!-- LEFT SIDEBAR (SAME AS SETTINGS) -->
+    <div class="w-64 bg-white shadow-md p-6">
+        <ul class="space-y-4 text-gray-700">
+            <li>
+                <a href="{% url 'profile' %}" class="hover:text-purple-600">
+                    Profile
+                </a>
+            </li>
 
-                <main class="settings-content">
-                    <h2>Account Settings</h2>
-                    <p><strong>Purpose:</strong> Basic account control (view & change account details).</p>
+            <li class="bg-purple-600 text-white py-2 px-3 rounded-lg shadow">
+                Settings
+            </li>
 
-                    <form method="post" enctype="multipart/form-data" class="space-y-6">
-                        {% csrf_token %}
+            <li>
+                <a href="{% url 'edit_profile' %}" class="hover:text-purple-600">
+                    Edit Profile
+                </a>
+            </li>
 
-                        <h3 class="text-lg font-semibold mt-4">Account</h3>
-                        <label>Username / Email</label>
-                        {{ user_form.email }}
+            <li>
+                <a href="{% url 'skills' %}" class="hover:text-purple-600">
+                    Skills
+                </a>
+            </li>
 
-                        <h3 class="text-lg font-semibold mt-4">Profile</h3>
-                        <label>Phone number</label>
-                        {{ form.phone_number }}
-                        <label>Profile image</label>
-                        {{ form.profile_image }}
-                        <label>Bio</label>
-                        {{ form.bio }}
+            <li class="pt-10 text-red-500 cursor-pointer">
+                Log Out
+            </li>
+        </ul>
+    </div>
 
-                    
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 p-10">
+        <h2 class="text-2xl font-semibold mb-8">Account Settings</h2>
 
-                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded mt-4">Save Changes</button>
-                    </form>
-                </main>
-            </div>
-            {% endblock %}
+        <div class="bg-white rounded-xl shadow-md p-10">
+
+            <p class="text-gray-600 mb-6">
+                <strong>Purpose:</strong> Basic account control (view & change account details).
+            </p>
+
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- ACCOUNT -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-2">Account</h3>
+                    <label class="block font-medium">Username / Email</label>
+                    {{ user_form.email }}
+                </div>
+
+                <!-- PROFILE -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-2 mt-6">Profile</h3>
+
+                    <label class="block font-medium">Phone number</label>
+                    {{ form.phone_number }}
+
+                    <label class="block font-medium mt-4">Profile image</label>
+                    {{ form.profile_image }}
+
+                    <label class="block font-medium mt-4">Bio</label>
+                    {{ form.bio }}
+                </div>
+
+                <button
+                    type="submit"
+                    class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mt-6"
+                >
+                    Save Changes
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
