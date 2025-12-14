@@ -119,12 +119,6 @@ def home_page(request):
 # ============================
 # PROFILE
 # ============================
-@login_required
-def profile_page(request):
-    return render(request, "main/profile.html", {
-        "profile": request.user.profile
-    })
-
 
 @login_required
 def conversation_view(request, user_id):
@@ -158,6 +152,72 @@ def conversation_view(request, user_id):
         'messages_qs': convo,
         'conversations': [],
     })
+
+@login_required
+@login_required
+def profile_page(request):
+    profile = request.user.profile
+    skills_qs = profile.skills.all()
+
+    suggested_jobs = []
+
+    # If user has skills → fetch real-time jobs
+    if skills_qs.exists():
+        # Build search query from skills
+        skill_names = [skill.name for skill in skills_qs]
+        query = " ".join(skill_names[:3])  # limit to avoid API overload
+
+        url = "https://jsearch.p.rapidapi.com/search"
+        headers = {
+            "X-RapidAPI-Key": settings.RAPIDAPI_KEY,
+            "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
+        }
+        params = {
+            "query": query,
+            "page": "1",
+            "num_pages": "1",
+        }
+
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=10)
+            response.raise_for_status()
+            suggested_jobs = response.json().get("data", [])
+        except Exception as e:
+            print("Job suggestion error:", e)
+            suggested_jobs = []
+
+    return render(request, "main/profile.html", {
+        "profile": profile,
+        "suggested_jobs": suggested_jobs,
+    })
+
+
+
+def fetch_jobs_by_skills(skill_names):
+    if not os.getenv("RAPIDAPI_KEY"):
+        return []
+
+    query = " ".join(skill_names[:3])  # use top skills
+    url = "https://jsearch.p.rapidapi.com/search"
+
+    headers = {
+        "X-RapidAPI-Key": os.getenv("RAPIDAPI_KEY"),
+        "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
+    }
+
+    params = {
+        "query": query,
+        "page": "1",
+        "num_pages": "1",
+    }
+
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        response.raise_for_status()
+        return response.json().get("data", [])
+    except Exception as e:
+        logger.error("Job fetch error: %s", e)
+        return []
 
 
 # ============================
@@ -340,15 +400,13 @@ def job_applications_page(request):
 # ============================
 @login_required
 def skills_page(request):
-    profile = request.user
-
-    skills = Skill.objects.filter(user=request.user)
+    skills = Skill.objects.filter(user=request.user.profile)
 
     if request.method == "POST":
         form = SkillForm(request.POST)
         if form.is_valid():
             skill = form.save(commit=False)
-            skill.user = request.user
+            skill.user = request.user.profile   # ✅ PROFILE
             skill.save()
             return redirect("skills")
     else:
@@ -359,10 +417,14 @@ def skills_page(request):
         "form": form,
     })
 
+
 @login_required
 def edit_skill(request, skill_id):
-    skill = get_object_or_404(Skill, id=skill_id, user=request.user
-)
+    skill = get_object_or_404(
+        Skill,
+        id=skill_id,
+        user=request.user.profile   # ✅ PROFILE
+    )
 
     if request.method == "POST":
         form = SkillForm(request.POST, instance=skill)
@@ -376,12 +438,11 @@ def edit_skill(request, skill_id):
 
 
 @login_required
-@login_required
 def delete_skill(request, skill_id):
     skill = get_object_or_404(
         Skill,
         id=skill_id,
-        user=request.user  # ✅ FIX
+        user=request.user.profile   # ✅ PROFILE INSTANCE
     )
 
     skill.delete()
