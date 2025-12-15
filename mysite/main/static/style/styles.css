@@ -166,3 +166,8 @@
     gap: 32px;
   }
 }
+
+.dark-theme {
+    background: #0f172a;
+    color: white;
+}

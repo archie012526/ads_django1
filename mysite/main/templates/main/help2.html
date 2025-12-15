@@ -3,7 +3,6 @@
 
 {% block title %}Help & Support{% endblock %}
 
-
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'style/setting-sidebar.css' %}">
 {% endblock %}
@@ -14,53 +13,86 @@
     <!-- SIDEBAR -->
     <aside class="settings-nav">
         <ul class="nav-links">
-            <li>
-                <a href="{% url 'settings_account' %}">
-                    Account
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_privacy' %}">
-                    Privacy
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_language' %}">
-                    Language &amp; Appearance
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_security' %}">
-                    Security
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_data_control' %}">
-                    Data &amp; Account Control
-                </a>
-            </li>
+            <li><a href="{% url 'settings_account' %}">Account</a></li>
+            <li><a href="{% url 'settings_privacy' %}">Privacy</a></li>
+            <li><a href="{% url 'settings_language' %}">Language &amp; Appearance</a></li>
+            <li><a href="{% url 'settings_security' %}">Security</a></li>
+            <li><a href="{% url 'settings_data_control' %}">Data &amp; Account Control</a></li>
             <li>
                 <a href="{% url 'settings_help' %}" class="sidebar-highlight-bg">
                     Help &amp; Support
                 </a>
             </li>
-            <li>
-                <a href="{% url 'logout' %}" class="logout-link">
-                    Log Out
-                </a>
-            </li>
+            <li><a href="{% url 'logout' %}" class="logout-link">Log Out</a></li>
         </ul>
     </aside>
 
+    <!-- MAIN CONTENT -->
     <main class="settings-content">
-        <h2>Help &amp; Support</h2>
-        
-        <ul>
-            <li><a href="#">FAQ</a></li>
-            <li><a href="{% url 'contact_us' %}">Contact support</a></li>
-            <li><a href="#">Report a problem</a></li>
-            <li><a href="#">Terms of Service</a> / <a href="#">Privacy Policy</a></li>
-        </ul>
+        <h2 class="page-title">Help &amp; Support</h2>
+
+        <p class="hint-text">
+            Find answers to common questions, get assistance, or report issues related to your account.
+        </p>
+
+        <!-- ===============================
+             SUPPORT RESOURCES
+        =============================== -->
+        <h3 class="section-title">Support Resources</h3>
+
+        <div class="support-card">
+            <h4>Frequently Asked Questions (FAQ)</h4>
+            <p>
+                Browse common questions about accounts, applications, privacy,
+                and security.
+            </p>
+            <a href="#" class="text-link">View FAQs</a>
+        </div>
+
+        <div class="support-card">
+            <h4>Contact Support</h4>
+            <p>
+                Need personal assistance? Reach out to our support team and we’ll
+                get back to you as soon as possible.
+            </p>
+            <a href="{% url 'contact_us' %}" class="text-link">Contact support</a>
+        </div>
+
+        <div class="support-card">
+            <h4>Report a Problem</h4>
+            <p>
+                Report bugs, broken features, or suspicious activity so we can
+                investigate quickly.
+            </p>
+            <a href="#" class="text-link">Report an issue</a>
+        </div>
+
+        <!-- ===============================
+             LEGAL
+        =============================== -->
+        <h3 class="section-title">Legal &amp; Policies</h3>
+
+        <div class="support-card">
+            <h4>Terms &amp; Privacy</h4>
+            <p>
+                Review our Terms of Service and Privacy Policy to understand how
+                your data is handled.
+            </p>
+            <a href="#" class="text-link">Terms of Service</a>
+            &nbsp;•&nbsp;
+            <a href="#" class="text-link">Privacy Policy</a>
+        </div>
+
+        <!-- ===============================
+             SYSTEM INFO
+        =============================== -->
+        <h3 class="section-title">System Information</h3>
+
+        <p class="hint-text">
+            App version: <strong>1.0.0</strong><br>
+            Last updated: <strong>2025</strong>
+        </p>
+
     </main>
 </div>
 {% endblock %}

@@ -13,75 +13,108 @@
     <!-- SIDEBAR -->
     <aside class="settings-nav">
         <ul class="nav-links">
-            <li>
-                <a href="{% url 'settings_account' %}">
-                    Account
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_privacy' %}">
-                    Privacy
-                </a>
-            </li>
+
+            <li><a href="{% url 'settings_account' %}">Account</a></li>
+            <li><a href="{% url 'settings_privacy' %}">Privacy</a></li>
+
             <li>
                 <a href="{% url 'settings_language' %}" class="sidebar-highlight-bg">
                     Language &amp; Appearance
                 </a>
             </li>
-            <li>
-                <a href="{% url 'settings_security' %}">
-                    Security
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_data_control' %}">
-                    Data &amp; Account Control
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_help' %}">
-                    Help &amp; Support
-                </a>
-            </li>
+
+            <li><a href="{% url 'settings_security' %}">Security</a></li>
+            <li><a href="{% url 'settings_data_control' %}">Data &amp; Account Control</a></li>
+            <li><a href="{% url 'settings_help' %}">Help &amp; Support</a></li>
+
             <li>
                 <a href="{% url 'logout' %}" class="logout-link">
                     Log Out
                 </a>
             </li>
+
         </ul>
     </aside>
 
+    <!-- MAIN CONTENT -->
     <main class="settings-content">
-        <h2>Language &amp; Appearance</h2>
+        <h2 class="page-title">Language &amp; Appearance</h2>
 
-        <form method="post" class="space-y-4">
+        <form method="post" class="settings-form">
             {% csrf_token %}
-            <label>Language selection</label>
-            <select name="language">
+
+            <!-- ===============================
+                 LANGUAGE
+            =============================== -->
+            <h3 class="section-title">Language</h3>
+
+            <label>Display language</label>
+            <select class="styled-select" name="language">
                 <option value="en">English</option>
                 <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="fil">Filipino</option>
             </select>
 
-            <label>Time zone</label>
-            <select name="timezone">
-                <option value="UTC">UTC</option>
-                <option value="Asia/Manila">Asia/Manila</option>
+            <!-- ===============================
+                 TIME ZONE
+            =============================== -->
+            <h3 class="section-title">Time Zone</h3>
+
+            <label>Select your time zone</label>
+            <select class="styled-select" name="timezone">
+                <option value="UTC">UTC (GMT)</option>
+                <option value="UTC-10">UTC-10 — Hawaii (HST)</option>
+                <option value="UTC-8">UTC-8 — Pacific (PST)</option>
+                <option value="UTC-5">UTC-5 — Eastern (EST)</option>
+                <option value="UTC+1">UTC+1 — Central Europe (CET)</option>
+                <option value="UTC+5:30">UTC+5:30 — India (IST)</option>
+                <option value="UTC+8">UTC+8 — Philippines / China</option>
+                <option value="UTC+9">UTC+9 — Japan (JST)</option>
+                <option value="UTC+10">UTC+10 — Australia (AEST)</option>
+                <option value="UTC+12">UTC+12 — New Zealand</option>
             </select>
 
-            <label>Theme</label>
-            <select name="theme">
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-            </select>
+            <!-- ===============================
+                 APPEARANCE
+            =============================== -->
+            <h3 class="section-title">Appearance</h3>
 
-            <label>Accessibility options</label>
-            <p>
-                <input type="checkbox" name="large_font"> Large font<br>
-                <input type="checkbox" name="high_contrast"> High contrast mode
-            </p>
+            <div class="toggle-row">
+                <span>Dark mode</span>
+                <label class="switch">
+                    <input type="checkbox" name="dark_mode">
+                    <span class="slider"></span>
+                </label>
+            </div>
 
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded">Save</button>
+            <!-- ===============================
+                 ACCESSIBILITY
+            =============================== -->
+            <h3 class="section-title">Accessibility</h3>
+
+            <div class="toggle-row">
+                <span>Large font</span>
+                <label class="switch">
+                    <input type="checkbox" name="large_font">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-row">
+                <span>High contrast</span>
+                <label class="switch">
+                    <input type="checkbox" name="high_contrast">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button type="submit" class="save-changes-btn">
+                Save Preferences
+            </button>
         </form>
     </main>
+
 </div>
 {% endblock %}
