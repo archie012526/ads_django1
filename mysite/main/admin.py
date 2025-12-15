@@ -13,21 +13,24 @@ from .models import (
 # ---------------------------
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
-    list_display = ('title', 'company', 'location', 'posted_at')
-    search_fields = ('title', 'company', 'location')
-    list_filter = ('location', 'company')
-    ordering = ('-posted_at',)
+    ordering = ('-created_at',)
 
+    list_display = (
+        'title',
+        'user',        # ✅ FIXED (was employer)
+        'location',
+        'created_at',
+    )
 
-# ---------------------------
-# JOB APPLICATIONS
-# ---------------------------
-@admin.register(JobApplication)
-class JobApplicationAdmin(admin.ModelAdmin):
-    list_display = ('user', 'job', 'status', 'applied_at')
-    search_fields = ('user__username', 'job__title')
-    list_filter = ('status', 'applied_at')
-    ordering = ('-applied_at',)
+    list_filter = (
+        'location',
+        'created_at',
+    )
+
+    search_fields = (
+        'title',
+        'description',
+    )
 
 
 # ---------------------------

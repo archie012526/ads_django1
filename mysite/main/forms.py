@@ -72,11 +72,11 @@ class JobForm(forms.ModelForm):
         model = Job
         fields = [
             "title",
-            "company",
-            "location",
-            "job_type",
-            "employment_type",
-            "skills",
-            "salary",
             "description",
+            "location",
         ]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "input"}),
+            "description": forms.Textarea(attrs={"class": "textarea"}),
+            "location": forms.TextInput(attrs={"class": "input"}),
+        }
