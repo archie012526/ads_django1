@@ -7,9 +7,10 @@ from django.db import IntegrityError
 from django.db.models import Q
 from django.conf import settings
 from django.core.mail import send_mail
+from .models import Post
 
 from .models import Profile, Job, JobApplication, Notification, Skill, Message
-from .forms import JobForm, SkillForm, UserForm, ProfileForm, SettingsForm
+from .forms import JobForm, PostForm, SkillForm, UserForm, ProfileForm, SettingsForm
 
 
 # ============================
@@ -75,19 +76,24 @@ def signup_page(request):
 # ============================
 @login_required
 def homepage(request):
-    profile, _ = Profile.objects.get_or_create(user=request.user)
+    posts = Post.objects.select_related('user').order_by('-created_at')
 
-    popular_jobs = Job.objects.order_by("-id")[:5]
+    if request.method == "POST":
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            post.save()
+            return redirect('home')
+    else:
+        form = PostForm()
 
-    return render(request, "main/home.html", {
-        "profile": profile,
-        "popular_jobs": popular_jobs,
-        "applications_count": JobApplication.objects.filter(user=request.user).count(),
-        "unread_notifications": Notification.objects.filter(
-            user=request.user, is_read=False
-        ).count(),
-    })
-
+    context = {
+        'form': form,
+        'posts': posts,
+        # keep your existing context variables here
+    }
+    return render(request, 'main/home.html', context)
 
 # ============================
 # PROFILE

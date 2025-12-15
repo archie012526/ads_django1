@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Profile, Skill, Job
+from .models import Profile, Skill, Job, Post
 
 
 class UserForm(forms.ModelForm):
@@ -79,4 +79,16 @@ class JobForm(forms.ModelForm):
             "title": forms.TextInput(attrs={"class": "input"}),
             "description": forms.Textarea(attrs={"class": "textarea"}),
             "location": forms.TextInput(attrs={"class": "input"}),
+        }
+
+class PostForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={
+                'placeholder': 'Start a post',
+                'class': 'post-input',
+                'rows': 2
+            })
         }
