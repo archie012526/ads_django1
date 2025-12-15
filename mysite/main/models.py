@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 # =========================
 #        PROFILE
 # =========================
@@ -17,33 +18,41 @@ class Profile(models.Model):
         choices=ROLE_CHOICES,
         default="job_seeker"
     )
-    
+
     # Personal info
     full_name = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(max_length=50, blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     company_name = models.CharField(max_length=255, blank=True, null=True)
-    profile_image = models.ImageField(upload_to="profile_images/", blank=True, null=True)
-    
+    profile_image = models.ImageField(
+        upload_to="profile_images/",
+        blank=True,
+        null=True
+    )
+
     # Job preferences
     preferred_job_titles = models.CharField(max_length=255, blank=True)
     job_categories = models.CharField(max_length=255, blank=True)
     employment_type = models.CharField(max_length=50, blank=True)
     preferred_location = models.CharField(max_length=255, blank=True)
-    
+
     # Privacy settings
     profile_visibility = models.CharField(
         max_length=20,
-        choices=[('public', 'Public'), ('employers', 'Employers Only'), ('private', 'Private')],
+        choices=[
+            ('public', 'Public'),
+            ('employers', 'Employers Only'),
+            ('private', 'Private')
+        ],
         default='employers'
     )
     allow_contact = models.BooleanField(default=True)
-    
+
     # Notifications
     email_notifications = models.BooleanField(default=True)
     push_notifications = models.BooleanField(default=False)
-    
+
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -62,9 +71,17 @@ class Skill(models.Model):
         ("Expert", "Expert"),
     ]
 
-    user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name="skills")
+    user = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="skills"
+    )
     name = models.CharField(max_length=255)
-    level = models.CharField(max_length=50, choices=LEVEL_CHOICES, default="Beginner")
+    level = models.CharField(
+        max_length=50,
+        choices=LEVEL_CHOICES,
+        default="Beginner"
+    )
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -75,29 +92,11 @@ class Skill(models.Model):
 #         JOBS
 # =========================
 class Job(models.Model):
-    JOB_TYPES = [
-        ("Full time", "Full time"),
-        ("Part-time", "Part-time"),
-        ("Internship", "Internship"),
-        ("Project work", "Project work"),
-        ("Volunteering", "Volunteering"),
-    ]
-
-    EMPLOYMENT_TYPES = [
-        ("Full day", "Full day"),
-        ("Flexible schedule", "Flexible schedule"),
-        ("Shift work", "Shift work"),
-    ]
-
-    title = models.CharField(max_length=255)
-    company = models.CharField(max_length=255)
-    location = models.CharField(max_length=255)
-    job_type = models.CharField(max_length=50, choices=JOB_TYPES, default="Full time")
-    employment_type = models.CharField(max_length=50, choices=EMPLOYMENT_TYPES, default="Full day")
-    skills = models.CharField(max_length=255, default="")
-    salary = models.CharField(max_length=50, default="Not specified")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
     description = models.TextField()
-    posted_at = models.DateTimeField(auto_now_add=True)
+    location = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
@@ -109,17 +108,20 @@ class Job(models.Model):
 class JobApplication(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
-    resume = models.FileField(upload_to='resumes/')
+    resume = models.FileField(upload_to="resumes/")
     cover_letter = models.TextField(blank=True, null=True)
     applied_at = models.DateTimeField(auto_now_add=True)
+
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Reviewed', 'Reviewed'),
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+    ]
+
     status = models.CharField(
         max_length=50,
-        choices=[
-            ('Pending', 'Pending'),
-            ('Reviewed', 'Reviewed'),
-            ('Accepted', 'Accepted'),
-            ('Rejected', 'Rejected'),
-        ],
+        choices=STATUS_CHOICES,
         default='Pending'
     )
 
@@ -144,8 +146,16 @@ class Notification(models.Model):
 #         MESSAGES
 # =========================
 class Message(models.Model):
-    sender = models.ForeignKey(User, related_name="sender", on_delete=models.CASCADE)
-    receiver = models.ForeignKey(User, related_name="receiver", on_delete=models.CASCADE)
+    sender = models.ForeignKey(
+        User,
+        related_name="sent_messages",
+        on_delete=models.CASCADE
+    )
+    receiver = models.ForeignKey(
+        User,
+        related_name="received_messages",
+        on_delete=models.CASCADE
+    )
     content = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
@@ -165,4 +175,3 @@ class ContactSubmission(models.Model):
 
     def __str__(self):
         return f"Message from {self.name}"
-
