@@ -35,18 +35,34 @@
     <!-- CENTER COLUMN -->
     <div class="center-column">
 
-        <!-- Create Post -->
-        <div class="create-post-card">
-            <div class="top-row">
-                <div class="profile-pic-small"></div>
-                <input type="text" placeholder="Start a post" class="post-input">
-            </div>
-            <div class="post-options">
-                <span>📹 Video</span>
-                <span>📷 Photo</span>
-                <span>✍️ Write article</span>
-            </div>
+<!-- Create Post -->
+<div class="create-post-card">
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="top-row">
+            <div class="profile-pic-small"></div>
+            {{ form.content }}
         </div>
+
+        <div class="post-options">
+            <span>📹 Video</span>
+            <span>📷 Photo</span>
+            <span>✍️ Write article</span>
+
+            <button type="submit" class="post-btn">Post</button>
+        </div>
+    </form>
+</div>
+{% for post in posts %}
+<div class="job-card">
+    <strong>{{ post.user.profile.full_name }}</strong>
+    <p>{{ post.content }}</p>
+    <small>{{ post.created_at|timesince }} ago</small>
+</div>
+{% empty %}
+<p>No posts yet.</p>
+{% endfor %}
 
         <!-- Recommended Users -->
         <div class="recommended-card">
