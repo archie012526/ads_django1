@@ -7,7 +7,8 @@ from .models import (
     Message,
     ContactSubmission,
     Skill,
-    SkillTag
+    SkillTag,
+    Post
 )
 
 # ---------------------------
@@ -122,3 +123,22 @@ class ContactSubmissionAdmin(admin.ModelAdmin):
     list_display = ('name', 'email', 'submitted_at')
     search_fields = ('name', 'email')
     ordering = ('-submitted_at',)
+
+
+# ---------------------------
+# POSTS
+# ---------------------------
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    list_display = ('user', 'post_type', 'content_preview', 'has_media', 'created_at')
+    list_filter = ('post_type', 'created_at')
+    search_fields = ('user__username', 'content', 'article_title')
+    ordering = ('-created_at',)
+    
+    def content_preview(self, obj):
+        return obj.content[:50] + '...' if len(obj.content) > 50 else obj.content
+    content_preview.short_description = 'Content'
+    
+    def has_media(self, obj):
+        return '✓' if (obj.image or obj.video) else '—'
+    has_media.short_description = 'Media'

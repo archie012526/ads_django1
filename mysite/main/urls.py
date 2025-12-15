@@ -20,6 +20,7 @@ urlpatterns = [
 
     # Profile
     path("profile/", views.profile_page, name="profile"),
+    path("profile/<int:user_id>/", views.view_user_profile, name="view_user_profile"),
     path("profile/edit/", views.edit_profile_page, name="edit_profile"),
 
     # Skills
@@ -60,7 +61,8 @@ urlpatterns = [
     path('privacy/', views.privacy, name='privacy'),
     path('security/', views.security, name='security'),
 
-    path("search/", views.job_search, name="job_search"),
+    path("search/", views.global_search, name="search"),
+    path("job-search/", views.job_search, name="job_search"),  # Legacy redirect
 
     #logout
     path("logout/", auth_views.LogoutView.as_view(next_page='landing'), name="logout"),

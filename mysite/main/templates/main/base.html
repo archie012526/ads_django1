@@ -48,7 +48,7 @@
             </div>
 
         <!-- ✅ SEARCH BAR (NOW FUNCTIONAL) -->
-        <form method="get" action="{% url 'find_job' %}" class="search-bar flex items-center">
+        <form method="get" action="{% url 'search' %}" class="search-bar flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <circle cx="11" cy="11" r="7" stroke-width="2"/>
                 <path d="M16 16l4 4" stroke-width="2"/>
@@ -57,7 +57,7 @@
             <input
                 type="text"
                 name="q"
-                placeholder="Search jobs..."
+                placeholder="Search jobs, people, employers..."
                 value="{{ request.GET.q }}"
                 class="search-input"
             >

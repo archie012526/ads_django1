@@ -172,13 +172,30 @@ class JobApplication(models.Model):
 #      NOTIFICATIONS
 # =========================
 class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('job_application', 'Job Application'),
+        ('job_post', 'New Job Post'),
+        ('message', 'New Message'),
+        ('profile_view', 'Profile View'),
+        ('post_like', 'Post Like'),
+        ('connection', 'New Connection'),
+        ('system', 'System'),
+    ]
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, default='system')
+    title = models.CharField(max_length=255, default='Notification')
     message = models.CharField(max_length=255)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    link = models.CharField(max_length=500, blank=True, null=True)
+    related_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications_from', blank=True, null=True)
 
     def __str__(self):
         return f"Notification for {self.user.username}"
+    
+    class Meta:
+        ordering = ['-created_at']
 
 
 # =========================
@@ -217,8 +234,19 @@ class ContactSubmission(models.Model):
 
 
 class Post(models.Model):
+    POST_TYPE_CHOICES = [
+        ('text', 'Text Post'),
+        ('photo', 'Photo Post'),
+        ('video', 'Video Post'),
+        ('article', 'Article'),
+    ]
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
+    post_type = models.CharField(max_length=20, choices=POST_TYPE_CHOICES, default='text')
+    image = models.ImageField(upload_to='post_images/', blank=True, null=True)
+    video = models.FileField(upload_to='post_videos/', blank=True, null=True)
+    article_title = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
