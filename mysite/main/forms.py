@@ -83,12 +83,50 @@ class JobForm(forms.ModelForm):
 
 class PostForm(forms.ModelForm):
     class Meta:
-        model = Post
-        fields = ['content']
-        widgets = {
-            'content': forms.Textarea(attrs={
-                'placeholder': 'Start a post',
-                'class': 'post-input',
-                'rows': 2
-            })
-        }
+        model = User
+        fields = ("username", "email", "phone_number", "password1", "password2")
+
+    def save(self, commit=True):
+        user = super().save(commit)
+        phone = self.cleaned_data["phone_number"]
+
+        user.profile.phone_number = phone
+        user.profile.save()
+
+        return user
+    
+
+class SignUpForm(UserCreationForm):
+    phone_number = forms.CharField()
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "phone_number", "password1", "password2")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["username"].widget.attrs.update({
+            "class": "form-input",
+            "placeholder": "Enter username"
+        })
+
+        self.fields["email"].widget.attrs.update({
+            "class": "form-input",
+            "placeholder": "Enter email"
+        })
+
+        self.fields["phone_number"].widget.attrs.update({
+            "class": "form-input",
+            "placeholder": "Enter phone number"
+        })
+
+        self.fields["password1"].widget.attrs.update({
+            "class": "form-input",
+            "placeholder": "Enter password"
+        })
+
+        self.fields["password2"].widget.attrs.update({
+            "class": "form-input",
+            "placeholder": "Confirm password"
+        })
