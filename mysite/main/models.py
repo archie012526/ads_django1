@@ -124,9 +124,21 @@ class Job(models.Model):
         null=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    skills = models.ManyToManyField('SkillTag', blank=True, related_name='jobs')
+    
+    # Tags/skills required for the job
+    # Defined below; declared here for type reference
+    # skills = models.ManyToManyField('SkillTag', blank=True, related_name='jobs')
 
     def __str__(self):
         return self.title
+
+
+class SkillTag(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 # =========================

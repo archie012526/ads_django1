@@ -45,10 +45,17 @@
     <!-- CENTER COLUMN -->
     <div class="center-column">
 
-        <!-- Create Post -->
+        <!-- Create Post Tabs -->
         <div class="create-post-card">
-            <form method="POST">
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb;">
+                <button type="button" onclick="showTab('post')" id="postTab" class="tab-button active" style="padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: 600; border-bottom: 3px solid #0a66c2;">Create Post</button>
+                <button type="button" onclick="showTab('job')" id="jobTab" class="tab-button" style="padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: 600;">Create Job</button>
+            </div>
+
+            <!-- Create Post Form -->
+            <form method="POST" id="postForm" style="display: block;">
                 {% csrf_token %}
+                <input type="hidden" name="post_type" value="post">
 
                 <div class="top-row">
                     {% if profile.profile_image %}
@@ -66,40 +73,178 @@
                     <button type="submit" class="post-btn">Post</button>
                 </div>
             </form>
-        </div>
 
-        {% for post in posts %}
-        <div class="job-card">
-            <strong>{{ post.user.profile.full_name }}</strong>
-            <p>{{ post.content }}</p>
-            <small>{{ post.created_at|timesince }} ago</small>
-        </div>
-        {% empty %}
-        <p>No posts yet.</p>
-        {% endfor %}
+            <!-- Create Job Form -->
+            <form method="POST" id="jobForm" style="display: none;">
+                {% csrf_token %}
+                <input type="hidden" name="post_type" value="job">
 
-        <!-- Recommended Users -->
-        <div class="recommended-card">
-            <h3>Recommended for you</h3>
-
-            {% for user in recommended_users %}
-            <div class="recommended-user">
-                {% if user.profile.profile_image %}
-                    <img src="{{ user.profile.profile_image.url }}" class="profile-pic-small" style="object-fit: cover;">
-                {% else %}
-                    <div class="profile-pic-small"></div>
-                {% endif %}
-
-                <div>
-                    <p class="username">{{ user.profile.full_name }}</p>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <input type="text" name="job_title" placeholder="Job Title" required style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                    
+                    <input type="text" name="job_company" placeholder="Company Name" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                    
+                    <textarea name="job_description" placeholder="Job Description" required rows="4" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
+                    
+                    <input type="text" name="job_location" placeholder="Location" required style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                    
+                    <select name="job_employment_type" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                        <option value="">-- Employment Type --</option>
+                        <option value="FULLTIME">Full time</option>
+                        <option value="PARTTIME">Part-time</option>
+                        <option value="INTERN">Internship</option>
+                        <option value="CONTRACT">Project / Contract</option>
+                    </select>
+                    
+                    <select name="job_working_schedule" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                        <option value="">-- Working Schedule --</option>
+                        <option value="full_day">Full day</option>
+                        <option value="flexible">Flexible schedule</option>
+                        <option value="shift">Shift work</option>
+                    </select>
                 </div>
 
-                <button class="follow-btn">+ Follow</button>
+                <div class="post-options" style="margin-top: 15px;">
+                    <button type="submit" class="post-btn">Post Job</button>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            function showTab(tab) {
+                const postForm = document.getElementById('postForm');
+                const jobForm = document.getElementById('jobForm');
+                const postTab = document.getElementById('postTab');
+                const jobTab = document.getElementById('jobTab');
+
+                if (tab === 'post') {
+                    postForm.style.display = 'block';
+                    jobForm.style.display = 'none';
+                    postTab.style.borderBottom = '3px solid #0a66c2';
+                    postTab.style.color = '#0a66c2';
+                    jobTab.style.borderBottom = 'none';
+                    jobTab.style.color = '#666';
+                } else {
+                    postForm.style.display = 'none';
+                    jobForm.style.display = 'block';
+                    jobTab.style.borderBottom = '3px solid #0a66c2';
+                    jobTab.style.color = '#0a66c2';
+                    postTab.style.borderBottom = 'none';
+                    postTab.style.color = '#666';
+                }
+            }
+        </script>
+
+        {% if my_jobs %}
+        <div class="recommended-card" style="margin-bottom: 16px;">
+            <h3>Your Job Posts</h3>
+
+            {% for job in my_jobs %}
+            <div class="job-card">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <h3 class="job-title">{{ job.title }}</h3>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <small>{{ job.created_at|timesince }} ago</small>
+                        <a href="{% url 'edit_job' job.id %}" class="follow-btn" style="padding:6px 10px;">Edit</a>
+                        <form method="POST" action="{% url 'delete_job' job.id %}" onsubmit="return confirm('Delete this job?');">
+                            {% csrf_token %}
+                            <button type="submit" class="follow-btn" style="padding:6px 10px; background:#ef4444; color:#fff;">Delete</button>
+                        </form>
+                    </div>
+                </div>
+                <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
+
+                <div class="job-badges">
+                    {% if job.employment_type %}
+                        <span class="pill">{{ job.get_employment_type_display }}</span>
+                    {% endif %}
+                    {% if job.working_schedule %}
+                        <span class="pill">{{ job.get_working_schedule_display }}</span>
+                    {% endif %}
+                    <span class="pill">{{ job.location }}</span>
+                </div>
+
+                <p class="job-description" style="margin-top:8px;">{{ job.description|truncatewords:30 }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if other_jobs %}
+        <div class="recommended-card" style="margin-bottom: 16px;">
+            <h3>Latest Job Posts</h3>
+
+            {% for job in other_jobs %}
+            <div class="job-card">
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div>
+                        <h3 class="job-title">{{ job.title }}</h3>
+                        <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
+                    </div>
+                    <small>{{ job.created_at|timesince }} ago</small>
+                </div>
+
+                <div class="job-badges">
+                    {% if job.employment_type %}
+                        <span class="pill">{{ job.get_employment_type_display }}</span>
+                    {% endif %}
+                    {% if job.working_schedule %}
+                        <span class="pill">{{ job.get_working_schedule_display }}</span>
+                    {% endif %}
+                    <span class="pill">{{ job.location }}</span>
+                </div>
+
+                <p class="job-description" style="margin-top:8px;">{{ job.description|truncatewords:30 }}</p>
             </div>
             {% endfor %}
 
-            <p class="show-more">Show more →</p>
+            <p class="show-more"><a href="{% url 'find_job' %}">See all jobs →</a></p>
         </div>
+        {% endif %}
+
+        <!-- Mixed Feed: Posts and Jobs in Natural Order -->
+        <h3 style="margin-top: 20px;">Feed</h3>
+        
+        {% for item in mixed_feed %}
+            {% if item.item_type == 'post' %}
+                <!-- Regular Post -->
+                <div class="job-card">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                        <strong>{{ item.user.profile.full_name }}</strong>
+                        <small>{{ item.created_at|timesince }} ago</small>
+                    </div>
+                    <p>{{ item.content }}</p>
+                </div>
+            {% elif item.item_type == 'job' %}
+                <!-- Job Post -->
+                <div class="job-card">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <div>
+                            <h3 class="job-title">{{ item.title }}</h3>
+                            <p class="job-company">{{ item.company_name|default:"Company not listed" }}</p>
+                        </div>
+                        <small>{{ item.created_at|timesince }} ago</small>
+                    </div>
+
+                    <div class="job-badges">
+                        {% if item.employment_type %}
+                            <span class="pill">{{ item.get_employment_type_display }}</span>
+                        {% endif %}
+                        {% if item.working_schedule %}
+                            <span class="pill">{{ item.get_working_schedule_display }}</span>
+                        {% endif %}
+                        <span class="pill">{{ item.location }}</span>
+                    </div>
+
+                    <p class="job-description" style="margin-top:8px;">{{ item.description|truncatewords:30 }}</p>
+                </div>
+            {% endif %}
+        {% empty %}
+            <p>No posts or jobs yet.</p>
+        {% endfor %}
+
+        <p class="show-more"><a href="{% url 'find_job' %}">See all jobs →</a></p>
+        
 
         <!-- REAL-TIME POPULAR JOBS FROM API -->
         <h3 style="margin-top: 20px;">Popular Jobs</h3>
@@ -120,19 +265,111 @@
 
     <!-- RIGHT COLUMN -->
     <div class="right-column">
+        <!-- Recommended for you (personalized jobs) -->
+        <div class="recommended-card">
+            <h3>Recommended for you</h3>
 
-        <div class="feed-card">
-            <h4>Add to your feed</h4>
+            {% if rec_by_skills %}
+            <h4 style="margin-top:12px;">Based on your skills</h4>
+            {% for item in rec_by_skills %}
+                {% with job=item.job %}
+                <div class="job-card">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <div>
+                            <strong>{{ job.title }}</strong>
+                            <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
+                        </div>
+                        <small>Matches {{ item.match_count }} skills</small>
+                    </div>
+                    <div class="job-badges">
+                        {% if job.employment_type %}
+                            <span class="pill">{{ job.get_employment_type_display }}</span>
+                        {% endif %}
+                        {% if job.working_schedule %}
+                            <span class="pill">{{ job.get_working_schedule_display }}</span>
+                        {% endif %}
+                        <span class="pill">{{ job.location }}</span>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+            {% endif %}
 
-            {% for industry in industries %}
-            <div class="feed-item">
-                <div class="profile-pic-small"></div>
-                <p>{{ industry }}</p>
-                <button class="follow-btn">Follow</button>
+            {% if rec_by_titles %}
+            <h4 style="margin-top:12px;">Roles you follow</h4>
+            {% for job in rec_by_titles %}
+            <div class="job-card">
+                <strong>{{ job.title }}</strong>
+                <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
+                <div class="job-badges">
+                    {% if job.employment_type %}<span class="pill">{{ job.get_employment_type_display }}</span>{% endif %}
+                    {% if job.working_schedule %}<span class="pill">{{ job.get_working_schedule_display }}</span>{% endif %}
+                    <span class="pill">{{ job.location }}</span>
+                </div>
             </div>
             {% endfor %}
-        </div>
+            {% endif %}
 
+            {% if rec_by_location %}
+            <h4 style="margin-top:12px;">Near you or remote</h4>
+            {% for job in rec_by_location %}
+            <div class="job-card">
+                <strong>{{ job.title }}</strong>
+                <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
+                <div class="job-badges">
+                    {% if job.employment_type %}<span class="pill">{{ job.get_employment_type_display }}</span>{% endif %}
+                    {% if job.working_schedule %}<span class="pill">{{ job.get_working_schedule_display }}</span>{% endif %}
+                    <span class="pill">{{ job.location }}</span>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% if rec_similar_applied %}
+            <h4 style="margin-top:12px;">Similar to jobs you applied for</h4>
+            {% for job in rec_similar_applied %}
+            <div class="job-card">
+                <strong>{{ job.title }}</strong>
+                <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
+                <div class="job-badges">
+                    {% if job.employment_type %}<span class="pill">{{ job.get_employment_type_display }}</span>{% endif %}
+                    {% if job.working_schedule %}<span class="pill">{{ job.get_working_schedule_display }}</span>{% endif %}
+                    <span class="pill">{{ job.location }}</span>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% if rec_recent %}
+            <h4 style="margin-top:12px;">Newly posted</h4>
+            {% for job in rec_recent %}
+            <div class="job-card">
+                <strong>{{ job.title }}</strong>
+                <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
+                <div class="job-badges">
+                    {% if job.employment_type %}<span class="pill">{{ job.get_employment_type_display }}</span>{% endif %}
+                    {% if job.working_schedule %}<span class="pill">{{ job.get_working_schedule_display }}</span>{% endif %}
+                    <span class="pill">{{ job.location }}</span>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            {% if rec_companies %}
+            <h4 style="margin-top:12px;">More from companies you applied to</h4>
+            {% for job in rec_companies %}
+            <div class="job-card">
+                <strong>{{ job.title }}</strong>
+                <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
+                <div class="job-badges">
+                    {% if job.employment_type %}<span class="pill">{{ job.get_employment_type_display }}</span>{% endif %}
+                    {% if job.working_schedule %}<span class="pill">{{ job.get_working_schedule_display }}</span>{% endif %}
+                    <span class="pill">{{ job.location }}</span>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
     </div>
 
 </div>
