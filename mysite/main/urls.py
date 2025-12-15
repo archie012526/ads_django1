@@ -13,7 +13,7 @@ urlpatterns = [
 
 
     # Home & Jobs
-    path("home/", views.home_page, name="homepage"),
+    path("home/", views.homepage, name="homepage"),
     path("find-job/", views.find_job, name="find_job"),
     path("job-applications/", views.job_applications_page, name="job_applications"),
 
@@ -35,7 +35,8 @@ urlpatterns = [
     path("mark-read/", views.mark_all_as_read, name="mark_all_as_read"),
 
     # Location
-    path("add-location/", views.location, name="add_location"),
+    path("add-location/", views.add_location, name="add_location"),
+
 
     # ✅ CONTACT FORM EMAIL (THIS IS STEP 4)
     path("contact/email/", views.contact_email, name="contact_email"),
