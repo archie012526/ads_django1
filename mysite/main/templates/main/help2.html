@@ -1,11 +1,11 @@
 {% extends "main/base.html" %}
 {% load static %}
 
-{% block title %}Settings: Help & Support{% endblock %}
+{% block title %}Help & Support{% endblock %}
 
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'style/settings.css' %}">
+<link rel="stylesheet" href="{% static 'style/setting-sidebar.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -13,8 +13,6 @@
 
     <!-- SIDEBAR -->
     <aside class="settings-nav">
-        <h1 class="settings-title">Settings</h1>
-
         <ul class="nav-links">
             <li>
                 <a href="{% url 'settings_account' %}">
@@ -22,7 +20,7 @@
                 </a>
             </li>
             <li>
-                <a href="{% url 'settings_privacy' %}" class="sidebar-highlight-bg">
+                <a href="{% url 'settings_privacy' %}">
                     Privacy
                 </a>
             </li>
@@ -42,8 +40,13 @@
                 </a>
             </li>
             <li>
-                <a href="{% url 'settings_help' %}">
+                <a href="{% url 'settings_help' %}" class="sidebar-highlight-bg">
                     Help &amp; Support
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'logout' %}" class="logout-link">
+                    Log Out
                 </a>
             </li>
         </ul>

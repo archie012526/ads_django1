@@ -1,0 +1,215 @@
+/* ===============================
+   GLOBAL RESET & BASE
+================================ */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #f4f4f9, #eef1f7);
+    color: #1f2937;
+}
+
+/* ===============================
+   MAIN LAYOUT CONTAINER
+================================ */
+.settings-container {
+    display: flex;
+    max-width: 1200px;
+    margin: 30px auto;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    min-height: 80vh;
+    overflow: hidden;
+}
+
+/* ===============================
+   SIDEBAR / NAVIGATION
+================================ */
+.settings-nav {
+    flex: 0 0 240px;
+    padding: 25px 0;
+    border-right: 1px solid #e5e7eb;
+    background: #fafafa;
+}
+
+.settings-nav .nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.settings-nav .nav-links li {
+    margin: 4px 0;
+}
+
+.settings-nav .nav-links a {
+    text-decoration: none;
+    color: #374151;
+    font-size: 15px;
+    display: block;
+    padding: 12px 28px;
+    border-radius: 12px;
+    transition: all 0.25s ease;
+}
+
+/* Hover */
+.settings-nav .nav-links a:hover:not(.sidebar-highlight-bg) {
+    background-color: #f3f4f6;
+    color: #6d28d9;
+}
+
+/* Active / Highlighted */
+.settings-nav .nav-links a.sidebar-highlight-bg {
+    background: linear-gradient(to right, #7c3aed, #8b5cf6);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 10px 25px rgba(124, 58, 237, 0.25);
+}
+
+.settings-nav .nav-links a.sidebar-highlight-bg:hover {
+    opacity: 0.95;
+}
+
+/* Log Out */
+.settings-nav .nav-links a.logout-link {;
+    color: rgb(220, 38, 38);
+}
+
+.settings-nav .nav-links a:hover:not(.sidebar-highlight-bg):not(.logout-link) {
+    background-color: #f3f4f6;
+    color: #6d28d9;
+}
+
+.settings-nav .nav-links a.logout-link:hover {
+    background-color: rgb(175, 26, 26);
+    color: #ffffff;
+}
+
+/* ===============================
+   CONTENT AREA
+================================ */
+.settings-content {
+    flex-grow: 1;
+    padding: 40px;
+}
+
+.settings-content .page-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 30px;
+    color: #111827;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 14px;
+}
+
+.settings-content .section-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-top: 45px;
+    margin-bottom: 20px;
+}
+
+.settings-content p {
+    line-height: 1.7;
+    margin-bottom: 20px;
+    color: #4b5563;
+}
+
+/* ===============================
+   FORM STYLES
+================================ */
+.settings-form {
+    padding-top: 10px;
+}
+
+.settings-content label {
+    display: block;
+    font-weight: 600;
+    margin-top: 18px;
+    margin-bottom: 6px;
+    color: #374151;
+    font-size: 14px;
+}
+
+/* Inputs */
+.settings-content input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.settings-content select,
+.settings-content textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    font-size: 14px;
+    background-color: #fafafa;
+    color: #111827;
+    transition: all 0.25s ease;
+}
+
+.settings-content input::placeholder,
+.settings-content textarea::placeholder {
+    color: #9ca3af;
+}
+
+.settings-content input:focus,
+.settings-content select:focus,
+.settings-content textarea:focus {
+    outline: none;
+    background-color: #ffffff;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15);
+}
+
+/* File input */
+.settings-content input[type="file"] {
+    border: none;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* ===============================
+   SAVE BUTTON
+================================ */
+.save-changes-btn {
+    display: inline-block;
+    background: linear-gradient(to right, #2563eb, #3b82f6);
+    color: #ffffff;
+    padding: 12px 26px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 30px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.save-changes-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 25px rgba(37, 99, 235, 0.3);
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+@media (max-width: 900px) {
+    .settings-container {
+        flex-direction: column;
+    }
+
+    .settings-nav {
+        flex: unset;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .settings-content {
+        padding: 25px;
+    }
+}

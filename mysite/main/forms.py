@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import Profile, Skill, Job
+from django.contrib.auth.forms import UserCreationForm
 
 
 class UserForm(forms.ModelForm):
@@ -80,3 +81,39 @@ class JobForm(forms.ModelForm):
             "salary",
             "description",
         ]
+
+
+class CustomSignupForm(UserCreationForm):
+    phone_number = forms.CharField(
+        max_length=20,
+        required=True,
+        label="Phone number"
+    )
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "phone_number", "password1", "password2")
+
+    def save(self, commit=True):
+        user = super().save(commit)
+        phone = self.cleaned_data["phone_number"]
+
+        user.profile.phone_number = phone
+        user.profile.save()
+
+        return user
+    
+
+class SignUpForm(UserCreationForm):
+    phone_number = forms.CharField()
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "phone_number", "password1", "password2")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({
+                "class": "form-input"
+            })
