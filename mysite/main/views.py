@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 
 from .models import Profile, Job, JobApplication, Notification, Skill, Message
-from .forms import JobForm, SkillForm, UserForm, ProfileForm, SettingsForm
+from .forms import JobForm, SkillForm, UserForm, ProfileForm, SettingsForm, SignUpForm
 
 
 # ============================
@@ -69,6 +69,18 @@ def signup_page(request):
 
     return render(request, "main/signup.html")
 
+def signup(request):
+    if request.method == "POST":
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            user.userprofile.phone_number = form.cleaned_data["phone_number"]
+            user.userprofile.save()
+            return redirect("login")
+    else:
+        form = SignUpForm()
+
+    return render(request, "main/signup.html", {"form": form})
 
 # ============================
 # HOME

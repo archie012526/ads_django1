@@ -108,7 +108,28 @@ class SignUpForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.widget.attrs.update({
-                "class": "form-input"
-            })
+
+        self.fields["username"].widget.attrs.update({
+            "class": "form-input",
+            "placeholder": "Enter username"
+        })
+
+        self.fields["email"].widget.attrs.update({
+            "class": "form-input",
+            "placeholder": "Enter email"
+        })
+
+        self.fields["phone_number"].widget.attrs.update({
+            "class": "form-input",
+            "placeholder": "Enter phone number"
+        })
+
+        self.fields["password1"].widget.attrs.update({
+            "class": "form-input",
+            "placeholder": "Enter password"
+        })
+
+        self.fields["password2"].widget.attrs.update({
+            "class": "form-input",
+            "placeholder": "Confirm password"
+        })
