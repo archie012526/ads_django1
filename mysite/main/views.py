@@ -113,7 +113,8 @@ def signup(request):
 # ============================
 @login_required
 def homepage(request):
-    posts = Post.objects.select_related('user').order_by('-created_at')
+    posts = Post.objects.select_related('user', 'user__profile').order_by('-created_at')
+    profile = request.user.profile
 
     if request.method == "POST":
         form = PostForm(request.POST)
@@ -125,10 +126,28 @@ def homepage(request):
     else:
         form = PostForm()
 
+    # Basic counts and defaults for sidebar cards
+    saved_jobs_count = 0
+    applications_count = JobApplication.objects.filter(user=request.user).count()
+    unread_notifications = Notification.objects.filter(user=request.user, is_read=False).count()
+
+    # Simple recommended users list (exclude self)
+    recommended_users = User.objects.exclude(id=request.user.id)[:5]
+
+    # Stub data for industries and popular_jobs if not provided elsewhere
+    industries = []
+    popular_jobs = []
+
     context = {
         'form': form,
         'posts': posts,
-        # keep your existing context variables here
+        'profile': profile,
+        'saved_jobs_count': saved_jobs_count,
+        'applications_count': applications_count,
+        'unread_notifications': unread_notifications,
+        'recommended_users': recommended_users,
+        'industries': industries,
+        'popular_jobs': popular_jobs,
     }
     return render(request, 'main/home.html', context)
 
