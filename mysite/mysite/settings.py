@@ -31,15 +31,15 @@ ALLOWED_HOSTS = [
 # APPLICATION DEFINITION
 # ======================
 INSTALLED_APPS = [
-    "daphne",  # must be first
+    # "daphne",  # Commented out for development - causes import error
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "channels",
-    "axes",
+    # "channels",  # Commented out for development
+    # "axes",  # Commented out for development
     "main.apps.MainConfig",
 ]
 
@@ -52,7 +52,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "axes.middleware.AxesMiddleware",
+    # "axes.middleware.AxesMiddleware",  # Commented out - axes disabled
 ]
 
 
@@ -82,13 +82,13 @@ TEMPLATES = [
 # WSGI / ASGI / CHANNELS
 # ======================
 WSGI_APPLICATION = "mysite.wsgi.application"
-ASGI_APPLICATION = "mysite.asgi.application"
+# ASGI_APPLICATION = "mysite.asgi.application"  # Commented out - channels disabled
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    }
-}
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels.layers.InMemoryChannelLayer",
+#     }
+# }
 
 
 # ======================
@@ -156,15 +156,15 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # ======================
-# AXES (LOGIN SECURITY) – FIXED
+# AXES (LOGIN SECURITY) – COMMENTED OUT FOR DEVELOPMENT
 # ======================
-AXES_FAILURE_LIMIT = 5
-AXES_COOLOFF_TIME = 1  # hours
-AXES_LOCK_OUT_AT_FAILURE = True
-AXES_RESET_ON_SUCCESS = True
+# AXES_FAILURE_LIMIT = 5
+# AXES_COOLOFF_TIME = 1  # hours
+# AXES_LOCK_OUT_AT_FAILURE = True
+# AXES_RESET_ON_SUCCESS = True
 
 AUTHENTICATION_BACKENDS = [
-    "axes.backends.AxesStandaloneBackend",
+    # "axes.backends.AxesStandaloneBackend",  # Commented out - axes disabled
     "django.contrib.auth.backends.ModelBackend",
 ]
 
