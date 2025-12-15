@@ -35,16 +35,15 @@
 
 <body>
 
-<!-- ================= TOP NAV BAR ================= -->
-<header class="top-navbar sticky top-0 z-50 bg-white shadow">
-    <div class="nav-left">
-
         <!-- Logo -->
-        <div class="logo-circle">
-            <a href="{% url 'homepage' %}">
-                <img src="{% static 'style/media/logo_jobbridge.jpg' %}" class="logo-img" alt="JobBridge Logo">
-            </a>
-        </div>
+    <header class="header">
+        <div class="left-side">
+            <div class="logo-circle">
+                <svg class="logo-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
 
         <!-- ✅ SEARCH BAR (NOW FUNCTIONAL) -->
         <form method="get" action="{% url 'find_job' %}" class="search-bar flex items-center">
@@ -110,11 +109,7 @@
 
     </nav>
 
-    <div class="nav-right">
-        <svg xmlns="http://www.w3.org/2000/svg" class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M4 6h16M4 12h16M4 18h16" stroke-width="2"/>
-        </svg>
-    </div>
+    
 </header>
 
 <!-- MAIN CONTENT -->
