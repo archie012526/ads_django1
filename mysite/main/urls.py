@@ -50,6 +50,7 @@ urlpatterns = [
     path('settings/data-control/', views.data_control, name='settings_data_control'),
     path('settings/help/', views.help_page, name='settings_help'),
     path("jobs/post/", views.post_job, name="post_job"),
+    path("jobs/create/", views.create_job, name="create_job"),
 
     path('data-control/', views.data_control, name='data_control'),
     path('help/', views.help_page, name='help'),

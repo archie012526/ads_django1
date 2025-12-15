@@ -203,14 +203,24 @@ def edit_profile_page(request):
 # ============================
 def find_job(request):
     query = request.GET.get("q", "")
+    employment_type = request.GET.get("employment_type", "")
+    working_schedule = request.GET.get("job_requirements", "")
+    
     jobs = Job.objects.all()
 
     if query:
         jobs = jobs.filter(
             Q(title__icontains=query) |
             Q(description__icontains=query) |
-            Q(location__icontains=query)
+            Q(location__icontains=query) |
+            Q(company_name__icontains=query)
         )
+    
+    if employment_type:
+        jobs = jobs.filter(employment_type=employment_type)
+    
+    if working_schedule:
+        jobs = jobs.filter(working_schedule=working_schedule)
 
     return render(request, "main/find_job.html", {
         "jobs": jobs,
@@ -433,10 +443,38 @@ def help_page(request):
 
 
 # ============================
-# POST JOB
+# CREATE/POST JOB
 # ============================
 @login_required
+def create_job(request):
+    # Only admins and employers can create jobs
+    if not (request.user.is_staff or request.user.profile.role == "employer"):
+        messages.error(request, "You don't have permission to create jobs.")
+        return redirect("homepage")
+
+    if request.method == "POST":
+        form = JobForm(request.POST)
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.user = request.user
+            job.save()
+            messages.success(request, "Job created successfully!")
+            return redirect("find_job")
+    else:
+        form = JobForm()
+
+    return render(request, "main/create_job.html", {"form": form})
+
+
+@login_required
 def post_job(request):
+    # Redirect to create_job view
+    return create_job(request)
+
+
+# Legacy view kept for compatibility
+@login_required
+def post_job_old(request):
     if request.user.profile.role != "employer":
         return redirect("homepage")
 
@@ -444,7 +482,7 @@ def post_job(request):
         form = JobForm(request.POST)
         if form.is_valid():
             job = form.save(commit=False)
-            job.employer = request.user
+            job.user = request.user
             job.save()
             return redirect("homepage")
     else:
