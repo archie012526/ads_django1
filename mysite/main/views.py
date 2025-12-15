@@ -7,6 +7,7 @@ from django.db import IntegrityError
 from django.db.models import Q
 from django.conf import settings
 from django.core.mail import send_mail
+from .models import Post
 
 from .models import Profile, Job, JobApplication, Notification, Skill, Message
 from .forms import JobForm, SkillForm, UserForm, ProfileForm, SettingsForm, SignUpForm
@@ -87,28 +88,24 @@ def signup(request):
 # ============================
 @login_required
 def homepage(request):
-    profile, _ = Profile.objects.get_or_create(user=request.user)
-
-    popular_jobs = Job.objects.order_by("-id")[:5]
-
-    return render(request, "main/home.html", {
-        "profile": profile,
-        "popular_jobs": popular_jobs,
-        "applications_count": JobApplication.objects.filter(user=request.user).count(),
-        "unread_notifications": Notification.objects.filter(
-            user=request.user, is_read=False
-        ).count(),
-    })
-
-def account_settings(request):
-    profile = request.user.profile
+    posts = Post.objects.select_related('user').order_by('-created_at')
 
     if request.method == "POST":
-        profile.phone_number = request.POST.get("phone_number")
-        profile.save()
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user = request.user
+            post.save()
+            return redirect('home')
+    else:
+        form = PostForm()
 
-    return render(request, "main/account.html")
-
+    context = {
+        'form': form,
+        'posts': posts,
+        # keep your existing context variables here
+    }
+    return render(request, 'main/home.html', context)
 
 # ============================
 # PROFILE
@@ -153,6 +150,7 @@ def edit_profile_page(request):
     return render(request, "main/edit_profile.html", {
         "user_form": user_form,
         "profile_form": profile_form,
+        "profile": profile,
     })
 
 
@@ -410,6 +408,18 @@ def post_job(request):
 
     return render(request, "main/post_job.html", {"form": form})
 
+@login_required
 def add_location(request):
-    return render(request, "add_location.html")
+    profile = request.user.profile
+    
+    if request.method == "POST":
+        location = request.POST.get("location", "")
+        profile.location = location
+        profile.save()
+        messages.success(request, "Location updated successfully!")
+        return redirect("homepage")
+    
+    return render(request, "main/add_location.html", {
+        "profile": profile,
+    })
 

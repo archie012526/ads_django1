@@ -1,32 +1,43 @@
+{% extends "main/base.html" %}
 {% load static %}
 
-{% block head_extra %}
+{% block extra_head %}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'style/add_location.css' %}?v=1">
-{% endblock head_extra %}
+<link rel="stylesheet" href="{% static 'style/add_location.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+
+<style>
+    header, .header, nav {
+        display: none !important;
+    }
+    
+    #map {
+        width: 100%;
+        height: 100%;
+        border-radius: 12px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="form-container">
-    
+
+    <!-- HEADER -->
     <div class="header-bar">
         <div class="logo-circle">
             <svg class="logo-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                      d="M13 10V3L4 14h7v7l9-11h-7z"></path>
             </svg>
         </div>
-        <span class="title-text">Add Job Location</span>
-        <div class="actions">
-            <button class="save-leave-btn">Save & Leave</button>
-            <button class="close-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+        <span class="title-text">Add Your Location</span>
+        <a href="{% url 'profile' %}" class="save-leave-btn">✕</a>
     </div>
 
+    <!-- MAIN -->
     <div class="main-content-box">
+
+        <!-- PROGRESS -->
         <div class="progress-steps">
             <div class="progress-line active-step"></div>
             <div class="progress-line"></div>
@@ -34,51 +45,199 @@
         </div>
 
         <div class="location-section">
-            <h2>Where is the job located?</h2>
-            <p class="instruction">Set the primary working address for this role.</p>
+            <h2>Where are you located?</h2>
+            <p class="instruction">
+                This helps employers find jobs near you.
+            </p>
 
-            <div class="location-tabs">
-                <button class="tab-btn active">By address</button>
-                <button class="tab-btn">By coordinates</button>
-            </div>
+            <form method="POST">
+                {% csrf_token %}
 
-            <div class="location-inputs">
-                
-                <div class="search-box">
-                    <div class="search-icon">📍</div>
-                    <input type="text" placeholder="Yamoussoukro, Ivory Coast" value="Yamoussoukro, Ivory Coast" class="search-input">
-                    
+                <!-- LOCATION INPUT -->
+                <div class="location-inputs">
+                    <div class="search-box">
+                        <span class="search-icon">📍</span>
+                        <input
+                            type="text"
+                            name="location"
+                            id="locationInput"
+                            class="search-input"
+                            placeholder="City, Province, Country"
+                            value="{{ profile.location }}"
+                            required
+                        >
+                        <button type="button" class="current-location-btn" onclick="getCurrentLocation()">
+                            📡 Use current
+                        </button>
+                    </div>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
-                
-                <input type="text" placeholder="Country" value="Ivory Coast" class="text-input">
-                
-                <div class="input-group">
-                    <input type="text" placeholder="City/Region" value="Yamoussoukro" class="text-input">
-                    <input type="text" placeholder="Street" class="text-input">
-                </div>
-                
-                <input type="text" placeholder="Building/Suite Number (Optional)" class="text-input">
 
-                <div class="toggle-container">
-                    <label for="exact-location" class="toggle-label">Show exact job address on map</label>
-                    <input type="checkbox" id="exact-location" class="toggle-switch">
+                <!-- MAP PREVIEW -->
+                <div class="map-placeholder" id="mapContainer">
+                    <div id="map"></div>
                 </div>
-            </div>
 
-            <div class="map-placeholder">
-                <div class="map-pin"></div>
-                <p>Map Preview of Location</p>
-            </div>
+                <!-- FOOTER -->
+                <div class="footer-nav">
+                    <a href="{% url 'profile' %}" class="back-btn">
+                        ← Back
+                    </a>
+
+                    <button type="submit" class="continue-btn">
+                        Save & Continue
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <div class="footer-nav">
-        <button class="back-btn">
-            &lt; Back
-        </button>
-        <button class="continue-btn">
-            Continue
-        </button>
-    </div>
 </div>
-{% endblock content %}
+
+<!-- MAP AND GEOLOCATION SCRIPT -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://nominatim.openstreetmap.org/reverse?format=json"></script>
+
+<script>
+let map;
+let marker;
+let currentLat = 40.7128;
+let currentLng = -74.0060;
+
+// Initialize map with default location (New York)
+function initializeMap() {
+    const mapContainer = document.getElementById('mapContainer');
+    mapContainer.style.height = '350px';
+    
+    map = L.map('map').setView([currentLat, currentLng], 12);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(map);
+    
+    // Add marker
+    marker = L.marker([currentLat, currentLng]).addTo(map)
+        .bindPopup('Your Location');
+    
+    // Get user's location if profile has one saved
+    const savedLocation = document.getElementById('locationInput').value;
+    if (savedLocation && savedLocation !== 'Lat' && !savedLocation.startsWith('Lat')) {
+        geocodeLocation(savedLocation);
+    }
+    
+    // Click on map to select location
+    map.on('click', function(e) {
+        updateMarker(e.latlng.lat, e.latlng.lng);
+    });
+}
+
+// Geocode location name to coordinates
+function geocodeLocation(locationName) {
+    if (!locationName || locationName.trim() === '') return;
+    
+    const encodedLocation = encodeURIComponent(locationName);
+    fetch(`https://nominatim.openstreetmap.org/search?q=${encodedLocation}&format=json&limit=1`)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                const lat = parseFloat(data[0].lat);
+                const lng = parseFloat(data[0].lon);
+                updateMarker(lat, lng);
+                map.setView([lat, lng], 12);
+            }
+        })
+        .catch(error => console.log('Geocoding error:', error));
+}
+
+// Update marker position and get location name
+function updateMarker(lat, lng) {
+    currentLat = lat;
+    currentLng = lng;
+    
+    if (marker) {
+        marker.setLatLng([lat, lng]);
+    }
+    
+    map.setView([lat, lng], 12);
+    
+    // Reverse geocode to get location name
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+        .then(response => response.json())
+        .then(data => {
+            let locationText = '';
+            if (data.address) {
+                const addr = data.address;
+                // Build location string: City, Region/State, Country
+                const city = addr.city || addr.town || addr.village || '';
+                const region = addr.state || addr.province || '';
+                const country = addr.country || '';
+                
+                locationText = [city, region, country].filter(Boolean).join(', ');
+            }
+            
+            if (locationText) {
+                document.getElementById('locationInput').value = locationText;
+            } else {
+                document.getElementById('locationInput').value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            }
+        })
+        .catch(error => {
+            document.getElementById('locationInput').value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            console.log('Reverse geocoding error:', error);
+        });
+}
+
+// Get current location using browser geolocation
+function getCurrentLocation() {
+    if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser.');
+        return;
+    }
+
+    const btn = event.target;
+    btn.textContent = '📡 Getting location...';
+    btn.disabled = true;
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            updateMarker(lat, lng);
+            btn.textContent = '📡 Use current';
+            btn.disabled = false;
+        },
+        function(error) {
+            let errorMsg = 'Unable to retrieve your location.';
+            if (error.code === error.PERMISSION_DENIED) {
+                errorMsg = 'Location permission denied. Please enable it in settings.';
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+                errorMsg = 'Location information is unavailable.';
+            }
+            alert(errorMsg);
+            btn.textContent = '📡 Use current';
+            btn.disabled = false;
+        }
+    );
+}
+
+// Handle location input changes
+document.getElementById('locationInput').addEventListener('change', function(e) {
+    if (e.target.value && !e.target.value.startsWith('Lat')) {
+        geocodeLocation(e.target.value);
+    }
+});
+
+// Initialize map when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMap();
+});
+</script>
+{% endblock %}

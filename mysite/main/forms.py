@@ -1,7 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Profile, Skill, Job
-from django.contrib.auth.forms import UserCreationForm
+from .models import Profile, Skill, Job, Post
 
 
 class UserForm(forms.ModelForm):
@@ -13,7 +12,7 @@ class UserForm(forms.ModelForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ["full_name", "phone_number", "location", "bio"]
+        fields = ["full_name", "phone_number", "location", "bio", "profile_image"]
 
 
 class SettingsForm(forms.ModelForm):
@@ -76,15 +75,13 @@ class JobForm(forms.ModelForm):
             "description",
             "location",
         ]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "input"}),
+            "description": forms.Textarea(attrs={"class": "textarea"}),
+            "location": forms.TextInput(attrs={"class": "input"}),
+        }
 
-
-class CustomSignupForm(UserCreationForm):
-    phone_number = forms.CharField(
-        max_length=20,
-        required=True,
-        label="Phone number"
-    )
-
+class PostForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ("username", "email", "phone_number", "password1", "password2")

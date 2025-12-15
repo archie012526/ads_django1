@@ -354,3 +354,15 @@ body {
         display: none;
     }
 }
+.post-btn {
+    margin-left: auto;
+    padding: 6px 14px;
+    background: #0a66c2;
+    color: white;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+}
+.post-btn:hover {
+    background: #004182;
+}
