@@ -1,26 +1,25 @@
 
 html, body {
     overflow-x: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
+
 /* GENERAL PAGE LAYOUT */
 .home-container {
     display: grid;
-    grid-template-columns: 280px 1fr 260px;
-    gap: 24px;
-
-    /* SAME WIDTH AS YOUR MESSAGES PAGE */
-    max-width: 1200px; 
+    grid-template-columns: 280px 1fr 320px;
+    gap: 28px;
+    max-width: 1280px; 
     width: 100%;
     margin: 30px auto;
-
     padding: 20px;
     box-sizing: border-box;
 }
 
-
-/* Distinct page background */
+/* Modern gradient background */
 body {
-    background: #f2eee7; /* slightly darker beige so cards pop */
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    min-height: 100vh;
 }
 
 /* ---------------------------- */
@@ -30,51 +29,63 @@ body {
 .left-column {
     position: relative;
 }
-/* Reusable card styling */
+
+/* Reusable card styling with modern effects */
 .card {
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 20px;
     padding: 20px;
-    border: 1px solid #e6dfd3; /* soft border creates separation */
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12); /* stronger shadow for depth */
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
 }
 
 /* Profile Card */
 .profile-card {
     background: #ffffff;
-    border-radius: 16px;
-    border: 1px solid #e6dfd3;
-    box-shadow: 0 8px 22px rgba(0,0,0,0.15);
+    border-radius: 20px;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
     overflow: hidden;
-    /* Removed padding-bottom: 20px; to be controlled by link spacing */
+    transition: all 0.3s ease;
 }
 
-/* Banner - lighter but not blending */
+.profile-card:hover {
+    box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+}
+
+/* Banner with gradient */
 .profile-banner {
-    background: #f8f4ed;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     height: 90px;
     width: 100%;
 }
 
-/* Profile Pic (Large) */
+/* Profile Pic with modern styling */
 .profile-pic-placeholder {
-    width: 75px;
-    height: 75px;
-    background: #dfd7cd;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 50%;
-    margin: -40px auto 10px;
-    border: 4px solid white;
+    margin: -45px auto 15px;
+    border: 5px solid white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* Profile Pic (Small - used throughout) */
+/* Profile Pic (Small) */
 .profile-pic-small {
-    width: 40px;
-    height: 40px;
-    background: #dfd7cd; /* Placeholder color */
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 50%;
-    flex-shrink: 0; /* Prevents shrinking in flex containers */
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
-
 
 /* Name + Location */
 .profile-name-link {
@@ -82,119 +93,250 @@ body {
     text-align: center;
     font-size: 18px;
     font-weight: 700;
-    color: #000000;
+    color: #1e293b;
     text-decoration: none;
     margin-top: 10px;
+    transition: color 0.2s;
+}
+
+.profile-name-link:hover {
+    color: #667eea;
 }
 
 .profile-name-link:visited {
-    color: #000000;
+    color: #1e293b;
 }
 
 .profile-card .location {
-    display: block; /* Ensures centering works */
+    display: block;
     text-align: center;
     font-size: 13px;
-    color: #85776d;
-    margin-bottom: 20px; /* Increased margin to separate from list */
+    color: #64748b;
+    margin-bottom: 20px;
     text-decoration: none;
+    transition: color 0.2s;
+}
+
+.profile-card .location:hover {
+    color: #667eea;
 }
 
 /* Links */
 .profile-links {
     list-style: none;
-    padding: 0; /* Removed padding from UL */
+    padding: 0;
     margin: 0;
 }
 
 .profile-links li {
-    padding: 10px 20px; /* Added padding to LI for full-width click area */
+    padding: 14px 20px;
     font-size: 14px;
-    border-bottom: 1px solid #ece5dc;
-    color: #5e463d;
-    transition: 0.2s;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    color: #475569;
+    transition: all 0.2s;
     cursor: pointer;
 }
 
 .profile-links li:hover {
-    background: #fcf6ef; /* Highlight entire row on hover */
-    color: #c79b46;
-    padding-left: 25px;
+    background: linear-gradient(90deg, #f8fafc 0%, #ede9fe 100%);
+    color: #667eea;
+    padding-left: 28px;
 }
 
 /* ---------------------------- */
 /* -------- CENTER COLUMN ------ */
 /* ---------------------------- */
 
-/* Card Styles */
+/* Modern Card Styles */
 .create-post-card,
 .recommended-card,
-.post-card {
+.post-card,
+.job-card {
     background: #ffffff;
-    border-radius: 16px;
-    border: 1px solid #e6dfd3;
-    padding: 20px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-    margin-bottom: 22px;
+    border-radius: 20px;
+    border: 1px solid rgba(0,0,0,0.08);
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    margin-bottom: 24px;
+    transition: all 0.3s ease;
+}
+
+.create-post-card:hover,
+.recommended-card:hover,
+.post-card:hover,
+.job-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
 }
 
 /* Create Post Card Specifics */
 .create-post-card {
-    padding: 15px 18px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
 }
 
 .create-post-card .top-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
 .post-input {
     flex: 1;
     width: 100%;
-    background: #f3f0ea;
-    padding: 12px 16px;
-    border-radius: 25px; /* Smoother radius */
+    background: #f8fafc;
+    padding: 14px 18px;
+    border-radius: 30px;
     font-size: 15px;
-    border: 1px solid #e0d7c9;
+    border: 2px solid transparent;
     outline: none;
     box-sizing: border-box;
+    transition: all 0.2s;
+}
+
+.post-input:focus {
+    background: #ffffff;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .post-options {
     display: flex;
-    justify-content: space-around; /* Distribute evenly */
-    padding-top: 8px;
+    justify-content: space-around;
+    padding-top: 10px;
     font-size: 14px;
-    color: #7a6c62;
-}
-.post-options span {
-    cursor: pointer;
-    transition: color 0.2s;
-}
-.post-options span:hover {
-    color: #c79b46;
+    color: #64748b;
+    font-weight: 500;
 }
 
-/* Recommended Users */
+.post-options span {
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.post-options span:hover {
+    color: #667eea;
+    background: #f1f5f9;
+}
+
+/* Tab Buttons */
+.tab-button {
+    position: relative;
+    padding: 12px 24px !important;
+    border: none !important;
+    background: none !important;
+    cursor: pointer !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    transition: all 0.2s !important;
+}
+
+.tab-button.active {
+    color: #667eea !important;
+}
+
+.tab-button::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #667eea;
+    border-radius: 3px 3px 0 0;
+    transform: scaleX(0);
+    transition: transform 0.2s;
+}
+
+.tab-button.active::after {
+    transform: scaleX(1);
+}
+
+/* Job Card Enhancements */
+.job-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 8px 0;
+    transition: color 0.2s;
+}
+
+.job-title:hover {
+    color: #667eea;
+}
+
+.job-company {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0 0 12px 0;
+    font-weight: 500;
+}
+
+.job-description {
+    color: #475569;
+    line-height: 1.6;
+    margin: 12px 0;
+}
+
+/* Modern Badges/Pills */
+.job-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+}
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    color: #667eea;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    transition: all 0.2s;
+}
+
+.pill:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Recommended Card */
 .recommended-card h3 {
     margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 16px;
+    margin-bottom: 18px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.recommended-card h4 {
+    margin-top: 20px;
+    margin-bottom: 12px;
+    font-size: 14px;
     font-weight: 600;
-    color: #533f36;
+    color: #667eea;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .recommended-user {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 0;
-    border-bottom: 1px solid #f1ebe3;
-    justify-content: space-between; /* Spreads name and button */
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    justify-content: space-between;
 }
 
 .recommended-user:last-child {
@@ -202,79 +344,109 @@ body {
 }
 
 .recommended-user .username {
-    flex-grow: 1; /* Pushes button to the right */
+    flex-grow: 1;
     margin: 0;
-    font-weight: 500;
-    color: #5e463d;
+    font-weight: 600;
+    color: #334155;
 }
 
 .follow-btn {
-    padding: 6px 14px;
-    border-radius: 20px;
-    background: #fffefc;
-    border: 1px solid #c79b46;
-    color: #a38140;
+    padding: 8px 18px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
     font-weight: 600;
+    font-size: 13px;
     cursor: pointer;
-    transition: 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    text-decoration: none;
+    display: inline-block;
 }
 
 .follow-btn:hover {
-    background: #f4e9d3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
 }
 
 .show-more {
-    text-align: left; /* Aligned left as per image */
+    text-align: center;
     font-size: 14px;
-    color: #7a6c62;
-    margin-top: 15px;
+    color: #64748b;
+    margin-top: 16px;
     margin-bottom: 0;
     cursor: pointer;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.show-more a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.show-more a:hover {
+    text-decoration: underline;
 }
 
 /* Posts */
 .post-card .post-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 12px;
+    margin-bottom: 16px;
 }
 
 .post-card .post-header .username {
     margin: 0;
     font-weight: 600;
-    color: #1f2937;
+    color: #1e293b;
 }
+
 .post-card .post-header small {
     display: block;
-    color: #9ca3af;
+    color: #94a3b8;
     font-size: 12px;
 }
+
 .post-content {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
+    color: #334155;
+    line-height: 1.6;
 }
 
 .post-image-placeholder {
     width: 100%;
-    height: 240px;
-    background: #dfd7cd;
-    border-radius: 12px;
-    margin-top: 10px;
+    height: 280px;
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-radius: 16px;
+    margin-top: 12px;
 }
 
 .post-actions {
     display: flex;
     justify-content: space-between;
-    margin-top: 15px;
-    color: #7a6c62;
+    margin-top: 16px;
+    color: #64748b;
     font-size: 14px;
-    border-top: 1px solid #f1ebe3;
-    padding-top: 10px;
-}
-.post-actions span {
-    cursor: pointer;
+    font-weight: 500;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding-top: 14px;
 }
 
+.post-actions span {
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.post-actions span:hover {
+    color: #667eea;
+    background: #f1f5f9;
+}
 
 /* ---------------------------- */
 /* ------- RIGHT COLUMN ------- */
@@ -284,57 +456,93 @@ body {
 .news-card,
 .feed-card {
     background: #ffffff;
-    border-radius: 16px;
-    border: 1px solid #e6dfd3;
-    padding: 20px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    border-radius: 20px;
+    border: 1px solid rgba(0,0,0,0.08);
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    transition: all 0.3s ease;
+}
+
+.news-card:hover,
+.feed-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
 
 .feed-card h4 {
     margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 16px;
-    font-weight: 600;
-    color: #533f36;
+    margin-bottom: 18px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
 }
 
 .feed-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 0;
-    border-bottom: 1px solid #f1ebe3;
-    justify-content: space-between; /* Distribute content */
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    justify-content: space-between;
 }
 
 .feed-item:last-child {
     border-bottom: none;
 }
+
 .feed-item p {
     flex-grow: 1;
     margin: 0;
     font-weight: 500;
-    color: #5e463d;
+    color: #334155;
 }
 
 .news-card {
-    /* If you add news content, style it here */
-    height: 150px; /* Placeholder size */
-    margin-bottom: 22px;
-    background: #f8f4ed; /* Slightly different background for visual separation */
+    height: 180px;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
 }
 
+/* Post Button */
+.post-btn {
+    margin-left: auto;
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 24px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.post-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* Section Titles */
+.section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 24px 0 16px 0;
+}
 
 /* --- Responsive Design --- */
-
-/* When screen is smaller than 1200px, reduce side columns */
 @media (max-width: 1200px) {
     .home-container {
-        grid-template-columns: 220px 1fr 220px;
+        grid-template-columns: 260px 1fr 280px;
+        gap: 20px;
     }
 }
 
-/* When screen is smaller than 992px, hide the right column */
 @media (max-width: 992px) {
     .home-container {
         grid-template-columns: 240px 1fr;
@@ -344,25 +552,13 @@ body {
     }
 }
 
-/* When screen is smaller than 768px, 1-column layout */
 @media (max-width: 768px) {
     .home-container {
         grid-template-columns: 1fr;
         padding: 10px;
+        gap: 16px;
     }
     .left-column {
         display: none;
     }
-}
-.post-btn {
-    margin-left: auto;
-    padding: 6px 14px;
-    background: #0a66c2;
-    color: white;
-    border: none;
-    border-radius: 16px;
-    cursor: pointer;
-}
-.post-btn:hover {
-    background: #004182;
 }

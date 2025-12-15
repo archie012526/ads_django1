@@ -129,27 +129,27 @@
 
                         <p class="job-date">{% if job.created_at %}{{ job.created_at|date:"j M, Y" }}{% endif %}</p>
 
-                        <h3 class="job-title">{{ job.job_title }}</h3>
+                        <h3 class="job-title">{{ job.title }}</h3>
 
-                        <p class="job-company">{{ job.employer_name|default:"Company not listed" }}</p>
+                        <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
 
                         <div class="job-badges">
-                            {% if job.job_employment_type %}
-                                <span class="pill">{{ job.job_employment_type }}</span>
+                            {% if job.employment_type %}
+                                <span class="pill">{{ job.get_employment_type_display }}</span>
                             {% endif %}
-                            {% if job.job_highlights %}
-                                {% for h in job.job_highlights|slice:":3" %}
-                                    <span class="pill">{{ h }}</span>
-                                {% endfor %}
+                            {% if job.working_schedule %}
+                                <span class="pill">{{ job.get_working_schedule_display }}</span>
                             {% endif %}
+                            {% for tag in job.skills.all %}
+                                <span class="pill">{{ tag.name }}</span>
+                            {% endfor %}
+                            <span class="pill">{{ job.location }}</span>
                         </div>
 
-                        <p class="job-salary">{{ job.job_min_salary|default:"—" }}{% if job.job_max_salary %} - {{ job.job_max_salary }}{% endif %}</p>
-
-                        <p class="job-location">{{ job.job_city|default:"" }}{% if job.job_country %}, {{ job.job_country }}{% endif %}</p>
+                        <p class="job-description">{{ job.description|truncatewords:20 }}</p>
 
                         <div class="mt-4">
-                            <a href="{{ job.job_apply_link }}" target="_blank" class="apply-btn">Apply</a>
+                            <button class="apply-btn">Apply</button>
                         </div>
 
                     </div>

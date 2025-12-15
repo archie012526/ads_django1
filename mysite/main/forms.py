@@ -73,13 +73,21 @@ class JobForm(forms.ModelForm):
         model = Job
         fields = [
             "title",
+            "company_name",
             "description",
             "location",
+            "employment_type",
+            "working_schedule",
+            "skills",
         ]
         widgets = {
             "title": forms.TextInput(attrs={"class": "input"}),
+            "company_name": forms.TextInput(attrs={"class": "input"}),
             "description": forms.Textarea(attrs={"class": "textarea"}),
             "location": forms.TextInput(attrs={"class": "input"}),
+            "employment_type": forms.Select(attrs={"class": "input"}),
+            "working_schedule": forms.Select(attrs={"class": "input"}),
+            "skills": forms.SelectMultiple(attrs={"class": "input"}),
         }
 
 class PostForm(forms.ModelForm):

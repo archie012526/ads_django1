@@ -7,6 +7,8 @@ from django.db import IntegrityError
 from django.db.models import Q
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils import timezone
+from datetime import timedelta
 from .models import Post
 
 from .models import Profile, Job, JobApplication, Notification, Skill, Message
@@ -113,22 +115,159 @@ def signup(request):
 # ============================
 @login_required
 def homepage(request):
-    posts = Post.objects.select_related('user').order_by('-created_at')
+    import random
+    
+    profile = request.user.profile
+    my_jobs = Job.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Combine posts and job posts from others (non-admin, non-self) for mixed feed
+    posts_from_others = list(Post.objects.exclude(user=request.user).select_related('user', 'user__profile').order_by('-created_at')[:20])
+    jobs_from_others = list(
+        Job.objects
+        .exclude(user=request.user)
+        .filter(user__is_staff=False)
+        .order_by('-created_at')[:20]
+    )
+    
+    # Tag each with a type for template rendering
+    for p in posts_from_others:
+        p.item_type = 'post'
+    for j in jobs_from_others:
+        j.item_type = 'job'
+    
+    # Combine and shuffle for natural mixed feed
+    mixed_feed = posts_from_others + jobs_from_others
+    random.shuffle(mixed_feed)
+    
+    # Keep separate references for backward compatibility
+    posts = Post.objects.select_related('user', 'user__profile').order_by('-created_at')
+    other_jobs = jobs_from_others[:10]
+
+    # ========= Personalized Recommendations =========
+    base_jobs = Job.objects.filter(user__is_staff=False).exclude(user=request.user)
+
+    # Skills-based
+    user_skills = list(profile.skills.values_list('name', flat=True))
+    rec_by_skills = []
+    if user_skills:
+        for job in base_jobs[:200]:
+            text = f"{job.title} {job.description}"
+            match_count = sum(1 for s in user_skills if s.lower() in text.lower())
+            if match_count > 0:
+                rec_by_skills.append({"job": job, "match_count": match_count})
+        rec_by_skills.sort(key=lambda x: x["match_count"], reverse=True)
+        rec_by_skills = rec_by_skills[:5]
+
+    # Titles/roles based on preferred_job_titles
+    rec_by_titles = []
+    if profile.preferred_job_titles:
+        titles = [t.strip() for t in profile.preferred_job_titles.split(',') if t.strip()]
+        if titles:
+            q = Q()
+            for t in titles:
+                q |= Q(title__icontains=t)
+            rec_by_titles = list(base_jobs.filter(q)[:5])
+
+    # Location-based (remote/hybrid/nearby approximation)
+    rec_by_location = []
+    pref_loc = profile.preferred_location or profile.location
+    if pref_loc:
+        rec_by_location = list(base_jobs.filter(Q(location__icontains=pref_loc) | Q(location__icontains="remote"))[:5])
+
+    # Recently posted (last 3 days)
+    recent_cutoff = timezone.now() - timedelta(days=3)
+    rec_recent = list(base_jobs.filter(created_at__gte=recent_cutoff)[:5])
+
+    # Similar to applied
+    applied_ids = list(JobApplication.objects.filter(user=request.user).values_list('job_id', flat=True).distinct())
+    rec_similar_applied = []
+    if applied_ids:
+        applied_titles = list(Job.objects.filter(id__in=applied_ids).values_list('title', flat=True))
+        if applied_titles:
+            q = Q()
+            for t in applied_titles:
+                # Use first keyword chunk to broaden match
+                key = t.split()[0] if t.split() else t
+                if key:
+                    q |= Q(title__icontains=key)
+            rec_similar_applied = list(base_jobs.exclude(id__in=applied_ids).filter(q)[:5])
+
+    # Company-based (companies user applied to)
+    rec_companies = []
+    if applied_ids:
+        companies = list(Job.objects.filter(id__in=applied_ids).values_list('company_name', flat=True))
+        companies = [c for c in companies if c]
+        if companies:
+            rec_companies = list(base_jobs.filter(company_name__in=companies)[:5])
 
     if request.method == "POST":
-        form = PostForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.user = request.user
-            post.save()
-            return redirect('home')
+        post_type = request.POST.get("post_type", "post")
+        
+        if post_type == "job":
+            # Create a job post
+            title = request.POST.get("job_title")
+            company = request.POST.get("job_company")
+            description = request.POST.get("job_description")
+            location = request.POST.get("job_location")
+            employment_type = request.POST.get("job_employment_type")
+            working_schedule = request.POST.get("job_working_schedule")
+            
+            if title and description and location:
+                Job.objects.create(
+                    user=request.user,
+                    title=title,
+                    company_name=company,
+                    description=description,
+                    location=location,
+                    employment_type=employment_type if employment_type else None,
+                    working_schedule=working_schedule if working_schedule else None
+                )
+                messages.success(request, "Job posted successfully!")
+                return redirect('homepage')
+        else:
+            # Create a regular post
+            form = PostForm(request.POST)
+            if form.is_valid():
+                post = form.save(commit=False)
+                post.user = request.user
+                post.save()
+                messages.success(request, "Post created successfully!")
+                return redirect('homepage')
     else:
         form = PostForm()
+
+    # Basic counts and defaults for sidebar cards
+    saved_jobs_count = 0
+    applications_count = JobApplication.objects.filter(user=request.user).count()
+    unread_notifications = Notification.objects.filter(user=request.user, is_read=False).count()
+
+    # Simple recommended users list (exclude self)
+    recommended_users = User.objects.exclude(id=request.user.id)[:5]
+
+    # Stub data for industries and popular_jobs if not provided elsewhere
+    industries = []
+    popular_jobs = []
 
     context = {
         'form': form,
         'posts': posts,
-        # keep your existing context variables here
+        'profile': profile,
+        'my_jobs': my_jobs,
+        'other_jobs': other_jobs,
+        'mixed_feed': mixed_feed,  # New mixed feed for natural ordering
+        # Personalized recs
+        'rec_by_skills': rec_by_skills,
+        'rec_by_titles': rec_by_titles,
+        'rec_by_location': rec_by_location,
+        'rec_recent': rec_recent,
+        'rec_similar_applied': rec_similar_applied,
+        'rec_companies': rec_companies,
+        'saved_jobs_count': saved_jobs_count,
+        'applications_count': applications_count,
+        'unread_notifications': unread_notifications,
+        'recommended_users': recommended_users,
+        'industries': industries,
+        'popular_jobs': popular_jobs,
     }
     return render(request, 'main/home.html', context)
 
@@ -138,19 +277,46 @@ def homepage(request):
 @login_required
 def profile_page(request):
     profile = request.user.profile
-    skills = profile.skills.all()
+    user_skill_names = list(profile.skills.values_list("name", flat=True))
 
-    suggested_jobs = Job.objects.none()
+    suggestions = []
 
-    if skills.exists():
+    if user_skill_names:
+        base = [s.lower() for s in user_skill_names]
+
         q = Q()
-        for skill in skills:
-            q |= Q(description__icontains=skill.name)
-        suggested_jobs = Job.objects.filter(q).distinct()
+        for s in user_skill_names:
+            q |= Q(title__icontains=s) | Q(description__icontains=s) | Q(skills__name__iexact=s)
+
+        jobs_qs = (
+            Job.objects
+            .filter(q)
+            .exclude(user=request.user)
+            .distinct()
+        )
+
+        for job in jobs_qs:
+            text = f"{job.title} {(job.description or '')}"
+            matched_from_text = {s for s in base if s in text.lower()}
+            matched_from_tags = set(
+                name.lower() for name in job.skills.filter(name__in=user_skill_names).values_list("name", flat=True)
+            )
+            matched = matched_from_text.union(matched_from_tags)
+            match_percent = int(round((len(matched) / max(1, len(base))) * 100))
+
+            suggestions.append({
+                "job": job,
+                "match_percent": match_percent,
+                "matched_skills": sorted(list(matched)),
+            })
+
+        # Sort by highest match
+        suggestions.sort(key=lambda x: x["match_percent"], reverse=True)
+        suggestions = suggestions[:10]
 
     return render(request, "main/profile.html", {
         "profile": profile,
-        "suggested_jobs": suggested_jobs,
+        "suggestions": suggestions,
     })
 
 
@@ -184,14 +350,28 @@ def edit_profile_page(request):
 # ============================
 def find_job(request):
     query = request.GET.get("q", "")
+    employment_type = request.GET.get("employment_type", "")
+    working_schedule = request.GET.get("job_requirements", "")
+    skill = request.GET.get("skill", "")
+    
     jobs = Job.objects.all()
 
     if query:
         jobs = jobs.filter(
             Q(title__icontains=query) |
             Q(description__icontains=query) |
-            Q(location__icontains=query)
+            Q(location__icontains=query) |
+            Q(company_name__icontains=query)
         )
+    
+    if employment_type:
+        jobs = jobs.filter(employment_type=employment_type)
+    
+    if working_schedule:
+        jobs = jobs.filter(working_schedule=working_schedule)
+
+    if skill:
+        jobs = jobs.filter(skills__name__iexact=skill).distinct()
 
     return render(request, "main/find_job.html", {
         "jobs": jobs,
@@ -414,10 +594,64 @@ def help_page(request):
 
 
 # ============================
-# POST JOB
+# CREATE/POST JOB
 # ============================
 @login_required
+def create_job(request):
+    # Only admins and employers can create jobs
+    if not (request.user.is_staff or request.user.profile.role == "employer"):
+        messages.error(request, "You don't have permission to create jobs.")
+        return redirect("homepage")
+
+    if request.method == "POST":
+        form = JobForm(request.POST)
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.user = request.user
+            job.save()
+            messages.success(request, "Job created successfully!")
+            return redirect("find_job")
+    else:
+        form = JobForm()
+
+    return render(request, "main/create_job.html", {"form": form})
+
+
+@login_required
+def edit_job(request, job_id: int):
+    job = get_object_or_404(Job, id=job_id, user=request.user)
+    if request.method == "POST":
+        form = JobForm(request.POST, instance=job)
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.user = request.user
+            job.save()
+            messages.success(request, "Job updated successfully!")
+            return redirect("homepage")
+    else:
+        form = JobForm(instance=job)
+    return render(request, "main/create_job.html", {"form": form, "editing": True})
+
+
+@login_required
+def delete_job(request, job_id: int):
+    job = get_object_or_404(Job, id=job_id, user=request.user)
+    if request.method == "POST":
+        job.delete()
+        messages.success(request, "Job deleted.")
+        return redirect("homepage")
+    return redirect("homepage")
+
+
+@login_required
 def post_job(request):
+    # Redirect to create_job view
+    return create_job(request)
+
+
+# Legacy view kept for compatibility
+@login_required
+def post_job_old(request):
     if request.user.profile.role != "employer":
         return redirect("homepage")
 
@@ -425,7 +659,7 @@ def post_job(request):
         form = JobForm(request.POST)
         if form.is_valid():
             job = form.save(commit=False)
-            job.employer = request.user
+            job.user = request.user
             job.save()
             return redirect("homepage")
     else:

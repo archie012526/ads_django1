@@ -93,14 +93,52 @@ class Skill(models.Model):
 #         JOBS
 # =========================
 class Job(models.Model):
+    EMPLOYMENT_TYPE_CHOICES = [
+        ('FULLTIME', 'Full time'),
+        ('PARTTIME', 'Part-time'),
+        ('INTERN', 'Internship'),
+        ('CONTRACT', 'Project / Contract'),
+    ]
+    
+    WORKING_SCHEDULE_CHOICES = [
+        ('full_day', 'Full day'),
+        ('flexible', 'Flexible schedule'),
+        ('shift', 'Shift work'),
+    ]
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
+    company_name = models.CharField(max_length=200, blank=True, null=True)
     description = models.TextField()
     location = models.CharField(max_length=100)
+    employment_type = models.CharField(
+        max_length=20,
+        choices=EMPLOYMENT_TYPE_CHOICES,
+        blank=True,
+        null=True
+    )
+    working_schedule = models.CharField(
+        max_length=20,
+        choices=WORKING_SCHEDULE_CHOICES,
+        blank=True,
+        null=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+    skills = models.ManyToManyField('SkillTag', blank=True, related_name='jobs')
+    
+    # Tags/skills required for the job
+    # Defined below; declared here for type reference
+    # skills = models.ManyToManyField('SkillTag', blank=True, related_name='jobs')
 
     def __str__(self):
         return self.title
+
+
+class SkillTag(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 # =========================
