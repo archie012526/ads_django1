@@ -18,8 +18,8 @@
             <div class="profile-sidebar">
                 
                 <div class="profile-header">
-                    {% if profile.profile_picture %}
-                        <img src="{{ profile.profile_picture.url }}" class="profile-img">
+                    {% if profile.profile_image %}
+                        <img src="{{ profile.profile_image.url }}" class="profile-img">
                     {% else %}
                         <img src="{% static 'images/default-pfp.png' %}" class="profile-img">
                     {% endif %}
