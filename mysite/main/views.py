@@ -10,7 +10,7 @@ from django.core.mail import send_mail
 from .models import Post
 
 from .models import Profile, Job, JobApplication, Notification, Skill, Message
-from .forms import JobForm, SkillForm, UserForm, ProfileForm, SettingsForm, SignUpForm
+from .forms import JobForm, PostForm, SkillForm, UserForm, ProfileForm, SettingsForm, SignUpForm
 
 
 # ============================
@@ -33,29 +33,54 @@ def contact_us_page(request):
 # ============================
 def login_page(request):
     if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
+        username_or_email = request.POST.get("username_or_email", "").strip()
+        password = request.POST.get("password", "")
 
-        user = authenticate(request, username=email, password=password)
-        if user:
+        user = None
+        
+        # Try to authenticate with username first
+        user = authenticate(request, username=username_or_email, password=password)
+        
+        # If that fails and input looks like email, try email lookup
+        if user is None and "@" in username_or_email:
+            try:
+                # Case-insensitive email lookup
+                user_obj = User.objects.get(email__iexact=username_or_email)
+                user = authenticate(request, username=user_obj.username, password=password)
+            except User.DoesNotExist:
+                pass
+        
+        if user is not None:
             login(request, user)
             return redirect("homepage")
-
-        messages.error(request, "Invalid email or password.")
+        else:
+            messages.error(request, "Invalid username/email or password.")
 
     return render(request, "main/login.html")
 
 
 def signup_page(request):
     if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
+        email = request.POST.get("email", "").strip().lower()
+        username = request.POST.get("username", "").strip() or email
+        password = request.POST.get("password", "") or request.POST.get("password1", "")
+        password2 = request.POST.get("password2", "")
+        first_name = request.POST.get("first_name", "")
+        last_name = request.POST.get("last_name", "")
+
+        # Validate passwords match
+        if password != password2:
+            messages.error(request, "Passwords do not match.")
+            return render(request, "main/signup.html")
+
+        # Validate password is not empty
+        if not password:
+            messages.error(request, "Password is required.")
+            return render(request, "main/signup.html")
 
         try:
             User.objects.create_user(
-                username=email,
+                username=username,
                 email=email,
                 password=password,
                 first_name=first_name,
