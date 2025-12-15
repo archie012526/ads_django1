@@ -173,6 +173,11 @@ body {
     background: transparent;
     outline: none;
     width: 200px;
+    color: #000;
+}
+
+.search-bar input::placeholder {
+    color: #666;
 }
 
 /* Center menu items */
