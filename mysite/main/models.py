@@ -93,10 +93,36 @@ class Skill(models.Model):
 #         JOBS
 # =========================
 class Job(models.Model):
+    EMPLOYMENT_TYPE_CHOICES = [
+        ('FULLTIME', 'Full time'),
+        ('PARTTIME', 'Part-time'),
+        ('INTERN', 'Internship'),
+        ('CONTRACT', 'Project / Contract'),
+    ]
+    
+    WORKING_SCHEDULE_CHOICES = [
+        ('full_day', 'Full day'),
+        ('flexible', 'Flexible schedule'),
+        ('shift', 'Shift work'),
+    ]
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
+    company_name = models.CharField(max_length=200, blank=True, null=True)
     description = models.TextField()
     location = models.CharField(max_length=100)
+    employment_type = models.CharField(
+        max_length=20,
+        choices=EMPLOYMENT_TYPE_CHOICES,
+        blank=True,
+        null=True
+    )
+    working_schedule = models.CharField(
+        max_length=20,
+        choices=WORKING_SCHEDULE_CHOICES,
+        blank=True,
+        null=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

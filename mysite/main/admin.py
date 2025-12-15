@@ -5,8 +5,20 @@ from .models import (
     JobApplication,
     Notification,
     Message,
-    ContactSubmission
+    ContactSubmission,
+    Skill
 )
+
+# ---------------------------
+# PROFILE
+# ---------------------------
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'full_name', 'role', 'location', 'updated_at')
+    list_filter = ('role', 'profile_visibility')
+    search_fields = ('user__username', 'full_name', 'company_name')
+    ordering = ('-updated_at',)
+
 
 # ---------------------------
 # JOBS
@@ -17,20 +29,51 @@ class JobAdmin(admin.ModelAdmin):
 
     list_display = (
         'title',
-        'user',        # ✅ FIXED (was employer)
+        'company_name',
+        'user',
         'location',
+        'employment_type',
+        'working_schedule',
         'created_at',
     )
 
     list_filter = (
         'location',
+        'employment_type',
+        'working_schedule',
         'created_at',
     )
 
     search_fields = (
         'title',
+        'company_name',
         'description',
     )
+
+    # Allow admins to easily create jobs
+    fields = ('user', 'title', 'company_name', 'description', 'location', 'employment_type', 'working_schedule')
+
+
+# ---------------------------
+# JOB APPLICATIONS
+# ---------------------------
+@admin.register(JobApplication)
+class JobApplicationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'job', 'status', 'applied_at')
+    list_filter = ('status', 'applied_at')
+    search_fields = ('user__username', 'job__title')
+    ordering = ('-applied_at',)
+
+
+# ---------------------------
+# SKILLS
+# ---------------------------
+@admin.register(Skill)
+class SkillAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user', 'level')
+    list_filter = ('level',)
+    search_fields = ('name', 'user__user__username')
+    ordering = ('name',)
 
 
 # ---------------------------
