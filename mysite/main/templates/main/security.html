@@ -52,33 +52,33 @@
     </aside>
 
     <main class="settings-content">
-        <h2>Security Settings</h2>
-        <p><strong>Purpose:</strong> Account protection and monitoring.</p>
-
-        <section>
-            <h3>Login activity</h3>
-            <p>Recent logins from devices and locations will be listed here.</p>
-            <!-- Example list (replace with real data) -->
-            <ul>
-                <li>Chrome on Windows — Manila, PH — 2 hours ago</li>
-                <li>Mobile app — Cebu, PH — 3 days ago</li>
-            </ul>
-        </section>
-
-        <section>
-            <h3>Active sessions</h3>
-            <p>Manage devices currently logged into your account.</p>
             <form method="post">
                 {% csrf_token %}
-                <button type="submit" name="action" value="logout_all" class="px-4 py-2 bg-red-600 text-white rounded">Logout from all devices</button>
             </form>
         </section>
+
+        <h3 class="section-title">Security</h3>
+
+        <label>Change password</label>
+        <a href="{% url 'password_change' %}" class="text-link">
+            Change your password
+        </a>
+
+        <div class="checkbox-group">
+            {{ form.two_factor_enabled }}
+            <label for="{{ form.two_factor_enabled.id_for_label }}">
+                Enable two-factor authentication (recommended)
+            </label>
+        </div>
 
         <section>
             <h3>Password</h3>
             <p>Last changed: {% if request.user.password %} — {% else %} — {% endif %}</p>
             <p><a href="{% url 'profile' %}">Change password</a></p>
         </section>
+        <p>
+          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
+        </p>
 
         <section>
             <h3>Security alerts</h3>
@@ -90,11 +90,21 @@
                 <br>
                 <label>SMS alerts</label>
                 <input type="checkbox" name="sms_alerts">
-                <p>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
-                </p>
             </form>
         </section>
+
+        <section>
+            <h3>Login activity</h3>
+            <p>Recent logins from devices and locations will be listed here.</p>
+            <!-- Example list (replace with real data) -->
+            <ul>
+                <li>Chrome on Windows — Manila, PH — 2 hours ago</li>
+                <li>Mobile app — Cebu, PH — 3 days ago</li>
+            </ul>
+        </section>
+
+        <button type="submit" name="action" value="logout_all" class="px-4 py-2 bg-red-600 text-white rounded">Logout from all devices</button>
+
     </main>
 </div>
 {% endblock %}
