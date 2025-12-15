@@ -1,10 +1,10 @@
 {% extends "main/base.html" %}
 {% load static %}
 
-{% block title %}Settings: Privacy{% endblock %}
+{% block title %}Privacy{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'style/settings.css' %}">
+<link rel="stylesheet" href="{% static 'style/setting-sidebar.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -12,46 +12,61 @@
 
     <!-- SIDEBAR -->
     <aside class="settings-nav">
-        <h1 class="settings-title">Settings</h1>
-
         <ul class="nav-links">
+
             <li>
                 <a href="{% url 'settings_account' %}">
                     Account
                 </a>
             </li>
+
             <li>
                 <a href="{% url 'settings_privacy' %}" class="sidebar-highlight-bg">
                     Privacy
                 </a>
             </li>
+
             <li>
                 <a href="{% url 'settings_language' %}">
                     Language &amp; Appearance
                 </a>
             </li>
+
             <li>
                 <a href="{% url 'settings_security' %}">
                     Security
                 </a>
             </li>
+
             <li>
                 <a href="{% url 'settings_data_control' %}">
                     Data &amp; Account Control
                 </a>
             </li>
+
             <li>
                 <a href="{% url 'settings_help' %}">
                     Help &amp; Support
                 </a>
             </li>
+
+            <li>
+                <a href="{% url 'logout' %}" class="logout-link">
+                    Log Out
+                </a>
+            </li>
+
         </ul>
     </aside>
 
     <!-- MAIN CONTENT -->
     <main class="settings-content">
         <h2 class="page-title">Privacy &amp; Visibility</h2>
-        <p><strong>Purpose:</strong> Control who can see what about your profile and activity.</p>
+
+        <p>
+            <strong>Purpose:</strong>
+            Control who can see what about your profile and activity.
+        </p>
 
         <form method="post" class="settings-form">
             {% csrf_token %}
@@ -59,10 +74,12 @@
             <label>Profile visibility</label>
             {{ form.profile_visibility }}
 
-            <label class="checkbox-group">
+            <div class="checkbox-group">
                 {{ form.allow_contact }}
-                Allow recruiters to contact me
-            </label>
+                <label for="{{ form.allow_contact.id_for_label }}">
+                    Allow recruiters to contact me
+                </label>
+            </div>
 
             <label>Show email to employers</label>
             <p>If you allow, employers may see your email address.</p>

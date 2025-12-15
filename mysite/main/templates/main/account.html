@@ -1,82 +1,172 @@
 {% extends "main/base.html" %}
 {% load static %}
 
-{% block title %}Settings: Account{% endblock %}
+{% block title %}Account Settings{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'style/settings.css' %}">
+
+<link rel="stylesheet" href="{% static 'style/setting-sidebar.css' %}">
 {% endblock %}
 
 {% block content %}
 
 <div class="settings-container">
 
-    <!-- SIDEBAR -->
-    <aside class="settings-nav">
-        <h1 class="settings-title">Settings</h1>
+<!-- SIDEBAR -->
+<aside class="settings-nav">
+    <ul class="nav-links">
 
-        <ul class="nav-links">
-            <li>
-                <a href="{% url 'settings_account' %}" class="sidebar-highlight-bg">
-                    Account
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_privacy' %}">
-                    Privacy
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_language' %}">
-                    Language &amp; Appearance
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_security' %}">
-                    Security
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_data_control' %}">
-                    Data &amp; Account Control
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_help' %}">
-                    Help &amp; Support
-                </a>
-            </li>
-        </ul>
-    </aside>
+        <li>
+            <a href="{% url 'settings_account' %}" class="sidebar-highlight-bg">
+                Account
+            </a>
+        </li>
 
-    <!-- MAIN CONTENT -->
-    <main class="settings-content">
-        <h2 class="page-title">Account Settings</h2>
-        <p><strong>Purpose:</strong> Basic account control (view &amp; change account details).</p>
+        <li>
+            <a href="{% url 'settings_privacy' %}">
+                Privacy
+            </a>
+        </li>
 
-        <form method="post" enctype="multipart/form-data" class="settings-form">
-            {% csrf_token %}
+        <li>
+            <a href="{% url 'settings_language' %}">
+                Language &amp; Appearance
+            </a>
+        </li>
 
-            <h3 class="section-title">Account</h3>
-            <label>Username / Email</label>
-            {{ user_form.email }}
+        <li>
+            <a href="{% url 'settings_security' %}">
+                Security
+            </a>
+        </li>
 
-            <h3 class="section-title">Profile</h3>
-            <label>Phone number</label>
-            {{ form.phone_number }}
+        <li>
+            <a href="{% url 'settings_data_control' %}">
+                Data &amp; Account Control
+            </a>
+        </li>
 
-            <label>Profile image</label>
-            {{ form.profile_image }}
+        <li>
+            <a href="{% url 'settings_help' %}">
+                Help &amp; Support
+            </a>
+        </li>
 
-            <label>Bio</label>
-            {{ form.bio }}
+        <li>
+            <a href="{% url 'logout' %}" class="logout-link">
+                Log Out
+            </a>
+        </li>
 
-            <button type="submit" class="save-changes-btn">
-                Save Changes
-            </button>
-        </form>
-    </main>
+    </ul>
+</aside>
 
-</div>
+<main class="settings-content">
+    <h2 class="page-title">Account Settings</h2>
+
+    <form method="post" enctype="multipart/form-data" class="settings-form">
+        {% csrf_token %}
+
+        <!-- ===============================
+             BASIC ACCOUNT
+        =============================== -->
+        <h3 class="section-title">Basic Account Control</h3>
+
+        <label>Username / Email</label>
+        {{ user_form.email }}
+
+        <label>Phone number</label>
+        <input type="text"
+              name="phone_number"
+              value="{{ request.user.profile.phone_number }}">
+
+        <!-- ===============================
+             SECURITY
+        =============================== -->
+        <h3 class="section-title">Security</h3>
+
+        <label>Change password</label>
+        <a href="{% url 'password_change' %}" class="text-link">
+            Change your password
+        </a>
+
+        <div class="checkbox-group">
+            {{ form.two_factor_enabled }}
+            <label for="{{ form.two_factor_enabled.id_for_label }}">
+                Enable two-factor authentication (recommended)
+            </label>
+        </div>
+
+        <!-- ===============================
+             CONNECTED ACCOUNTS (NEW)
+        =============================== -->
+        <h3 class="section-title">Connected Accounts</h3>
+
+        <div class="checkbox-group">
+            <input type="checkbox" disabled checked>
+            <label>Google</label>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" disabled>
+            <label>LinkedIn</label>
+        </div>
+
+        <p class="hint-text">
+            Manage social logins from your authentication provider.
+        </p>
+
+        <!-- ===============================
+             ACCOUNT STATUS (NEW)
+        =============================== -->
+        <h3 class="section-title">Account Status</h3>
+
+        <label>Account status</label>
+        {{ form.account_status }}
+
+        <p class="hint-text">
+            Deactivating your account will hide your profile and applications.
+        </p>
+
+        <!-- ===============================
+             APPLICATION PREFERENCES (NEW)
+        =============================== -->
+        <h3 class="section-title">Application Preferences</h3>
+
+        <label>Default resume</label>
+        {{ form.default_resume }}
+
+        <label>Default cover letter</label>
+        {{ form.default_cover_letter }}
+
+        <div class="checkbox-group">
+            {{ form.auto_fill_applications }}
+            <label for="{{ form.auto_fill_applications.id_for_label }}">
+                Enable auto-fill for job applications
+            </label>
+        </div>
+
+        <div class="checkbox-group">
+            {{ form.track_application_history }}
+            <label for="{{ form.track_application_history.id_for_label }}">
+                Track my application history
+            </label>
+        </div>
+
+        <div class="checkbox-group">
+            {{ form.allow_resume_download }}
+            <label for="{{ form.allow_resume_download.id_for_label }}">
+                Allow employers to download my resume
+            </label>
+        </div>
+
+        <!-- ===============================
+             SAVE
+        =============================== -->
+        <button type="submit" class="save-changes-btn">
+            Save Changes
+        </button>
+    </form>
+</main>
 
 {% endblock %}

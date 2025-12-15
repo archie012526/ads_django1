@@ -88,6 +88,15 @@ def homepage(request):
         ).count(),
     })
 
+def account_settings(request):
+    profile = request.user.profile
+
+    if request.method == "POST":
+        profile.phone_number = request.POST.get("phone_number")
+        profile.save()
+
+    return render(request, "main/account.html")
+
 
 # ============================
 # PROFILE
