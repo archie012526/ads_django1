@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 from .models import Profile, Skill, Job, Post
 
 
@@ -83,17 +84,11 @@ class JobForm(forms.ModelForm):
 
 class PostForm(forms.ModelForm):
     class Meta:
-        model = User
-        fields = ("username", "email", "phone_number", "password1", "password2")
-
-    def save(self, commit=True):
-        user = super().save(commit)
-        phone = self.cleaned_data["phone_number"]
-
-        user.profile.phone_number = phone
-        user.profile.save()
-
-        return user
+        model = Post
+        fields = ("content",)
+        widgets = {
+            "content": forms.Textarea(attrs={"rows": 3, "placeholder": "Start a post"}),
+        }
     
 
 class SignUpForm(UserCreationForm):
