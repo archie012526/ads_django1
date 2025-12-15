@@ -177,20 +177,11 @@ class ContactSubmission(models.Model):
     def __str__(self):
         return f"Message from {self.name}"
 
-# class UserProfile(models.Model):
-#     user = models.OneToOneField(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.CASCADE,
-#         related_name="profile"
-#     )
 
-#     phone_number = models.CharField(
-#         max_length=20,
-#         blank=False,
-#         null=False
-#     )
+class Post(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
-#     two_factor_enabled = models.BooleanField(default=False)
-
-#     def __str__(self):
-#         return f"{self.user.username} Profile"
+    def __str__(self):
+        return f"{self.user.username} - {self.created_at}"

@@ -1,7 +1,11 @@
 from django import forms
 from django.contrib.auth.models import User
+<<<<<<< HEAD
+from .models import Profile, Skill, Job, Post
+=======
 from .models import Profile, Skill, Job
 from django.contrib.auth.forms import UserCreationForm
+>>>>>>> bb1bbec46f014b2d16531b005102645a021ecd0f
 
 
 class UserForm(forms.ModelForm):
@@ -76,39 +80,20 @@ class JobForm(forms.ModelForm):
             "description",
             "location",
         ]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "input"}),
+            "description": forms.Textarea(attrs={"class": "textarea"}),
+            "location": forms.TextInput(attrs={"class": "input"}),
+        }
 
-
-class CustomSignupForm(UserCreationForm):
-    phone_number = forms.CharField(
-        max_length=20,
-        required=True,
-        label="Phone number"
-    )
-
+class PostForm(forms.ModelForm):
     class Meta:
-        model = User
-        fields = ("username", "email", "phone_number", "password1", "password2")
-
-    def save(self, commit=True):
-        user = super().save(commit)
-        phone = self.cleaned_data["phone_number"]
-
-        user.profile.phone_number = phone
-        user.profile.save()
-
-        return user
-    
-
-class SignUpForm(UserCreationForm):
-    phone_number = forms.CharField()
-
-    class Meta:
-        model = User
-        fields = ("username", "email", "phone_number", "password1", "password2")
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.widget.attrs.update({
-                "class": "form-input"
+        model = Post
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={
+                'placeholder': 'Start a post',
+                'class': 'post-input',
+                'rows': 2
             })
+        }
