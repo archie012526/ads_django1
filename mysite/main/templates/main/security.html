@@ -13,98 +13,113 @@
     <!-- SIDEBAR -->
     <aside class="settings-nav">
         <ul class="nav-links">
-            <li>
-                <a href="{% url 'settings_account' %}">
-                    Account
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_privacy' %}">
-                    Privacy
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_language' %}">
-                    Language &amp; Appearance
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_security' %}" class="sidebar-highlight-bg">
-                    Security
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_data_control' %}">
-                    Data &amp; Account Control
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_help' %}">
-                    Help &amp; Support
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'logout' %}" class="logout-link">
-                    Log Out
-                </a>
-            </li>
+            <li><a href="{% url 'settings_account' %}">Account</a></li>
+            <li><a href="{% url 'settings_privacy' %}">Privacy</a></li>
+            <li><a href="{% url 'settings_language' %}">Language &amp; Appearance</a></li>
+            <li><a href="{% url 'settings_security' %}" class="sidebar-highlight-bg">Security</a></li>
+            <li><a href="{% url 'settings_data_control' %}">Data &amp; Account Control</a></li>
+            <li><a href="{% url 'settings_help' %}">Help &amp; Support</a></li>
+            <li><a href="{% url 'logout' %}" class="logout-link">Log Out</a></li>
         </ul>
     </aside>
 
+    <!-- MAIN CONTENT -->
     <main class="settings-content">
-            <form method="post">
-                {% csrf_token %}
-            </form>
-        </section>
+        <h2 class="page-title">Security</h2>
 
-        <h3 class="section-title">Security</h3>
+        <form method="post" class="settings-form">
+            {% csrf_token %}
 
-        <label>Change password</label>
-        <a href="{% url 'password_change' %}" class="text-link">
-            Change your password
-        </a>
+            <!-- ===============================
+                 CHANGE PASSWORD
+            =============================== -->
+            <h3 class="section-title">Change Password</h3>
 
-        <div class="checkbox-group">
-            {{ form.two_factor_enabled }}
-            <label for="{{ form.two_factor_enabled.id_for_label }}">
-                Enable two-factor authentication (recommended)
-            </label>
-        </div>
+            <label>Current password</label>
+            <input type="password" name="old_password" class="text-input" placeholder="Enter current password">
 
-        <section>
-            <h3>Password</h3>
-            <p>Last changed: {% if request.user.password %} — {% else %} — {% endif %}</p>
-            <p><a href="{% url 'profile' %}">Change password</a></p>
-        </section>
-        <p>
-          <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
-        </p>
+            <label>New password</label>
+            <input type="password" name="new_password1" class="text-input" placeholder="Enter new password">
 
-        <section>
-            <h3>Security alerts</h3>
-            <p>Configure how you receive security alerts (email/SMS).</p>
-            <form method="post">
-                {% csrf_token %}
-                <label>Email alerts</label>
-                <input type="checkbox" name="email_alerts" {% if request.user.email %}checked{% endif %}>
-                <br>
-                <label>SMS alerts</label>
-                <input type="checkbox" name="sms_alerts">
-            </form>
-        </section>
+            <label>Confirm new password</label>
+            <input type="password" name="new_password2" class="text-input" placeholder="Confirm new password">
 
-        <section>
-            <h3>Login activity</h3>
-            <p>Recent logins from devices and locations will be listed here.</p>
-            <!-- Example list (replace with real data) -->
-            <ul>
-                <li>Chrome on Windows — Manila, PH — 2 hours ago</li>
-                <li>Mobile app — Cebu, PH — 3 days ago</li>
+            <p class="hint-text">
+                Use at least 8 characters with a mix of letters, numbers, and symbols.
+            </p>
+
+            <!-- ===============================
+                 TWO-FACTOR AUTHENTICATION
+            =============================== -->
+            <h3 class="section-title">Two-Factor Authentication</h3>
+
+            <div class="toggle-row">
+                <span>Enable two-factor authentication</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="two_factor_enabled" {% if form.two_factor_enabled.value %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <p class="hint-text">
+                Adds an extra layer of security using SMS or authenticator apps.
+            </p>
+
+            <!-- ===============================
+                 SECURITY ALERTS
+            =============================== -->
+            <h3 class="section-title">Security Alerts</h3>
+
+            <label>Emergency contact number</label>
+            <input type="text"
+                   name="emergency_contact"
+                   class="text-input"
+                   placeholder="+63 9XX XXX XXXX">
+
+            <div class="checkbox-card">
+                <label class="checkbox-item">
+                    <input type="checkbox" name="email_alerts" checked>
+                    <span>Email alerts for suspicious activity</span>
+                </label>
+
+                <label class="checkbox-item">
+                    <input type="checkbox" name="sms_alerts">
+                    <span>SMS alerts for new logins</span>
+                </label>
+            </div>
+
+            <!-- ===============================
+                 LOGIN ACTIVITY
+            =============================== -->
+            <h3 class="section-title">Login Activity</h3>
+
+            <ul class="activity-list">
+                <li>
+                    <strong>Chrome • Windows</strong>
+                    <span>Manila, PH • Active now</span>
+                </li>
+                <li>
+                    <strong>Mobile • Android</strong>
+                    <span>Cebu, PH • 2 days ago</span>
+                </li>
+                <li>
+                    <strong>Safari • iOS</strong>
+                    <span>Singapore • 1 week ago</span>
+                </li>
             </ul>
-        </section>
 
-        <button type="submit" name="action" value="logout_all" class="px-4 py-2 bg-red-600 text-white rounded">Logout from all devices</button>
+            <button type="submit" name="action" value="logout_all" class="danger-btn">
+                Logout from all devices
+            </button>
 
+            <!-- ===============================
+                 SAVE
+            =============================== -->
+            <button type="submit" class="save-changes-btn">
+                Save Security Settings
+            </button>
+
+        </form>
     </main>
 </div>
 {% endblock %}

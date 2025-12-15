@@ -3,7 +3,6 @@
 
 {% block title %}Data & Account Control{% endblock %}
 
-
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'style/setting-sidebar.css' %}">
 {% endblock %}
@@ -14,54 +13,95 @@
     <!-- SIDEBAR -->
     <aside class="settings-nav">
         <ul class="nav-links">
-            <li>
-                <a href="{% url 'settings_account' %}">
-                    Account
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_privacy' %}">
-                    Privacy
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_language' %}">
-                    Language &amp; Appearance
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'settings_security' %}">
-                    Security
-                </a>
-            </li>
+
+            <li><a href="{% url 'settings_account' %}">Account</a></li>
+            <li><a href="{% url 'settings_privacy' %}">Privacy</a></li>
+            <li><a href="{% url 'settings_language' %}">Language &amp; Appearance</a></li>
+            <li><a href="{% url 'settings_security' %}">Security</a></li>
+
             <li>
                 <a href="{% url 'settings_data_control' %}" class="sidebar-highlight-bg">
                     Data &amp; Account Control
                 </a>
             </li>
-            <li>
-                <a href="{% url 'settings_help' %}">
-                    Help &amp; Support
-                </a>
-            </li>
+
+            <li><a href="{% url 'settings_help' %}">Help &amp; Support</a></li>
+
             <li>
                 <a href="{% url 'logout' %}" class="logout-link">
                     Log Out
                 </a>
             </li>
+
         </ul>
     </aside>
 
+    <!-- MAIN CONTENT -->
     <main class="settings-content">
-        <h2>Data &amp; Account Control</h2>
+        <h2 class="page-title">Data &amp; Account Control</h2>
 
-        <form method="post">
+        <form method="post" class="settings-form">
             {% csrf_token %}
-            <p><button name="action" value="download" class="px-4 py-2 bg-gray-200 rounded">Download my data</button></p>
-            <p><button name="action" value="request_deletion" class="px-4 py-2 bg-gray-200 rounded">Request data deletion</button></p>
-            <p><button name="action" value="deactivate" class="px-4 py-2 bg-yellow-500 text-white rounded">Deactivate account</button></p>
-            <p><button name="action" value="delete" class="px-4 py-2 bg-red-600 text-white rounded">Delete account permanently</button></p>
+
+            <!-- ===============================
+                 DOWNLOAD DATA
+            =============================== -->
+            <h3 class="section-title">Your Data</h3>
+            <p class="section-desc">
+                Download a copy of your personal data stored on JobBridge.
+            </p>
+
+            <button
+                type="submit"
+                name="action"
+                value="download"
+                class="secondary-btn"
+            >
+                Download my data
+            </button>
+
+            <hr class="settings-divider">
+
+            <!-- ===============================
+                 ACCOUNT STATUS
+            =============================== -->
+            <h3 class="section-title">Account Control</h3>
+            <p class="section-desc">
+                Manage the status of your account. These actions may affect your access.
+            </p>
+
+            <button
+                type="submit"
+                name="action"
+                value="deactivate"
+                class="warning-btn"
+            >
+                Deactivate account
+            </button>
+
+            <hr class="settings-divider">
+
+            <!-- ===============================
+                 DELETE ACCOUNT
+            =============================== -->
+            <h3 class="section-title danger-title">Danger Zone</h3>
+            <p class="section-desc">
+                Permanently delete your account and all associated data.
+                This action cannot be undone.
+            </p>
+
+            <button
+                type="submit"
+                name="action"
+                value="delete"
+                class="danger-btn"
+                onclick="return confirm('This will permanently delete your account. Continue?');"
+            >
+                Delete account permanently
+            </button>
+
         </form>
     </main>
+
 </div>
 {% endblock %}

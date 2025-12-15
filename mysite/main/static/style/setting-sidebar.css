@@ -341,3 +341,266 @@ body {
     background: #eee;
     cursor: pointer;
 }
+
+/* ===============================
+   CUSTOM SELECT
+================================ */
+.styled-select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* ===============================
+   TOGGLE SWITCH
+================================ */
+.toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 16px 0;
+}
+
+.switch {
+    position: relative;
+    width: 46px;
+    height: 24px;
+}
+
+.switch input {
+    display: none;
+}
+
+.slider {
+    position: absolute;
+    inset: 0;
+    background: #d1d5db;
+    border-radius: 999px;
+    transition: 0.3s;
+}
+
+.slider::before {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.switch input:checked + .slider {
+    background: #2563eb;
+}
+
+.switch input:checked + .slider::before {
+    transform: translateX(22px);
+}
+
+/* ===== Buttons ===== */
+.secondary-btn {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.secondary-btn:hover {
+    background: #e5e7eb;
+}
+
+.warning-btn {
+    background: #f59e0b;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.warning-btn:hover {
+    background: #d97706;
+}
+
+.danger-btn {
+    background: #dc2626;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.danger-btn:hover {
+    background: #b91c1c;
+}
+
+.danger-title {
+    color: #dc2626;
+}
+
+.settings-divider {
+    margin: 24px 0;
+    border: none;
+    border-top: 1px solid #e5e7eb;
+}
+
+.section-desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 12px;
+}
+
+/* ===============================
+   FIX LOST BUTTONS
+=============================== */
+
+.settings-form button {
+    display: inline-block;
+    margin-top: 12px;
+    margin-bottom: 8px;
+    min-width: 220px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Secondary */
+.secondary-btn {
+    background-color: #f3f4f6 !important;
+    border: 1px solid #d1d5db !important;
+    color: #111827 !important;
+}
+
+/* Warning */
+.warning-btn {
+    background-color: #f59e0b !important;
+    color: #ffffff !important;
+}
+
+/* Danger */
+.danger-btn {
+    background-color: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+/* Toggle switch */
+.toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 12px 0;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 46px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    background-color: #ccc;
+    border-radius: 24px;
+    inset: 0;
+    transition: 0.3s;
+}
+
+.toggle-switch .slider::before {
+    content: "";
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.toggle-switch input:checked + .slider {
+    background-color: #2563eb;
+}
+
+.toggle-switch input:checked + .slider::before {
+    transform: translateX(22px);
+}
+
+/* Checkbox cards */
+.checkbox-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Login activity */
+.activity-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.activity-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+/* Danger button */
+.danger-btn {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.support-card {
+    background: #f9fafb;
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+}
+
+.support-card h4 {
+    margin: 0 0 6px;
+    font-size: 16px;
+}
+
+.support-card p {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 6px;
+}
