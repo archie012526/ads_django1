@@ -1,1 +1,309 @@
-<h1>Your job applications will show here.</h1>
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .applications-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .page-header {
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+    }
+
+    .page-header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
+    }
+
+    .page-header p {
+        color: #666;
+        font-size: 16px;
+    }
+
+    .applications-grid {
+        display: grid;
+        gap: 20px;
+    }
+
+    .application-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .application-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+
+    .applicant-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #f0f0f0;
+    }
+
+    .application-info {
+        flex: 1;
+    }
+
+    .applicant-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 4px;
+    }
+
+    .job-title {
+        color: #667eea;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+
+    .application-meta {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-badge.pending {
+        background: linear-gradient(135deg, #ffd93d 0%, #ff9a3d 100%);
+        color: white;
+    }
+
+    .status-badge.reviewed {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    .status-badge.accepted {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+    }
+
+    .status-badge.rejected {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+
+    .applied-date {
+        color: #999;
+        font-size: 13px;
+    }
+
+    .application-actions {
+        display: flex;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .btn-message {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-message:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-view {
+        background: #f5f5f5;
+        color: #333;
+    }
+
+    .btn-view:hover {
+        background: #e8e8e8;
+    }
+
+    .empty-state {
+        background: white;
+        border-radius: 20px;
+        padding: 60px 40px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .empty-state-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 12px;
+    }
+
+    .empty-state p {
+        color: #666;
+        font-size: 16px;
+        margin-bottom: 24px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 32px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    }
+
+    @media (max-width: 768px) {
+        .application-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .application-actions {
+            width: 100%;
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="applications-container">
+    <div class="page-header">
+        {% if is_employer %}
+            <h1>📋 Job Applications</h1>
+            <p>Manage applications to your job postings</p>
+        {% else %}
+            <h1>📋 My Applications</h1>
+            <p>Track your job applications and their status</p>
+        {% endif %}
+    </div>
+
+    {% if applications %}
+        <div class="applications-grid">
+            {% for app in applications %}
+                <div class="application-card">
+                    {% if is_employer %}
+                        {# Show applicant info for employers #}
+                        {% if app.user.profile.profile_image %}
+                            <img src="{{ app.user.profile.profile_image.url }}" class="applicant-avatar" alt="{{ app.user.username }}">
+                        {% else %}
+                            <img src="{% static 'images/default-pfp.png' %}" class="applicant-avatar" alt="{{ app.user.username }}">
+                        {% endif %}
+                        
+                        <div class="application-info">
+                            <div class="applicant-name">{{ app.user.profile.full_name|default:app.user.username }}</div>
+                            <div class="job-title">Applied for: {{ app.job.title }}</div>
+                            <div class="application-meta">
+                                <span class="status-badge {{ app.status|lower }}">{{ app.status }}</span>
+                                <span class="applied-date">📅 {{ app.applied_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+
+                        <div class="application-actions">
+                            <a href="{% url 'conversation' app.user.id %}" class="btn btn-message">
+                                💬 Message
+                            </a>
+                            <button class="btn btn-view">👁️ View Resume</button>
+                        </div>
+                    {% else %}
+                        {# Show job info for job seekers #}
+                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                            💼
+                        </div>
+                        
+                        <div class="application-info">
+                            <div class="applicant-name">{{ app.job.title }}</div>
+                            <div class="job-title">{{ app.job.company_name|default:"Company" }} • {{ app.job.location }}</div>
+                            <div class="application-meta">
+                                <span class="status-badge {{ app.status|lower }}">{{ app.status }}</span>
+                                <span class="applied-date">📅 {{ app.applied_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+
+                        <div class="application-actions">
+                            {% if app.job.user != request.user %}
+                                <a href="{% url 'conversation' app.job.user.id %}" class="btn btn-message">
+                                    💬 Message Employer
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            {% if is_employer %}
+                <h2>No Applications Yet</h2>
+                <p>When candidates apply to your job postings, they'll appear here.</p>
+                <a href="{% url 'create_job' %}" class="btn-primary">Post a Job</a>
+            {% else %}
+                <h2>No Applications Yet</h2>
+                <p>Start applying to jobs that match your skills!</p>
+                <a href="{% url 'find_job' %}" class="btn-primary">Browse Jobs</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

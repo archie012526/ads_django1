@@ -24,22 +24,29 @@
 
     <div class="notif-list">
         {% for notif in notifications %}
-        <div class="notif-item {% if notif.status == 'unread' %}unread{% endif %}">
-            <div class="notif-icon {{ notif.color }}"></div>
+        <div class="notif-item {% if not notif.is_read %}unread{% endif %}">
+            <div class="notif-icon 
+                {% if notif.notification_type == 'job_post' %}blue
+                {% elif notif.notification_type == 'message' %}green
+                {% elif notif.notification_type == 'job_application' %}orange
+                {% else %}purple{% endif %}"></div>
 
             <div class="notif-content">
                 <h3>{{ notif.title }}</h3>
-                <p>{{ notif.description }}</p>
+                <p>{{ notif.message }}</p>
+                {% if notif.link %}
+                    <a href="{{ notif.link }}" style="color: #667eea; font-size: 13px; text-decoration: none; margin-top: 4px; display: inline-block;">View Details →</a>
+                {% endif %}
             </div>
 
-            <span class="notif-type">{{ notif.type }}</span>
+            <span class="notif-type">{{ notif.get_notification_type_display }}</span>
             <span class="notif-time">
-                {{ notif.time_created|timesince }} ago
+                {{ notif.created_at|timesince }} ago
             </span>
 
             <span class="notif-status 
-                {% if notif.status == 'unread' %}unread-badge{% else %}read-badge{% endif %}">
-                {{ notif.status }}
+                {% if not notif.is_read %}unread-badge{% else %}read-badge{% endif %}">
+                {% if not notif.is_read %}unread{% else %}read{% endif %}
             </span>
         </div>
         {% empty %}

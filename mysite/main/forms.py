@@ -93,9 +93,13 @@ class JobForm(forms.ModelForm):
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ("content",)
+        fields = ("content", "post_type", "image", "video", "article_title")
         widgets = {
-            "content": forms.Textarea(attrs={"rows": 3, "placeholder": "Start a post"}),
+            "content": forms.Textarea(attrs={"rows": 3, "placeholder": "Start a post", "class": "post-input"}),
+            "post_type": forms.HiddenInput(),
+            "image": forms.FileInput(attrs={"accept": "image/*", "style": "display:none;", "id": "imageInput"}),
+            "video": forms.FileInput(attrs={"accept": "video/*", "style": "display:none;", "id": "videoInput"}),
+            "article_title": forms.TextInput(attrs={"placeholder": "Article title", "style": "display:none;", "id": "articleTitleInput", "class": "post-input"}),
         }
     
 

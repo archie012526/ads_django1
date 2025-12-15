@@ -141,7 +141,7 @@ def homepage(request):
     
     # Keep separate references for backward compatibility
     posts = Post.objects.select_related('user', 'user__profile').order_by('-created_at')
-    other_jobs = jobs_from_others[:10]
+    other_jobs = jobs_from_others[:2]
 
     # ========= Personalized Recommendations =========
     base_jobs = Job.objects.filter(user__is_staff=False).exclude(user=request.user)
@@ -213,7 +213,7 @@ def homepage(request):
             working_schedule = request.POST.get("job_working_schedule")
             
             if title and description and location:
-                Job.objects.create(
+                job = Job.objects.create(
                     user=request.user,
                     title=title,
                     company_name=company,
@@ -222,11 +222,29 @@ def homepage(request):
                     employment_type=employment_type if employment_type else None,
                     working_schedule=working_schedule if working_schedule else None
                 )
+                
+                # Create notifications for users with matching skills
+                user_skill_names = set(profile.skills.values_list('name', flat=True))
+                if user_skill_names:
+                    # Find users whose skills match job description or tags
+                    for other_profile in Profile.objects.exclude(user=request.user).select_related('user'):
+                        other_skills = set(other_profile.skills.values_list('name', flat=True))
+                        matching_skills = user_skill_names.intersection(other_skills)
+                        if matching_skills or any(skill.lower() in description.lower() for skill in other_skills):
+                            Notification.objects.create(
+                                user=other_profile.user,
+                                notification_type='job_post',
+                                title=f'New Job: {title}',
+                                message=f'{request.user.profile.full_name or request.user.username} posted a job that matches your skills',
+                                link=f'/find-job/',
+                                related_user=request.user
+                            )
+                
                 messages.success(request, "Job posted successfully!")
                 return redirect('homepage')
         else:
             # Create a regular post
-            form = PostForm(request.POST)
+            form = PostForm(request.POST, request.FILES)
             if form.is_valid():
                 post = form.save(commit=False)
                 post.user = request.user
@@ -321,6 +339,29 @@ def profile_page(request):
 
 
 @login_required
+def view_user_profile(request, user_id):
+    """View another user's profile with option to message them"""
+    viewed_user = get_object_or_404(User, id=user_id)
+    
+    # Don't allow viewing own profile through this view
+    if viewed_user == request.user:
+        return redirect('profile')
+    
+    profile = viewed_user.profile
+    user_skill_names = list(profile.skills.values_list("name", flat=True))
+    
+    # Get their job posts if they're an employer
+    jobs_posted = Job.objects.filter(user=viewed_user) if profile.role == 'employer' else []
+    
+    return render(request, "main/view_user_profile.html", {
+        "viewed_user": viewed_user,
+        "profile": profile,
+        "user_skills": profile.skills.all(),
+        "jobs_posted": jobs_posted,
+    })
+
+
+@login_required
 def edit_profile_page(request):
     profile = request.user.profile
 
@@ -354,7 +395,7 @@ def find_job(request):
     working_schedule = request.GET.get("job_requirements", "")
     skill = request.GET.get("skill", "")
     
-    jobs = Job.objects.all()
+    jobs = Job.objects.select_related('user', 'user__profile').prefetch_related('skills').all()
 
     if query:
         jobs = jobs.filter(
@@ -380,19 +421,52 @@ def find_job(request):
 
 
 def job_search(request):
+    """Legacy job search - redirects to global search"""
+    return global_search(request)
+
+
+def global_search(request):
+    """Search for jobs, users, and employers"""
     query = request.GET.get("q", "")
-    jobs = Job.objects.all()
-
+    
+    jobs = []
+    users = []
+    employers = []
+    
     if query:
-        jobs = jobs.filter(
+        # Search jobs
+        jobs = Job.objects.filter(
             Q(title__icontains=query) |
-            Q(company__icontains=query) |
+            Q(description__icontains=query) |
+            Q(company_name__icontains=query) |
             Q(location__icontains=query)
-        )
+        ).select_related('user', 'user__profile').prefetch_related('skills')[:20]
+        
+        # Search users (job seekers)
+        users = User.objects.filter(
+            Q(username__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(profile__full_name__icontains=query) |
+            Q(profile__bio__icontains=query)
+        ).exclude(profile__role='employer').select_related('profile')[:10]
+        
+        # Search employers
+        employers = User.objects.filter(
+            Q(username__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(profile__full_name__icontains=query) |
+            Q(profile__bio__icontains=query),
+            profile__role='employer'
+        ).select_related('profile')[:10]
 
-    return render(request, "main/job_search.html", {
-        "jobs": jobs,
+    return render(request, "main/search_results.html", {
         "query": query,
+        "jobs": jobs,
+        "users": users,
+        "employers": employers,
+        "total_results": len(jobs) + len(users) + len(employers)
     })
 
 
@@ -401,10 +475,21 @@ def job_search(request):
 # ============================
 @login_required
 def job_applications_page(request):
-    applications = JobApplication.objects.filter(user=request.user)
-    return render(request, "main/job_applications.html", {
-        "applications": applications
-    })
+    # If user is employer, show applications to their jobs
+    if request.user.profile.role == "employer":
+        my_jobs = Job.objects.filter(user=request.user)
+        applications = JobApplication.objects.filter(job__in=my_jobs).select_related('user', 'job', 'user__profile')
+        return render(request, "main/job_applications.html", {
+            "applications": applications,
+            "is_employer": True
+        })
+    # Otherwise show user's own applications
+    else:
+        applications = JobApplication.objects.filter(user=request.user)
+        return render(request, "main/job_applications.html", {
+            "applications": applications,
+            "is_employer": False
+        })
 
 
 # ============================
@@ -464,12 +549,18 @@ def delete_skill(request, skill_id):
 def messages_inbox(request):
     msgs = Message.objects.filter(
         Q(sender=request.user) | Q(receiver=request.user)
-    ).order_by("-sent_at")
+    ).select_related('sender', 'receiver', 'sender__profile', 'receiver__profile').order_by("-sent_at")
 
     conversations = {}
     for m in msgs:
         other = m.receiver if m.sender == request.user else m.sender
-        conversations.setdefault(other, m)
+        if other not in conversations:
+            conversations[other] = {
+                'user': other,
+                'display_name': other.profile.full_name or other.username,
+                'avatar_url': other.profile.profile_image.url if other.profile.profile_image else None,
+                'last_message': m
+            }
 
     return render(request, "main/messages.html", {
         "conversations": conversations.values()
@@ -488,20 +579,50 @@ def conversation_view(request, user_id):
                 receiver=other,
                 content=content
             )
+            # Create notification for receiver
+            Notification.objects.create(
+                user=other,
+                notification_type='message',
+                title='New Message',
+                message=f'{request.user.profile.full_name or request.user.username} sent you a message',
+                link=f'/messages/{request.user.id}/',
+                related_user=request.user
+            )
         return redirect("conversation", user_id=user_id)
 
+    # Get all messages in the conversation
     convo = Message.objects.filter(
         Q(sender=request.user, receiver=other) |
         Q(sender=other, receiver=request.user)
-    ).order_by("sent_at")
+    ).select_related('sender', 'receiver').order_by("sent_at")
 
+    # Mark unread messages as read
     Message.objects.filter(
         sender=other, receiver=request.user, is_read=False
     ).update(is_read=True)
 
+    # Get all conversations for sidebar
+    msgs = Message.objects.filter(
+        Q(sender=request.user) | Q(receiver=request.user)
+    ).select_related('sender', 'receiver', 'sender__profile', 'receiver__profile').order_by("-sent_at")
+
+    conversations = {}
+    for m in msgs:
+        conv_other = m.receiver if m.sender == request.user else m.sender
+        if conv_other not in conversations:
+            conversations[conv_other] = {
+                'user': conv_other,
+                'display_name': conv_other.profile.full_name or conv_other.username,
+                'avatar_url': conv_other.profile.profile_image.url if conv_other.profile.profile_image else None,
+                'last_message': m
+            }
+
     return render(request, "main/messages.html", {
         "conversation_user": other,
+        "conversation_user_display": other.profile.full_name or other.username,
+        "conversation_user_avatar": other.profile.profile_image.url if other.profile.profile_image else None,
         "messages_qs": convo,
+        "conversations": conversations.values(),
     })
 
 

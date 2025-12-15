@@ -53,9 +53,10 @@
             </div>
 
             <!-- Create Post Form -->
-            <form method="POST" id="postForm" style="display: block;">
+            <form method="POST" id="postForm" enctype="multipart/form-data" style="display: block;">
                 {% csrf_token %}
                 <input type="hidden" name="post_type" value="post">
+                <input type="hidden" name="post_type" id="mediaType" value="text">
 
                 <div class="top-row">
                     {% if profile.profile_image %}
@@ -66,13 +67,82 @@
                     {{ form.content }}
                 </div>
 
+                <!-- Hidden file inputs and article title -->
+                {{ form.image }}
+                {{ form.video }}
+                {{ form.article_title }}
+
+                <div id="mediaPreview" style="margin: 10px 0; display: none;">
+                    <div id="previewContent" style="max-width: 100%; border-radius: 12px; overflow: hidden;"></div>
+                    <button type="button" onclick="clearMedia()" style="margin-top: 8px; padding: 4px 12px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px;">Remove</button>
+                </div>
+
                 <div class="post-options">
-                    <span>📹 Video</span>
-                    <span>📷 Photo</span>
-                    <span>✍️ Write article</span>
+                    <span onclick="triggerVideoUpload()" style="cursor: pointer;">📹 Video</span>
+                    <span onclick="triggerPhotoUpload()" style="cursor: pointer;">📷 Photo</span>
+                    <span onclick="showArticleInput()" style="cursor: pointer;">✍️ Write article</span>
                     <button type="submit" class="post-btn">Post</button>
                 </div>
             </form>
+
+            <script>
+                function triggerPhotoUpload() {
+                    document.getElementById('imageInput').click();
+                }
+
+                function triggerVideoUpload() {
+                    document.getElementById('videoInput').click();
+                }
+
+                function showArticleInput() {
+                    const titleInput = document.getElementById('articleTitleInput');
+                    const mediaType = document.getElementById('mediaType');
+                    
+                    if (titleInput.style.display === 'none') {
+                        titleInput.style.display = 'block';
+                        titleInput.style.marginTop = '10px';
+                        mediaType.value = 'article';
+                    } else {
+                        titleInput.style.display = 'none';
+                        mediaType.value = 'text';
+                    }
+                }
+
+                function clearMedia() {
+                    document.getElementById('imageInput').value = '';
+                    document.getElementById('videoInput').value = '';
+                    document.getElementById('mediaPreview').style.display = 'none';
+                    document.getElementById('previewContent').innerHTML = '';
+                    document.getElementById('mediaType').value = 'text';
+                }
+
+                // Preview image when selected
+                document.getElementById('imageInput').addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            document.getElementById('previewContent').innerHTML = 
+                                '<img src="' + e.target.result + '" style="max-width: 100%; border-radius: 12px;">';
+                            document.getElementById('mediaPreview').style.display = 'block';
+                            document.getElementById('mediaType').value = 'photo';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                // Preview video when selected
+                document.getElementById('videoInput').addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const url = URL.createObjectURL(file);
+                        document.getElementById('previewContent').innerHTML = 
+                            '<video controls style="max-width: 100%; border-radius: 12px;"><source src="' + url + '" type="' + file.type + '"></video>';
+                        document.getElementById('mediaPreview').style.display = 'block';
+                        document.getElementById('mediaType').value = 'video';
+                    }
+                });
+            </script>
 
             <!-- Create Job Form -->
             <form method="POST" id="jobForm" style="display: none;">
@@ -210,10 +280,48 @@
                 <!-- Regular Post -->
                 <div class="job-card">
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                        <strong>{{ item.user.profile.full_name }}</strong>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <a href="{% url 'view_user_profile' item.user.id %}" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;">
+                                {% if item.user.profile.profile_image %}
+                                    <img src="{{ item.user.profile.profile_image.url }}" class="profile-pic-small" style="object-fit: cover;">
+                                {% else %}
+                                    <div class="profile-pic-small"></div>
+                                {% endif %}
+                                <div>
+                                    <strong style="color: #1a1a1a; cursor: pointer;">{{ item.user.profile.full_name|default:item.user.username }}</strong>
+                                    {% if item.post_type == 'article' %}
+                                        <span style="color: #667eea; font-size: 12px; margin-left: 8px;">✍️ Article</span>
+                                    {% elif item.post_type == 'photo' %}
+                                        <span style="color: #667eea; font-size: 12px; margin-left: 8px;">📷 Photo</span>
+                                    {% elif item.post_type == 'video' %}
+                                        <span style="color: #667eea; font-size: 12px; margin-left: 8px;">📹 Video</span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                        </div>
                         <small>{{ item.created_at|timesince }} ago</small>
                     </div>
+                    
+                    {% if item.post_type == 'article' and item.article_title %}
+                        <h3 style="font-size: 20px; font-weight: 700; color: #1e293b; margin: 12px 0;">{{ item.article_title }}</h3>
+                    {% endif %}
+                    
                     <p>{{ item.content }}</p>
+                    
+                    {% if item.image %}
+                        <div style="margin-top: 12px;">
+                            <img src="{{ item.image.url }}" style="max-width: 100%; border-radius: 12px; cursor: pointer;" alt="Post image">
+                        </div>
+                    {% endif %}
+                    
+                    {% if item.video %}
+                        <div style="margin-top: 12px;">
+                            <video controls style="max-width: 100%; border-radius: 12px;">
+                                <source src="{{ item.video.url }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    {% endif %}
                 </div>
             {% elif item.item_type == 'job' %}
                 <!-- Job Post -->

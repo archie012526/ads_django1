@@ -132,6 +132,15 @@
                         <h3 class="job-title">{{ job.title }}</h3>
 
                         <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
+                        
+                        {% if job.user %}
+                            <p class="text-xs text-gray-500 mt-1">
+                                Posted by: 
+                                <a href="{% url 'view_user_profile' job.user.id %}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                                    {{ job.user.profile.full_name|default:job.user.username }}
+                                </a>
+                            </p>
+                        {% endif %}
 
                         <div class="job-badges">
                             {% if job.employment_type %}
@@ -148,8 +157,13 @@
 
                         <p class="job-description">{{ job.description|truncatewords:20 }}</p>
 
-                        <div class="mt-4">
-                            <button class="apply-btn">Apply</button>
+                        <div class="mt-4 flex gap-2">
+                            <button class="apply-btn flex-1">Apply</button>
+                            {% if job.user and job.user != request.user %}
+                                <a href="{% url 'conversation' job.user.id %}" class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-150 text-sm font-medium">
+                                    💬
+                                </a>
+                            {% endif %}
                         </div>
 
                     </div>
