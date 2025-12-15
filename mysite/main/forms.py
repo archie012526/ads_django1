@@ -73,13 +73,8 @@ class JobForm(forms.ModelForm):
         model = Job
         fields = [
             "title",
-            "company",
-            "location",
-            "job_type",
-            "employment_type",
-            "skills",
-            "salary",
             "description",
+            "location",
         ]
 
 

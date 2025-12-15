@@ -28,6 +28,29 @@ body {
     color: #ffffff;
 }
 
+.header .nav-center {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+}
+
+.header .nav-link {
+    color: white !important;
+    text-decoration: none;
+}
+
+.header .nav-link span {
+    color: white !important;
+}
+
+.header .nav-link svg {
+    stroke: white !important;
+}
+
+.header .nav-icon {
+    stroke: white !important;
+}
+
 .left-side {
     display: flex;
     align-items: center;
