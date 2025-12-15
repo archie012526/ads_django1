@@ -5,6 +5,34 @@
 {% block extra_head %}
 
 <link rel="stylesheet" href="{% static 'style/edit_profile.css' %}">
+<style>
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    textarea,
+    select {
+        width: 100%;
+        padding: 0.5rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.75rem;
+        font-size: 0.95rem;
+    }
+    
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="tel"]:focus,
+    textarea:focus,
+    select:focus {
+        outline: none;
+        border-color: #a855f7;
+        box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+</style>
 {% endblock %}
 
 
@@ -51,18 +79,26 @@
             <!-- PROFILE PHOTO -->
             <div class="flex justify-center mb-10">
                 <div class="relative">
-                    <img src="{% static 'images/default_profile.svg' %}"
-                         class="w-28 h-28 rounded-full border-4 border-purple-200 shadow-md ring-4 ring-purple-100">
+                    {% if profile.profile_image %}
+                        <img src="{{ profile.profile_image.url }}"
+                             class="w-28 h-28 rounded-full border-4 border-purple-200 shadow-md ring-4 ring-purple-100 object-cover">
+                    {% else %}
+                        <img src="{% static 'images/default_profile.svg' %}"
+                             class="w-28 h-28 rounded-full border-4 border-purple-200 shadow-md ring-4 ring-purple-100">
+                    {% endif %}
 
-                    <button
-                        class="absolute bottom-1 right-1 bg-purple-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm shadow hover:bg-purple-700 transition">
+                    <label for="profile_image_input"
+                           class="absolute bottom-1 right-1 bg-purple-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm shadow hover:bg-purple-700 transition cursor-pointer">
                         ✎
-                    </button>
+                    </label>
                 </div>
             </div>
 
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
+
+                <!-- Hidden file input for profile image -->
+                <input type="file" id="profile_image_input" name="profile_image" accept="image/*" style="display: none;">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
 
@@ -96,6 +132,11 @@
                         {{ profile_form.bio }}
                     </div>
 
+                    <!-- PROFILE IMAGE (Hidden but processed) -->
+                    <div style="display: none;">
+                        {{ profile_form.profile_image }}
+                    </div>
+
                 </div>
 
                 <!-- BUTTONS -->
@@ -115,5 +156,29 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Handle profile image upload
+    document.getElementById('profile_image_input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                // Update the profile image preview
+                const img = document.querySelector('.w-28.h-28.rounded-full');
+                if (img) {
+                    img.src = event.target.result;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Trigger file input when edit button is clicked
+    document.querySelector('label[for="profile_image_input"]').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('profile_image_input').click();
+    });
+</script>
 
 {% endblock %}

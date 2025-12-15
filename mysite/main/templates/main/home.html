@@ -16,13 +16,23 @@
 
             <div class="profile-banner"></div>
 
-            <div class="profile-pic-placeholder"></div>
+            {% if profile.profile_image %}
+                <img src="{{ profile.profile_image.url }}" class="profile-pic-placeholder" style="object-fit: cover;">
+            {% else %}
+                <div class="profile-pic-placeholder"></div>
+            {% endif %}
 
             <a href="{% url 'profile' %}" class="profile-name-link">
                 {{ profile.full_name }}
             </a>
 
-            <a href="{% url 'add_location' %}" class="location">location</a>
+            <a href="{% url 'add_location' %}" class="location">
+                {% if profile.location %}
+                    📍 {{ profile.location }}
+                {% else %}
+                    📍 Add Location
+                {% endif %}
+            </a>
 
             <ul class="profile-links">
                 <li>Saved Jobs: {{ saved_jobs_count }}</li>
@@ -38,7 +48,11 @@
         <!-- Create Post -->
         <div class="create-post-card">
             <div class="top-row">
-                <div class="profile-pic-small"></div>
+                {% if profile.profile_image %}
+                    <img src="{{ profile.profile_image.url }}" class="profile-pic-small" style="object-fit: cover;">
+                {% else %}
+                    <div class="profile-pic-small"></div>
+                {% endif %}
                 <input type="text" placeholder="Start a post" class="post-input">
             </div>
             <div class="post-options">
@@ -54,7 +68,11 @@
 
             {% for user in recommended_users %}
             <div class="recommended-user">
-                <div class="profile-pic-small"></div>
+                {% if user.profile.profile_image %}
+                    <img src="{{ user.profile.profile_image.url }}" class="profile-pic-small" style="object-fit: cover;">
+                {% else %}
+                    <div class="profile-pic-small"></div>
+                {% endif %}
 
                 <div>
                     <p class="username">{{ user.profile.full_name }}</p>

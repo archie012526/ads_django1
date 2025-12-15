@@ -132,6 +132,7 @@ def edit_profile_page(request):
     return render(request, "main/edit_profile.html", {
         "user_form": user_form,
         "profile_form": profile_form,
+        "profile": profile,
     })
 
 
@@ -389,6 +390,18 @@ def post_job(request):
 
     return render(request, "main/post_job.html", {"form": form})
 
+@login_required
 def add_location(request):
-    return render(request, "add_location.html")
+    profile = request.user.profile
+    
+    if request.method == "POST":
+        location = request.POST.get("location", "")
+        profile.location = location
+        profile.save()
+        messages.success(request, "Location updated successfully!")
+        return redirect("homepage")
+    
+    return render(request, "main/add_location.html", {
+        "profile": profile,
+    })
 
