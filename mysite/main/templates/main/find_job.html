@@ -140,6 +140,9 @@
                             {% if job.working_schedule %}
                                 <span class="pill">{{ job.get_working_schedule_display }}</span>
                             {% endif %}
+                            {% for tag in job.skills.all %}
+                                <span class="pill">{{ tag.name }}</span>
+                            {% endfor %}
                             <span class="pill">{{ job.location }}</span>
                         </div>
 

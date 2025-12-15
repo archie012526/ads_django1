@@ -74,32 +74,41 @@
     <h2 class="section-title">Job Suggestions for You</h2>
     <p class="suggestion-intro">Matches based on your skills</p>
 
-    {% if suggested_jobs %}
+    {% if suggestions %}
         <div class="job-list">
-            {% for job in suggested_jobs %}
+            {% for s in suggestions %}
+                {% with job=s.job %}
                 <div class="job-card">
                     <div class="job-info">
-                        <h3 class="job-title">{{ job.job_title }}</h3>
-                        <p class="job-company">{{ job.employer_name }}</p>
-                        <p class="job-location">
-                            {{ job.job_city|default:"Remote" }},
-                            {{ job.job_country|default:"" }}
-                        </p>
+                        <h3 class="job-title">{{ job.title }}</h3>
+                        <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
+                        <p class="job-location">{{ job.location|default:"Remote" }}</p>
+
+                        <div class="job-badges">
+                            {% if job.employment_type %}
+                                <span class="pill">{{ job.get_employment_type_display }}</span>
+                            {% endif %}
+                            {% if job.working_schedule %}
+                                <span class="pill">{{ job.get_working_schedule_display }}</span>
+                            {% endif %}
+                            {% for tag in job.skills.all %}
+                                <span class="pill">{{ tag.name }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <p class="job-description">{{ job.description|default:"No description provided."|truncatewords:35 }}</p>
                     </div>
 
                     <div class="job-match">
                         <span>Skill Match</span>
-                        <strong>{{ job.match_percent }}%</strong>
+                        <strong>{{ s.match_percent }}%</strong>
                     </div>
 
                     <div class="job-action">
-                        <a href="{{ job.job_apply_link }}"
-                           target="_blank"
-                           class="apply-btn">
-                            Apply Now
-                        </a>
+                        <button class="apply-btn">Apply Now</button>
                     </div>
                 </div>
+                {% endwith %}
             {% endfor %}
         </div>
     {% else %}

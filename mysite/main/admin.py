@@ -6,7 +6,8 @@ from .models import (
     Notification,
     Message,
     ContactSubmission,
-    Skill
+    Skill,
+    SkillTag
 )
 
 # ---------------------------
@@ -32,6 +33,7 @@ class JobAdmin(admin.ModelAdmin):
         'company_name',
         'user',
         'location',
+        'skills_list',
         'employment_type',
         'working_schedule',
         'created_at',
@@ -51,7 +53,12 @@ class JobAdmin(admin.ModelAdmin):
     )
 
     # Allow admins to easily create jobs
-    fields = ('user', 'title', 'company_name', 'description', 'location', 'employment_type', 'working_schedule')
+    fields = ('user', 'title', 'company_name', 'description', 'location', 'employment_type', 'working_schedule', 'skills')
+    filter_horizontal = ('skills',)
+
+    def skills_list(self, obj):
+        return ", ".join(obj.skills.values_list('name', flat=True)) or "—"
+    skills_list.short_description = 'Skills'
 
 
 # ---------------------------
@@ -73,6 +80,15 @@ class SkillAdmin(admin.ModelAdmin):
     list_display = ('name', 'user', 'level')
     list_filter = ('level',)
     search_fields = ('name', 'user__user__username')
+    ordering = ('name',)
+
+
+# ---------------------------
+# SKILL TAGS (Job skills)
+# ---------------------------
+@admin.register(SkillTag)
+class SkillTagAdmin(admin.ModelAdmin):
+    search_fields = ('name',)
     ordering = ('name',)
 
 
