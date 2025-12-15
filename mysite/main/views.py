@@ -308,6 +308,8 @@ def profile_page(request):
 
         jobs_qs = (
             Job.objects
+            .select_related("user", "user__profile")
+            .prefetch_related("skills")
             .filter(q)
             .exclude(user=request.user)
             .distinct()
@@ -332,9 +334,23 @@ def profile_page(request):
         suggestions.sort(key=lambda x: x["match_percent"], reverse=True)
         suggestions = suggestions[:10]
 
+    # Fallback: if no suggestions (no skills or no matches), show recent jobs
+    if not suggestions:
+        fallback_jobs = Job.objects.select_related("user", "user__profile").prefetch_related("skills") \
+            .exclude(user=request.user).order_by("-created_at")[:6]
+        suggestions = [{
+            "job": job,
+            "match_percent": 0,
+            "matched_skills": [],
+        } for job in fallback_jobs]
+
+    # Fetch user's posts
+    user_posts = Post.objects.filter(user=request.user).order_by("-created_at")
+
     return render(request, "main/profile.html", {
         "profile": profile,
         "suggestions": suggestions,
+        "user_posts": user_posts,
     })
 
 
@@ -394,6 +410,59 @@ def find_job(request):
     employment_type = request.GET.get("employment_type", "")
     working_schedule = request.GET.get("job_requirements", "")
     skill = request.GET.get("skill", "")
+
+    # If no jobs exist (fresh DB), seed a handful so the page always has content
+    if not Job.objects.exists():
+        owner = User.objects.first()
+        if owner:
+            sample_jobs = [
+                Job(
+                    user=owner,
+                    title="Frontend Engineer",
+                    company_name="Aurora Labs",
+                    description="Build delightful UIs in React and Tailwind, ship features fast, and collaborate with product/design.",
+                    location="Remote",
+                    employment_type="FULLTIME",
+                    working_schedule="flexible",
+                ),
+                Job(
+                    user=owner,
+                    title="Backend Developer",
+                    company_name="BlueRiver Tech",
+                    description="Design and scale APIs with Django/DRF, write clean code, and improve performance and observability.",
+                    location="New York, NY",
+                    employment_type="FULLTIME",
+                    working_schedule="full_day",
+                ),
+                Job(
+                    user=owner,
+                    title="Data Analyst",
+                    company_name="InsightIQ",
+                    description="Explore datasets, build dashboards, and communicate insights using SQL, Python, and modern BI tools.",
+                    location="Austin, TX",
+                    employment_type="PARTTIME",
+                    working_schedule="flexible",
+                ),
+                Job(
+                    user=owner,
+                    title="Product Designer",
+                    company_name="Northwind Studio",
+                    description="Own end-to-end design from research to high-fidelity, prototype interactions, and partner with engineering.",
+                    location="San Francisco, CA",
+                    employment_type="CONTRACT",
+                    working_schedule="flexible",
+                ),
+                Job(
+                    user=owner,
+                    title="DevOps Engineer",
+                    company_name="CloudForge",
+                    description="Automate CI/CD, harden cloud infra, improve reliability, and drive cost optimizations.",
+                    location="Remote",
+                    employment_type="FULLTIME",
+                    working_schedule="full_day",
+                ),
+            ]
+            Job.objects.bulk_create(sample_jobs)
     
     jobs = Job.objects.select_related('user', 'user__profile').prefetch_related('skills').all()
 
