@@ -1,6 +1,11 @@
 from django import forms
 from django.contrib.auth.models import User
+<<<<<<< HEAD
 from .models import Profile, Skill, Job, Post
+=======
+from .models import Profile, Skill, Job
+from django.contrib.auth.forms import UserCreationForm
+>>>>>>> bb1bbec46f014b2d16531b005102645a021ecd0f
 
 
 class UserForm(forms.ModelForm):
