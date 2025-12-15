@@ -72,91 +72,105 @@
         =============================== -->
         <h3 class="section-title">Basic Account Control</h3>
 
-        <label>Username / Email</label>
+        <label>Email</label>
         {{ user_form.email }}
+
+        <label>Username</label>
+        <input type="text"
+               name="username"
+               value="{{ request.user.username }}"
+               class="text-input">
 
         <label>Phone number</label>
         <input type="text"
-              name="phone_number"
-              value="{{ request.user.profile.phone_number }}">
+               name="phone_number"
+               value="{{ request.user.profile.phone_number }}"
+               class="text-input">
 
         <!-- ===============================
-             SECURITY
-        =============================== -->
-        <h3 class="section-title">Security</h3>
-
-        <label>Change password</label>
-        <a href="{% url 'password_change' %}" class="text-link">
-            Change your password
-        </a>
-
-        <div class="checkbox-group">
-            {{ form.two_factor_enabled }}
-            <label for="{{ form.two_factor_enabled.id_for_label }}">
-                Enable two-factor authentication (recommended)
-            </label>
-        </div>
-
-        <!-- ===============================
-             CONNECTED ACCOUNTS (NEW)
+             CONNECTED ACCOUNTS
         =============================== -->
         <h3 class="section-title">Connected Accounts</h3>
 
-        <div class="checkbox-group">
-            <input type="checkbox" disabled checked>
-            <label>Google</label>
+        <div class="connected-accounts">
+            <div class="connected-app google">
+                <i class="fa-brands fa-google"></i>
+                <span>Google</span>
+                <button type="button" class="connect-btn">Connected</button>
+            </div>
+
+            <div class="connected-app facebook">
+                <i class="fa-brands fa-facebook-f"></i>
+                <span>Facebook</span>
+                <button type="button" class="connect-btn">Connect</button>
+            </div>
         </div>
 
-        <div class="checkbox-group">
-            <input type="checkbox" disabled>
-            <label>LinkedIn</label>
-        </div>
-
-        <p class="hint-text">
-            Manage social logins from your authentication provider.
-        </p>
 
         <!-- ===============================
-             ACCOUNT STATUS (NEW)
+             ACCOUNT STATUS
         =============================== -->
         <h3 class="section-title">Account Status</h3>
 
-        <label>Account status</label>
-        {{ form.account_status }}
+        <div class="toggle-row">
+            <span>Status</span>
+            <label class="toggle-switch">
+                <input type="checkbox" name="account_active" checked>
+                <span class="slider"></span>
+            </label>
+            <span class="toggle-label">Active</span>
+        </div>
 
         <p class="hint-text">
-            Deactivating your account will hide your profile and applications.
+            Turning this off will deactivate your account.
         </p>
 
         <!-- ===============================
-             APPLICATION PREFERENCES (NEW)
+             APPLICATION PREFERENCES
         =============================== -->
         <h3 class="section-title">Application Preferences</h3>
 
-        <label>Default resume</label>
-        {{ form.default_resume }}
+        <label>Default Resume</label>
 
-        <label>Default cover letter</label>
-        {{ form.default_cover_letter }}
+        <input type="file"
+              name="default_resume"
+              id="resumeInput"
+              accept=".pdf,.jpg,.jpeg,.png"
+              class="file-input">
 
-        <div class="checkbox-group">
-            {{ form.auto_fill_applications }}
-            <label for="{{ form.auto_fill_applications.id_for_label }}">
-                Enable auto-fill for job applications
+        <div id="resumePreview" class="file-preview hidden"></div>
+
+        <label>Default Cover Letter</label>
+
+        <input type="file"
+              name="default_cover_letter"
+              id="coverInput"
+              accept=".pdf,.jpg,.jpeg,.png"
+              class="file-input">
+
+        <div id="coverPreview" class="file-preview hidden"></div>
+
+        <div class="toggle-row">
+            <span>Auto-fill applications</span>
+            <label class="toggle-switch">
+                <input type="checkbox" name="auto_fill_applications">
+                <span class="slider"></span>
             </label>
         </div>
 
-        <div class="checkbox-group">
-            {{ form.track_application_history }}
-            <label for="{{ form.track_application_history.id_for_label }}">
-                Track my application history
+        <div class="toggle-row">
+            <span>Track application history</span>
+            <label class="toggle-switch">
+                <input type="checkbox" name="track_application_history">
+                <span class="slider"></span>
             </label>
         </div>
 
-        <div class="checkbox-group">
-            {{ form.allow_resume_download }}
-            <label for="{{ form.allow_resume_download.id_for_label }}">
-                Allow employers to download my resume
+        <div class="toggle-row">
+            <span>Allow employers to download resume</span>
+            <label class="toggle-switch">
+                <input type="checkbox" name="allow_resume_download">
+                <span class="slider"></span>
             </label>
         </div>
 
@@ -168,5 +182,6 @@
         </button>
     </form>
 </main>
+
 
 {% endblock %}
