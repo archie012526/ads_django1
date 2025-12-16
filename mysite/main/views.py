@@ -8,10 +8,11 @@ from django.db.models import Q
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
+from django.http import JsonResponse
 from datetime import timedelta
 from .models import Post
 
-from .models import Profile, Job, JobApplication, Notification, Skill, Message
+from .models import Profile, Job, JobApplication, Notification, Skill, Message, SavedJob
 from .forms import JobForm, PostForm, SkillForm, UserForm, ProfileForm, SettingsForm, SignUpForm, JobApplicationForm
 
 
@@ -255,7 +256,7 @@ def homepage(request):
         form = PostForm()
 
     # Basic counts and defaults for sidebar cards
-    saved_jobs_count = 0
+    saved_jobs_count = SavedJob.objects.filter(user=request.user).count()
     applications_count = JobApplication.objects.filter(user=request.user).count()
     unread_notifications = Notification.objects.filter(user=request.user, is_read=False).count()
 
@@ -286,6 +287,7 @@ def homepage(request):
         'recommended_users': recommended_users,
         'industries': industries,
         'popular_jobs': popular_jobs,
+        'saved_jobs': SavedJob.objects.filter(user=request.user).select_related('job', 'job__user', 'job__user__profile'),
     }
     return render(request, 'main/home.html', context)
 
@@ -883,11 +885,6 @@ def apply_job(request, job_id):
         messages.error(request, "Employers cannot apply for jobs.")
         return redirect("find_job")
     
-    # Check if already applied
-    if JobApplication.objects.filter(user=request.user, job=job).exists():
-        messages.warning(request, "You have already applied for this job.")
-        return redirect("find_job")
-    
     if request.method == "POST":
         form = JobApplicationForm(request.POST, request.FILES)
         if form.is_valid():
@@ -915,5 +912,32 @@ def apply_job(request, job_id):
         "job": job,
         "form": form,
     })
+
+
+@login_required
+def toggle_save_job(request, job_id):
+    """Save or unsave a job"""
+    job = get_object_or_404(Job, id=job_id)
+    
+    saved_job, created = SavedJob.objects.get_or_create(
+        user=request.user,
+        job=job
+    )
+    
+    if not created:
+        # Job was already saved, so delete it
+        saved_job.delete()
+        messages.info(request, "Job removed from saved.")
+        is_saved = False
+    else:
+        messages.success(request, "Job saved successfully!")
+        is_saved = True
+    
+    # Return JSON response for AJAX
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'saved': is_saved})
+    
+    return redirect(request.META.get('HTTP_REFERER', 'find_job'))
+
 
 

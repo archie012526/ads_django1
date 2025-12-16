@@ -373,6 +373,37 @@
 
     <!-- RIGHT COLUMN -->
     <div class="right-column">
+        <!-- Saved Jobs Section -->
+        <div class="recommended-card" style="margin-bottom: 30px;">
+            <h3>Saved Jobs</h3>
+            
+            {% if saved_jobs %}
+                {% for saved in saved_jobs %}
+                    {% with job=saved.job %}
+                    <div class="job-card">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px;">
+                            <div style="flex: 1;">
+                                <a href="{% url 'apply_job' job.id %}" style="text-decoration: none; color: inherit;">
+                                    <strong style="cursor: pointer; color: #0a66c2; hover: text-decoration: underline;">{{ job.title }}</strong>
+                                </a>
+                                <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
+                            </div>
+                            <a href="{% url 'toggle_save_job' job.id %}" style="font-size: 18px; text-decoration: none;">⭐</a>
+                        </div>
+                        <div class="job-badges">
+                            {% if job.employment_type %}<span class="pill">{{ job.get_employment_type_display }}</span>{% endif %}
+                            {% if job.working_schedule %}<span class="pill">{{ job.get_working_schedule_display }}</span>{% endif %}
+                            <span class="pill">{{ job.location }}</span>
+                        </div>
+                        <p style="font-size: 12px; color: #666; margin-top: 8px;">Saved {{ saved.saved_at|timesince }} ago</p>
+                    </div>
+                    {% endwith %}
+                {% endfor %}
+            {% else %}
+                <p style="color: #666; font-size: 14px;">No saved jobs yet. Browse jobs and click ☆ to save them!</p>
+            {% endif %}
+        </div>
+
         <!-- Recommended for you (personalized jobs) -->
         <div class="recommended-card">
             <h3>Recommended for you</h3>

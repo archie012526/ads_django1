@@ -106,7 +106,12 @@
                     </div>
 
                     <div class="job-action">
-                        <button class="apply-btn">Apply Now</button>
+                        <div style="display: flex; gap: 10px;">
+                            <a href="{% url 'apply_job' job.id %}" class="apply-btn" style="flex: 1; text-align: center; padding: 10px 20px; color: white; background-color: #2c3e50; border-radius: 5px; text-decoration: none;">Apply Now</a>
+                            <a href="{% url 'toggle_save_job' job.id %}" style="padding: 10px 15px; font-size: 18px; background-color: #fff3cd; border-radius: 5px; text-decoration: none; border: 1px solid #ffc107;" title="Save Job">
+                                {% if job.saved_by.filter|length > 0 %}⭐{% else %}☆{% endif %}
+                            </a>
+                        </div>
                     </div>
                 </div>
                 {% endwith %}

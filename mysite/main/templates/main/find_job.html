@@ -159,6 +159,9 @@
 
                         <div class="mt-4 flex gap-2">
                             <a href="{% url 'apply_job' job.id %}" class="apply-btn flex-1 text-center">Apply</a>
+                            <a href="{% url 'toggle_save_job' job.id %}" class="px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition duration-150 text-sm font-medium" title="Save Job">
+                                {% if job.saved_by.filter|length > 0 %}⭐{% else %}☆{% endif %}
+                            </a>
                             {% if job.user and job.user != request.user %}
                                 <a href="{% url 'conversation' job.user.id %}" class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-150 text-sm font-medium">
                                     💬
