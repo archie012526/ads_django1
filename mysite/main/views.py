@@ -12,7 +12,7 @@ from datetime import timedelta
 from .models import Post
 
 from .models import Profile, Job, JobApplication, Notification, Skill, Message
-from .forms import JobForm, PostForm, SkillForm, UserForm, ProfileForm, SettingsForm, SignUpForm
+from .forms import JobForm, PostForm, SkillForm, UserForm, ProfileForm, SettingsForm, SignUpForm, JobApplicationForm
 
 
 # ============================
@@ -871,4 +871,49 @@ def add_location(request):
     return render(request, "main/add_location.html", {
         "profile": profile,
     })
+
+
+@login_required
+def apply_job(request, job_id):
+    """Handle job application submission"""
+    job = get_object_or_404(Job, id=job_id)
+    
+    # Check if user is a job seeker, not an employer
+    if request.user.profile.role == "employer":
+        messages.error(request, "Employers cannot apply for jobs.")
+        return redirect("find_job")
+    
+    # Check if already applied
+    if JobApplication.objects.filter(user=request.user, job=job).exists():
+        messages.warning(request, "You have already applied for this job.")
+        return redirect("find_job")
+    
+    if request.method == "POST":
+        form = JobApplicationForm(request.POST, request.FILES)
+        if form.is_valid():
+            application = form.save(commit=False)
+            application.user = request.user
+            application.job = job
+            application.save()
+            
+            # Create notification for job poster
+            Notification.objects.create(
+                user=job.user,
+                notification_type='job_application',
+                title=f'New Application: {job.title}',
+                message=f'{request.user.profile.full_name or request.user.username} applied for {job.title}',
+                link=f'/job-applications/',
+                related_user=request.user
+            )
+            
+            messages.success(request, "Application submitted successfully!")
+            return redirect("find_job")
+    else:
+        form = JobApplicationForm()
+    
+    return render(request, "main/apply_job.html", {
+        "job": job,
+        "form": form,
+    })
+
 

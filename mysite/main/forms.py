@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Profile, Skill, Job, Post
+from .models import Profile, Skill, Job, Post, JobApplication
 
 
 class UserForm(forms.ModelForm):
@@ -100,6 +100,18 @@ class PostForm(forms.ModelForm):
             "image": forms.FileInput(attrs={"accept": "image/*", "style": "display:none;", "id": "imageInput"}),
             "video": forms.FileInput(attrs={"accept": "video/*", "style": "display:none;", "id": "videoInput"}),
             "article_title": forms.TextInput(attrs={"placeholder": "Article title", "style": "display:none;", "id": "articleTitleInput", "class": "post-input"}),
+        }
+
+
+class JobApplicationForm(forms.ModelForm):
+    class Meta:
+        model = JobApplication
+        fields = ["resume"]
+        widgets = {
+            "resume": forms.FileInput(attrs={
+                "class": "w-full px-4 py-2 border border-gray-300 rounded-lg",
+                "accept": ".pdf,.doc,.docx",
+            }),
         }
     
 
