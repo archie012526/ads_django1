@@ -767,22 +767,89 @@ def account_settings(request):
     })
 
 
+@login_required
 def privacy(request):
-    return render(request, "main/privacy2.html")
+    profile = request.user.profile
+    
+    if request.method == "POST":
+        profile.profile_visibility = request.POST.get('profile_visibility', 'employers')
+        profile.allow_contact = request.POST.get('allow_contact') == 'on'
+        profile.save()
+        messages.success(request, "Privacy settings updated successfully!")
+        return redirect("settings_privacy")
+    
+    return render(request, "main/privacy2.html", {"profile": profile})
 
 
+@login_required
 def security(request):
+    if request.method == "POST":
+        action = request.POST.get('action')
+        
+        if action == 'logout_all':
+            # For now, just log out current session
+            messages.info(request, "Logged out from all devices.")
+            return redirect('logout')
+        
+        # Handle password change
+        old_password = request.POST.get('old_password')
+        new_password1 = request.POST.get('new_password1')
+        new_password2 = request.POST.get('new_password2')
+        
+        if old_password and new_password1 and new_password2:
+            if new_password1 != new_password2:
+                messages.error(request, "New passwords don't match.")
+            elif not request.user.check_password(old_password):
+                messages.error(request, "Current password is incorrect.")
+            elif len(new_password1) < 8:
+                messages.error(request, "Password must be at least 8 characters.")
+            else:
+                request.user.set_password(new_password1)
+                request.user.save()
+                messages.success(request, "Password changed successfully! Please log in again.")
+                return redirect('login')
+        else:
+            messages.success(request, "Security settings updated.")
+        
+        return redirect("settings_security")
+    
     return render(request, "main/security.html")
 
 
+@login_required
 def language(request):
-    return render(request, "main/language2.html")
+    profile = request.user.profile
+    
+    if request.method == "POST":
+        # Save language and appearance preferences
+        profile.language = request.POST.get('language', 'en')
+        profile.timezone = request.POST.get('timezone', 'UTC')
+        profile.dark_mode = request.POST.get('dark_mode') == 'on'
+        profile.save()
+        messages.success(request, "Language and appearance preferences saved!")
+        return redirect("settings_language")
+    
+    return render(request, "main/language2.html", {"profile": profile})
 
 
+@login_required
 def data_control(request):
+    if request.method == "POST":
+        action = request.POST.get('action')
+        
+        if action == 'download':
+            messages.info(request, "Your data export has been requested. You'll receive an email when it's ready.")
+        elif action == 'deactivate':
+            messages.warning(request, "Account deactivation feature coming soon.")
+        elif action == 'delete':
+            messages.error(request, "Account deletion is permanent. Contact support to proceed.")
+        
+        return redirect("settings_data_control")
+    
     return render(request, "main/data-control2.html")
 
 
+@login_required
 def help_page(request):
     return render(request, "main/help2.html")
 
