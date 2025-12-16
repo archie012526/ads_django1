@@ -1,0 +1,52 @@
+﻿[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$dXGtKCFxKESgMaro3M3Xzr$L8zO1a6GmzRsqQ6cEGAqQ8EUASXSjPSiuHekznuvYfw=",
+    "last_login": "2025-12-15T21:36:07.605Z",
+    "is_superuser": false,
+    "username": "username",
+    "first_name": "user",
+    "last_name": "user",
+    "email": "user@sample.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-12-15T21:36:02.781Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "xmvsn5jkwk0ko3t1bc1xdiz73fly2ys3",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2pABBiku3fcMBJhBqoYmpV0Z765NutDtf-_9lwhxW2vYOi9hInERSpx-txTzg9sO6B7bbZZ5busyJbkr8qBdjjPx83q4fwc19vqtsbBKlI0v2vqsQZUBjAd9JiRFEdHqwklZSGQdu5xpAGDDaMAkByjeH-aLN7g:1vVGEh:6oOaNUfZA-xZ_HT_lqpY_A8fe_AYQ4NJh6bNwodHvnU",
+    "expire_date": "2025-12-29T21:36:07.620Z"
+  }
+},
+{
+  "model": "main.profile",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "username"
+    ],
+    "role": "job_seeker",
+    "full_name": null,
+    "phone_number": null,
+    "location": null,
+    "bio": null,
+    "company_name": null,
+    "profile_image": "",
+    "preferred_job_titles": "",
+    "job_categories": "",
+    "employment_type": "",
+    "preferred_location": "",
+    "profile_visibility": "employers",
+    "allow_contact": true,
+    "email_notifications": true,
+    "push_notifications": false,
+    "updated_at": "2025-12-15T21:36:07.613Z"
+  }
+}
+]
