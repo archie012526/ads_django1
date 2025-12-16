@@ -66,7 +66,7 @@ urlpatterns = [
     path("search/", views.global_search, name="search"),
     path("job-search/", views.job_search, name="job_search"),  # Legacy redirect
 
-    #logout
-    path("logout/", auth_views.LogoutView.as_view(next_page='landing'), name="logout"),
+    # Logout (custom view supporting GET and POST)
+    path("logout/", views.logout_view, name="logout"),
 ]   
 
