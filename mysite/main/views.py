@@ -15,6 +15,8 @@ from .models import Post
 from .models import Profile, Job, JobApplication, Notification, Skill, Message, SavedJob
 from .forms import JobForm, PostForm, SkillForm, UserForm, ProfileForm, SettingsForm, SignUpForm, JobApplicationForm
 
+from django.contrib.auth import logout as django_logout
+
 
 # ============================
 # LANDING / STATIC
@@ -874,6 +876,14 @@ def add_location(request):
         "profile": profile,
     })
 
+
+def logout_view(request):
+    """Log the user out on GET or POST and redirect to landing."""
+    if request.method in ("POST", "GET"):
+        django_logout(request)
+        return redirect('landing')
+    # Fallback for other methods
+    return redirect('landing')
 
 @login_required
 def apply_job(request, job_id):

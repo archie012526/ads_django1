@@ -13,7 +13,7 @@
             <a href="{% url 'skills' %}" class="sidebar-link sidebar-pill {% if request.path == '/skills/' %}active{% endif %}">Skills</a>
         </li>
         <li>
-            <a href="/logout/" class="sidebar-link logout-link">Log Out</a>
+            <a href="{% url 'logout' %}" class="sidebar-link logout-link">Log Out</a>
         </li>
     </ul>
 </aside>
