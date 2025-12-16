@@ -25,6 +25,64 @@
             border-color: #a855f7;
             box-shadow: 0 0 0 3px rgb(168 85 247 / 0.3);
         }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        body.dark-mode .header {
+            background-color: #2d3748;
+            border-bottom: 1px solid #4a5568;
+        }
+        body.dark-mode .search-bar {
+            background-color: #374151;
+            border-color: #4b5563;
+        }
+        body.dark-mode .search-input {
+            background-color: #374151;
+            color: #e2e8f0;
+        }
+        body.dark-mode .nav-item {
+            color: #cbd5e0;
+        }
+        body.dark-mode .nav-item:hover,
+        body.dark-mode .nav-active {
+            color: #ffffff;
+        }
+        body.dark-mode .profile-card,
+        body.dark-mode .create-post-card,
+        body.dark-mode .post-card,
+        body.dark-mode .job-card,
+        body.dark-mode .recommended-card,
+        body.dark-mode .bg-white {
+            background-color: #2d3748 !important;
+            border-color: #4a5568 !important;
+        }
+        body.dark-mode input,
+        body.dark-mode textarea,
+        body.dark-mode select {
+            background-color: #374151;
+            color: #e2e8f0;
+            border-color: #4b5563;
+        }
+        body.dark-mode .text-gray-900,
+        body.dark-mode .text-gray-800,
+        body.dark-mode .text-gray-700 {
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode .text-gray-600,
+        body.dark-mode .text-gray-500 {
+            color: #cbd5e0 !important;
+        }
+        body.dark-mode .settings-container {
+            background-color: #1a202c;
+        }
+        body.dark-mode .settings-nav,
+        body.dark-mode .settings-content {
+            background-color: #2d3748;
+            border-color: #4a5568;
+        }
     </style>
 
     <!-- Custom CSS -->
@@ -35,7 +93,7 @@
     {% block extra_head %}{% endblock %}
 </head>
 
-<body>
+<body {% if user.is_authenticated and user.profile.dark_mode %}class="dark-mode"{% endif %}>
 
         <!-- Logo -->
     <header class="header">

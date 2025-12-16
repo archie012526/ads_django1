@@ -63,6 +63,14 @@
     <main class="settings-content">
         <h2 class="page-title">Privacy &amp; Visibility</h2>
 
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" style="padding: 12px; margin-bottom: 20px; border-radius: 8px; background: {% if message.tags == 'success' %}#d4edda{% elif message.tags == 'error' %}#f8d7da{% else %}#d1ecf1{% endif %}; border: 1px solid {% if message.tags == 'success' %}#c3e6cb{% elif message.tags == 'error' %}#f5c6cb{% else %}#bee5eb{% endif %}; color: {% if message.tags == 'success' %}#155724{% elif message.tags == 'error' %}#721c24{% else %}#0c5460{% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
         <form method="post" class="settings-form">
             {% csrf_token %}
 
@@ -71,19 +79,12 @@
             =============================== -->
             <h3 class="section-title">Profile Visibility</h3>
 
-            <div class="toggle-row">
-                <div class="toggle-text">
-                    <strong>Public profile</strong>
-                    <p class="hint-text">
-                        Allow employers to view your profile.
-                    </p>
-                </div>
-
-                <label class="toggle-switch">
-                    {{ form.profile_visibility }}
-                    <span class="slider"></span>
-                </label>
-            </div>
+            <label>Who can see your profile?</label>
+            <select class="styled-select" name="profile_visibility">
+                <option value="public" {% if profile.profile_visibility == 'public' %}selected{% endif %}>Public - Everyone</option>
+                <option value="employers" {% if profile.profile_visibility == 'employers' %}selected{% endif %}>Employers Only</option>
+                <option value="private" {% if profile.profile_visibility == 'private' %}selected{% endif %}>Private - Only Me</option>
+            </select>
 
             <!-- ===============================
                 CONTACT PERMISSIONS
@@ -99,7 +100,7 @@
                 </div>
 
                 <label class="toggle-switch">
-                    {{ form.allow_contact }}
+                    <input type="checkbox" name="allow_contact" {% if profile.allow_contact %}checked{% endif %}>
                     <span class="slider"></span>
                 </label>
             </div>
@@ -113,7 +114,7 @@
                 </div>
 
                 <label class="toggle-switch">
-                    {{ form.show_email }}
+                    <input type="checkbox" name="show_email">
                     <span class="slider"></span>
                 </label>
             </div>
@@ -132,7 +133,7 @@
                 </div>
 
                 <label class="toggle-switch">
-                    {{ form.search_engine_indexing }}
+                    <input type="checkbox" name="search_engine_indexing">
                     <span class="slider"></span>
                 </label>
             </div>

@@ -40,6 +40,14 @@
     <main class="settings-content">
         <h2 class="page-title">Language &amp; Appearance</h2>
 
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" style="padding: 12px; margin-bottom: 20px; border-radius: 8px; background: {% if message.tags == 'success' %}#d4edda{% elif message.tags == 'error' %}#f8d7da{% else %}#d1ecf1{% endif %}; border: 1px solid {% if message.tags == 'success' %}#c3e6cb{% elif message.tags == 'error' %}#f5c6cb{% else %}#bee5eb{% endif %}; color: {% if message.tags == 'success' %}#155724{% elif message.tags == 'error' %}#721c24{% else %}#0c5460{% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
         <form method="post" class="settings-form">
             {% csrf_token %}
 
@@ -50,11 +58,11 @@
 
             <label>Display language</label>
             <select class="styled-select" name="language">
-                <option value="en">English</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
-                <option value="fil">Filipino</option>
+                <option value="en" {% if profile.language == 'en' %}selected{% endif %}>English</option>
+                <option value="es" {% if profile.language == 'es' %}selected{% endif %}>Spanish</option>
+                <option value="fr" {% if profile.language == 'fr' %}selected{% endif %}>French</option>
+                <option value="de" {% if profile.language == 'de' %}selected{% endif %}>German</option>
+                <option value="fil" {% if profile.language == 'fil' %}selected{% endif %}>Filipino</option>
             </select>
 
             <!-- ===============================
@@ -64,16 +72,16 @@
 
             <label>Select your time zone</label>
             <select class="styled-select" name="timezone">
-                <option value="UTC">UTC (GMT)</option>
-                <option value="UTC-10">UTC-10 — Hawaii (HST)</option>
-                <option value="UTC-8">UTC-8 — Pacific (PST)</option>
-                <option value="UTC-5">UTC-5 — Eastern (EST)</option>
-                <option value="UTC+1">UTC+1 — Central Europe (CET)</option>
-                <option value="UTC+5:30">UTC+5:30 — India (IST)</option>
-                <option value="UTC+8">UTC+8 — Philippines / China</option>
-                <option value="UTC+9">UTC+9 — Japan (JST)</option>
-                <option value="UTC+10">UTC+10 — Australia (AEST)</option>
-                <option value="UTC+12">UTC+12 — New Zealand</option>
+                <option value="UTC" {% if profile.timezone == 'UTC' %}selected{% endif %}>UTC (GMT)</option>
+                <option value="UTC-10" {% if profile.timezone == 'UTC-10' %}selected{% endif %}>UTC-10 — Hawaii (HST)</option>
+                <option value="UTC-8" {% if profile.timezone == 'UTC-8' %}selected{% endif %}>UTC-8 — Pacific (PST)</option>
+                <option value="UTC-5" {% if profile.timezone == 'UTC-5' %}selected{% endif %}>UTC-5 — Eastern (EST)</option>
+                <option value="UTC+1" {% if profile.timezone == 'UTC+1' %}selected{% endif %}>UTC+1 — Central Europe (CET)</option>
+                <option value="UTC+5:30" {% if profile.timezone == 'UTC+5:30' %}selected{% endif %}>UTC+5:30 — India (IST)</option>
+                <option value="UTC+8" {% if profile.timezone == 'UTC+8' %}selected{% endif %}>UTC+8 — Philippines / China</option>
+                <option value="UTC+9" {% if profile.timezone == 'UTC+9' %}selected{% endif %}>UTC+9 — Japan (JST)</option>
+                <option value="UTC+10" {% if profile.timezone == 'UTC+10' %}selected{% endif %}>UTC+10 — Australia (AEST)</option>
+                <option value="UTC+12" {% if profile.timezone == 'UTC+12' %}selected{% endif %}>UTC+12 — New Zealand</option>
             </select>
 
             <!-- ===============================
@@ -84,7 +92,7 @@
             <div class="toggle-row">
                 <span>Dark mode</span>
                 <label class="switch">
-                    <input type="checkbox" name="dark_mode">
+                    <input type="checkbox" name="dark_mode" {% if profile.dark_mode %}checked{% endif %}>
                     <span class="slider"></span>
                 </label>
             </div>

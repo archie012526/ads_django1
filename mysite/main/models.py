@@ -54,6 +54,11 @@ class Profile(models.Model):
     email_notifications = models.BooleanField(default=True)
     push_notifications = models.BooleanField(default=False)
 
+    # Appearance preferences
+    dark_mode = models.BooleanField(default=False)
+    language = models.CharField(max_length=10, default='en', blank=True)
+    timezone = models.CharField(max_length=50, default='UTC', blank=True)
+
     # Timestamps
     updated_at = models.DateTimeField(auto_now=True)
 
