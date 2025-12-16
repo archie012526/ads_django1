@@ -17,6 +17,7 @@ urlpatterns = [
     path("home/", views.homepage, name="homepage"),
     path("find-job/", views.find_job, name="find_job"),
     path("job-applications/", views.job_applications_page, name="job_applications"),
+    path("jobs/<int:job_id>/apply/", views.apply_job, name="apply_job"),
 
     # Profile
     path("profile/", views.profile_page, name="profile"),
