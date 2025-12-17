@@ -115,6 +115,11 @@
         color: white;
     }
 
+    .status-badge.interview {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
     .status-badge.rejected {
         background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
         color: white;
@@ -264,6 +269,29 @@
                                 💬 Message
                             </a>
                             <button class="btn btn-view">👁️ View Resume</button>
+                            <form method="POST" action="{% url 'update_application_status' app.id %}" style="display:flex; gap:8px; align-items:center;">
+                                {% csrf_token %}
+                                <select name="status" class="btn btn-view" style="padding:8px 12px;">
+                                    {% for value,label in app.STATUS_CHOICES %}
+                                        <option value="{{ value }}" {% if app.status == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-message">Save</button>
+                            </form>
+                        </div>
+
+                        {# Schedule interview inline #}
+                        <div style="margin-top:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <form method="POST" action="{% url 'schedule_interview' app.id %}" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                {% csrf_token %}
+                                <input type="datetime-local" name="scheduled_at" value="{% if app.interview_scheduled_at %}{{ app.interview_scheduled_at|date:'Y-m-d\\TH:i' }}{% endif %}" class="btn btn-view" style="padding:8px 12px;">
+                                <input type="text" name="location" value="{{ app.interview_location }}" placeholder="Location" class="btn btn-view" style="padding:8px 12px;">
+                                <input type="url" name="meeting_url" value="{{ app.interview_meeting_url }}" placeholder="Meeting URL" class="btn btn-view" style="padding:8px 12px;">
+                                <button type="submit" class="btn btn-message">Schedule Interview</button>
+                            </form>
+                            {% if app.interview_scheduled_at %}
+                                <a href="{% url 'download_interview_invite' app.id %}" class="btn btn-view">⬇️ Download Invite</a>
+                            {% endif %}
                         </div>
                     {% else %}
                         {# Show job info for job seekers #}
@@ -287,6 +315,15 @@
                                 </a>
                             {% endif %}
                         </div>
+
+                        {% if app.interview_scheduled_at %}
+                            <div style="margin-top:8px; color:#333;">
+                                <strong>Interview:</strong> {{ app.interview_scheduled_at|date:"M d, Y h:i A" }}
+                                {% if app.interview_location %} • {{ app.interview_location }}{% endif %}
+                                {% if app.interview_meeting_url %} • <a href="{{ app.interview_meeting_url }}" target="_blank">Join</a>{% endif %}
+                                • <a href="{% url 'download_interview_invite' app.id %}">Download invite</a>
+                            </div>
+                        {% endif %}
                     {% endif %}
                 </div>
             {% endfor %}

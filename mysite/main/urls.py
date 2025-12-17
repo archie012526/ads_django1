@@ -17,6 +17,10 @@ urlpatterns = [
     path("home/", views.homepage, name="homepage"),
     path("find-job/", views.find_job, name="find_job"),
     path("job-applications/", views.job_applications_page, name="job_applications"),
+    path("interviews/", views.interviews_page, name="interviews"),
+    path("applications/<int:app_id>/status/", views.update_application_status, name="update_application_status"),
+    path("applications/<int:app_id>/schedule/", views.schedule_interview, name="schedule_interview"),
+    path("applications/<int:app_id>/invite.ics", views.download_interview_invite, name="download_interview_invite"),
     path("jobs/<int:job_id>/apply/", views.apply_job, name="apply_job"),
     path("jobs/<int:job_id>/save/", views.toggle_save_job, name="toggle_save_job"),
 
