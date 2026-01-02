@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.db import IntegrityError
 from django.db.models import Q
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 from datetime import timedelta
@@ -354,10 +354,20 @@ def profile_page(request):
     # Fetch user's posts
     user_posts = Post.objects.filter(user=request.user).order_by("-created_at")
 
+    # Applications and interviews for this user
+    applications_qs = JobApplication.objects.filter(user=request.user).select_related('job', 'job__user', 'job__user__profile')
+    interviews_qs = applications_qs.filter(status='Interview')
+    applications_count = applications_qs.count()
+    interviews_count = interviews_qs.count()
+
     return render(request, "main/profile.html", {
         "profile": profile,
         "suggestions": suggestions,
         "user_posts": user_posts,
+        "applications_count": applications_count,
+        "interviews_count": interviews_count,
+        "applications": applications_qs,
+        "interviews": interviews_qs,
     })
 
 
@@ -626,6 +636,10 @@ def schedule_interview(request, app_id: int):
         scheduled_at_str = request.POST.get('scheduled_at')  # HTML datetime-local
         location = request.POST.get('location', '')
         meeting_url = request.POST.get('meeting_url', '')
+        try:
+            duration_minutes = int(request.POST.get('duration_minutes', '45'))
+        except ValueError:
+            duration_minutes = 45
 
         try:
             if scheduled_at_str:
@@ -653,7 +667,61 @@ def schedule_interview(request, app_id: int):
             related_user=request.user
         )
 
-        messages.success(request, 'Interview scheduled and invite ready to download.')
+        # Email ICS invite to applicant
+        if application.interview_scheduled_at:
+            start = application.interview_scheduled_at
+            end = start + timedelta(minutes=duration_minutes)
+            dtstamp = _format_ics_dt(timezone.now())
+            dtstart = _format_ics_dt(start)
+            dtend = _format_ics_dt(end)
+            summary = f"Interview: {application.job.title}"
+            description_lines = [
+                f"Job: {application.job.title}",
+            ]
+            if application.interview_meeting_url:
+                description_lines.append(f"Meeting URL: {application.interview_meeting_url}")
+            if application.interview_location:
+                description_lines.append(f"Location: {application.interview_location}")
+            description = "\\n".join(description_lines)
+
+            ics = (
+                "BEGIN:VCALENDAR\n"
+                "VERSION:2.0\n"
+                "PRODID:-//ADS Django//EN\n"
+                "METHOD:REQUEST\n"
+                "BEGIN:VEVENT\n"
+                f"UID:jobapp-{application.id}@mysite\n"
+                f"DTSTAMP:{dtstamp}\n"
+                f"DTSTART:{dtstart}\n"
+                f"DTEND:{dtend}\n"
+                f"SUMMARY:{summary}\n"
+                f"DESCRIPTION:{description}\n"
+                "END:VEVENT\n"
+                "END:VCALENDAR\n"
+            )
+
+            subject = f"Interview Scheduled: {application.job.title}"
+            body = (
+                f"Hi {application.user.first_name or application.user.username},\n\n"
+                f"Your interview for '{application.job.title}' has been scheduled.\n"
+                f"When: {start.strftime('%b %d, %Y %I:%M %p %Z')}\n"
+                f"Where: {application.interview_location or 'Online'}\n"
+                f"Meeting: {application.interview_meeting_url or 'N/A'}\n\n"
+                "An event invite is attached."
+            )
+            email = EmailMessage(
+                subject,
+                body,
+                settings.DEFAULT_FROM_EMAIL,
+                [application.user.email]
+            )
+            email.attach(filename=f"interview-{application.id}.ics", content=ics, mimetype='text/calendar')
+            try:
+                email.send(fail_silently=True)
+            except Exception:
+                pass
+
+        messages.success(request, 'Interview scheduled; invite emailed and ready to download.')
     return redirect('job_applications')
 
 

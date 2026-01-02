@@ -285,6 +285,7 @@
                             <form method="POST" action="{% url 'schedule_interview' app.id %}" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                                 {% csrf_token %}
                                 <input type="datetime-local" name="scheduled_at" value="{% if app.interview_scheduled_at %}{{ app.interview_scheduled_at|date:'Y-m-d\\TH:i' }}{% endif %}" class="btn btn-view" style="padding:8px 12px;">
+                                <input type="number" min="15" max="240" step="15" name="duration_minutes" value="45" placeholder="Duration (min)" class="btn btn-view" style="padding:8px 12px; width:140px;">
                                 <input type="text" name="location" value="{{ app.interview_location }}" placeholder="Location" class="btn btn-view" style="padding:8px 12px;">
                                 <input type="url" name="meeting_url" value="{{ app.interview_meeting_url }}" placeholder="Meeting URL" class="btn btn-view" style="padding:8px 12px;">
                                 <button type="submit" class="btn btn-message">Schedule Interview</button>

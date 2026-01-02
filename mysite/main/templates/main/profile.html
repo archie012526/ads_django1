@@ -33,15 +33,15 @@
                 </div>
 
                 <div class="profile-info">
-                    <div class="info-card applications">
+                    <a href="{% url 'job_applications' %}" class="info-card applications" style="text-decoration:none; color:inherit;">
                         <h3>Applications</h3>
-                        <p class="info-number">12</p>
-                    </div>
+                        <p class="info-number">{{ applications_count }}</p>
+                    </a>
 
-                    <div class="info-card interviews">
+                    <a href="{% url 'interviews' %}" class="info-card interviews" style="text-decoration:none; color:inherit;">
                         <h3>Interviews</h3>
-                        <p class="info-number">4</p>
-                    </div>
+                        <p class="info-number">{{ interviews_count }}</p>
+                    </a>
 
                     <div class="info-card status">
                         <h3>Status</h3>
@@ -121,6 +121,64 @@
         <p>No job suggestions yet.</p>
     {% endif %}
 </div>
+    <!-- Applications & Interviews Lists -->
+    <div class="job-suggestions" style="margin-top:20px;">
+        <h2 class="section-title">My Applications</h2>
+        {% if applications %}
+            <div class="job-list">
+            {% for app in applications %}
+                <div class="job-card">
+                    <div class="job-info">
+                        <h3 class="job-title">{{ app.job.title }}</h3>
+                        <p class="job-company">{{ app.job.company_name|default:"Company not listed" }}</p>
+                        <p class="job-location">{{ app.job.location|default:"Remote" }}</p>
+                        <div class="job-badges">
+                            <span class="pill">{{ app.status }}</span>
+                            <span class="pill">Applied {{ app.applied_at|date:"M d, Y" }}</span>
+                        </div>
+                        {% if app.interview_scheduled_at %}
+                            <p class="job-description">Interview: {{ app.interview_scheduled_at|date:"M d, Y h:i A" }}{% if app.interview_location %} • {{ app.interview_location }}{% endif %}{% if app.interview_meeting_url %} • <a href="{{ app.interview_meeting_url }}" target="_blank">Join</a>{% endif %}</p>
+                        {% endif %}
+                    </div>
+                    <div class="job-action">
+                        <a href="{% url 'download_interview_invite' app.id %}" class="apply-btn" style="display:inline-block; padding: 10px 20px; color: white; background-color: #0a66c2; border-radius: 5px; text-decoration: none;">Download Invite</a>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p>No applications yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="job-suggestions" style="margin-top:20px;">
+        <h2 class="section-title">My Interviews</h2>
+        {% if interviews %}
+            <div class="job-list">
+            {% for app in interviews %}
+                <div class="job-card">
+                    <div class="job-info">
+                        <h3 class="job-title">{{ app.job.title }}</h3>
+                        <p class="job-company">{{ app.job.company_name|default:"Company not listed" }}</p>
+                        <p class="job-location">{{ app.job.location|default:"Remote" }}</p>
+                        <div class="job-badges">
+                            <span class="pill">Interview</span>
+                            <span class="pill">{{ app.interview_scheduled_at|date:"M d, Y h:i A" }}</span>
+                        </div>
+                        {% if app.interview_location or app.interview_meeting_url %}
+                            <p class="job-description">{% if app.interview_location %}Location: {{ app.interview_location }}{% endif %}{% if app.interview_meeting_url %} • <a href="{{ app.interview_meeting_url }}" target="_blank">Join</a>{% endif %}</p>
+                        {% endif %}
+                    </div>
+                    <div class="job-action">
+                        <a href="{% url 'download_interview_invite' app.id %}" class="apply-btn" style="display:inline-block; padding: 10px 20px; color: white; background-color: #0a66c2; border-radius: 5px; text-decoration: none;">Download Invite</a>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p>No interviews yet.</p>
+        {% endif %}
+    </div>
                 </div>
             </div>
             </div>
