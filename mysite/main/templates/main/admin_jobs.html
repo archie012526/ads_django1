@@ -1,0 +1,43 @@
+{% extends "main/admin_base.html" %}
+
+{% block admin_content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Job Management</h1>
+</div>
+
+<div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Title</th>
+                <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Status</th>
+                <th class="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for job in jobs %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ job.title }}</td>
+                <td class="px-6 py-4">
+                    {% if job.is_approved %}
+                        <span class="px-2 py-1 text-xs font-bold bg-green-100 text-green-700 rounded-full">Approved</span>
+                    {% else %}
+                        <span class="px-2 py-1 text-xs font-bold bg-yellow-100 text-yellow-700 rounded-full">Pending</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <div class="flex justify-center space-x-2">
+                        <a href="{% url 'toggle_job_approval' job.id %}" class="px-3 py-1 rounded text-white text-xs font-bold {% if job.is_approved %}bg-orange-500{% else %}bg-indigo-600{% endif %}">
+                            {% if job.is_approved %}Reject{% else %}Approve{% endif %}
+                        </a>
+                        <a href="{% url 'delete_job' job.id %}" onclick="return confirm('Delete this job?')" class="px-3 py-1 rounded text-white text-xs font-bold bg-red-600">
+                            Delete
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "main/admin_base.html" %}
+
+{% block admin_content %}
+<h1 class="text-3xl font-bold text-gray-800 mb-8">Dashboard Overview</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+    <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+        <p class="text-gray-500 font-medium uppercase text-xs tracking-wider">Total Users</p>
+        <p class="text-4xl font-extrabold text-blue-600 mt-2">{{ total_users }}</p>
+    </div>
+    <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+        <p class="text-gray-500 font-medium uppercase text-xs tracking-wider">Total Active Jobs</p>
+        <p class="text-4xl font-extrabold text-indigo-600 mt-2">{{ total_jobs }}</p>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+        <h2 class="text-lg font-bold text-gray-800">Recent Activity Logs</h2>
+    </div>
+    <table class="min-w-full text-left">
+        <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
+            <tr>
+                <th class="px-6 py-4">User</th>
+                <th class="px-6 py-4">Action</th>
+                <th class="px-6 py-4">Time</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for log in recent_logs %}
+            <tr class="hover:bg-gray-50/80 transition-colors">
+                <td class="px-6 py-4 text-sm font-semibold text-gray-700">{{ log.user.username|default:"System" }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600">{{ log.action }}</td>
+                <td class="px-6 py-4 text-sm text-gray-400 italic">{{ log.timestamp|date:"M d, Y H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="px-6 py-10 text-center text-gray-400">No recent activity found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

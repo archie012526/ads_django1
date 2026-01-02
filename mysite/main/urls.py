@@ -72,5 +72,18 @@ urlpatterns = [
 
     # Logout (custom view supporting GET and POST)
     path("logout/", views.logout_view, name="logout"),
+
+    # ===============================
+# ADMIN PANEL (SUPERUSER ONLY)
+# ===============================
+path("admin-panel/login/", views.admin_login, name="admin_login"),
+path("admin-panel/", views.admin_dashboard, name="admin_dashboard"),
+path("admin-panel/users/", views.admin_users, name="admin_users"),
+path("admin-panel/users/<int:user_id>/toggle-ban/", views.toggle_user_ban, name="toggle_user_ban"),
+path("admin-panel/jobs/", views.admin_jobs, name="admin_jobs"),
+path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+path('admin-panel/jobs/toggle/<int:job_id>/', views.toggle_job_approval, name='toggle_job_approval'),
+path('admin-panel/jobs/delete/<int:job_id>/', views.delete_job, name='delete_job'),
 ]   
+
 
