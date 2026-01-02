@@ -117,6 +117,14 @@ class JobApplicationForm(forms.ModelForm):
 
 class SignUpForm(UserCreationForm):
     phone_number = forms.CharField()
+    role = forms.ChoiceField(
+        choices=[
+            ('job_seeker', 'Job Seeker (Looking for a job)'),
+            ('employer', 'Employer (Hiring employees)')
+        ],
+        widget=forms.RadioSelect,
+        initial='job_seeker'
+    )
 
     class Meta:
         model = User

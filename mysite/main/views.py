@@ -73,6 +73,7 @@ def signup_page(request):
         password2 = request.POST.get("password2", "")
         first_name = request.POST.get("first_name", "")
         last_name = request.POST.get("last_name", "")
+        role = request.POST.get("role", "job_seeker")  # Get role from form
 
         # Validate passwords match
         if password != password2:
@@ -85,13 +86,17 @@ def signup_page(request):
             return render(request, "main/signup.html")
 
         try:
-            User.objects.create_user(
+            user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password,
                 first_name=first_name,
                 last_name=last_name,
             )
+            # Set the role and full_name on the profile
+            user.profile.role = role
+            user.profile.full_name = f"{first_name} {last_name}".strip()
+            user.profile.save()
         except IntegrityError:
             messages.error(request, "Email already registered.")
             return render(request, "main/signup.html")
@@ -271,6 +276,15 @@ def homepage(request):
     industries = []
     popular_jobs = []
 
+    # Determine if user is an employer
+    is_employer = profile.role == "employer"
+    
+    # For employers, get applications received
+    if is_employer:
+        my_jobs_ids = my_jobs.values_list('id', flat=True)
+        applications_count = JobApplication.objects.filter(job_id__in=my_jobs_ids).count()
+        interviews_count = JobApplication.objects.filter(job_id__in=my_jobs_ids, status='Interview').count()
+    
     context = {
         'form': form,
         'posts': posts,
@@ -293,6 +307,7 @@ def homepage(request):
         'industries': industries,
         'popular_jobs': popular_jobs,
         'saved_jobs': SavedJob.objects.filter(user=request.user).select_related('job', 'job__user', 'job__user__profile'),
+        'is_employer': is_employer,  # Add role info
     }
     return render(request, 'main/home.html', context)
 
