@@ -35,8 +35,15 @@
             </a>
 
             <ul class="profile-links">
-                <li>Saved Jobs: {{ saved_jobs_count }}</li>
-                <li>Applications: {{ applications_count }}</li>
+                <li>
+                    <a href="{% url 'find_job' %}" style="text-decoration:none; color:inherit;">Saved Jobs: {{ saved_jobs_count }}</a>
+                </li>
+                <li>
+                    <a href="{% url 'job_applications' %}" style="text-decoration:none; color:inherit;">Applications: {{ applications_count }}</a>
+                </li>
+                <li>
+                    <a href="{% url 'interviews' %}" style="text-decoration:none; color:inherit;">Interviews: {{ interviews_count }}</a>
+                </li>
                 <li>Notifications: {{ unread_notifications }}</li>
             </ul>
         </div>

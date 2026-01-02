@@ -6,10 +6,11 @@ from django.contrib import messages
 from django.db import IntegrityError
 from django.db.models import Q
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from datetime import timedelta
+from datetime import datetime
 from .models import Post
 
 from .models import Profile, Job, JobApplication, Notification, Skill, Message, SavedJob
@@ -260,6 +261,7 @@ def homepage(request):
     # Basic counts and defaults for sidebar cards
     saved_jobs_count = SavedJob.objects.filter(user=request.user).count()
     applications_count = JobApplication.objects.filter(user=request.user).count()
+    interviews_count = JobApplication.objects.filter(user=request.user, status='Interview').count()
     unread_notifications = Notification.objects.filter(user=request.user, is_read=False).count()
 
     # Simple recommended users list (exclude self)
@@ -285,6 +287,7 @@ def homepage(request):
         'rec_companies': rec_companies,
         'saved_jobs_count': saved_jobs_count,
         'applications_count': applications_count,
+        'interviews_count': interviews_count,
         'unread_notifications': unread_notifications,
         'recommended_users': recommended_users,
         'industries': industries,
@@ -351,10 +354,20 @@ def profile_page(request):
     # Fetch user's posts
     user_posts = Post.objects.filter(user=request.user).order_by("-created_at")
 
+    # Applications and interviews for this user
+    applications_qs = JobApplication.objects.filter(user=request.user).select_related('job', 'job__user', 'job__user__profile')
+    interviews_qs = applications_qs.filter(status='Interview')
+    applications_count = applications_qs.count()
+    interviews_count = interviews_qs.count()
+
     return render(request, "main/profile.html", {
         "profile": profile,
         "suggestions": suggestions,
         "user_posts": user_posts,
+        "applications_count": applications_count,
+        "interviews_count": interviews_count,
+        "applications": applications_qs,
+        "interviews": interviews_qs,
     })
 
 
@@ -563,6 +576,204 @@ def job_applications_page(request):
             "applications": applications,
             "is_employer": False
         })
+
+
+# ============================
+# INTERVIEWS (filtered applications)
+# ============================
+@login_required
+def interviews_page(request):
+    if request.user.profile.role == "employer":
+        my_jobs = Job.objects.filter(user=request.user)
+        applications = JobApplication.objects.filter(job__in=my_jobs, status='Interview').select_related('user', 'job', 'user__profile')
+        return render(request, "main/interviews.html", {
+            "applications": applications,
+            "is_employer": True
+        })
+    else:
+        applications = JobApplication.objects.filter(user=request.user, status='Interview').select_related('job', 'job__user', 'job__user__profile')
+        return render(request, "main/interviews.html", {
+            "applications": applications,
+            "is_employer": False
+        })
+
+
+# ============================
+# Update application status (employer only)
+# ============================
+@login_required
+def update_application_status(request, app_id: int):
+    application = get_object_or_404(JobApplication, id=app_id)
+    # Only the job owner can change status
+    if application.job.user != request.user:
+        messages.error(request, "You do not have permission to update this application.")
+        return redirect('job_applications')
+
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        valid = {choice[0] for choice in JobApplication.STATUS_CHOICES}
+        if new_status in valid:
+            application.status = new_status
+            application.save(update_fields=['status'])
+            messages.success(request, "Application status updated.")
+        else:
+            messages.error(request, "Invalid status selected.")
+    return redirect('job_applications')
+
+
+# ============================
+# Schedule interview + generate ICS invite
+# ============================
+@login_required
+def schedule_interview(request, app_id: int):
+    application = get_object_or_404(JobApplication, id=app_id)
+    # Only job owner can schedule
+    if application.job.user != request.user:
+        messages.error(request, "You do not have permission to schedule this interview.")
+        return redirect('job_applications')
+
+    if request.method == 'POST':
+        scheduled_at_str = request.POST.get('scheduled_at')  # HTML datetime-local
+        location = request.POST.get('location', '')
+        meeting_url = request.POST.get('meeting_url', '')
+        try:
+            duration_minutes = int(request.POST.get('duration_minutes', '45'))
+        except ValueError:
+            duration_minutes = 45
+
+        try:
+            if scheduled_at_str:
+                naive = datetime.strptime(scheduled_at_str, '%Y-%m-%dT%H:%M')
+                aware_dt = timezone.make_aware(naive, timezone.get_current_timezone())
+            else:
+                aware_dt = None
+        except Exception:
+            messages.error(request, 'Invalid date/time format.')
+            return redirect('job_applications')
+
+        application.interview_scheduled_at = aware_dt
+        application.interview_location = location or None
+        application.interview_meeting_url = meeting_url or None
+        application.status = 'Interview'
+        application.save()
+
+        # Notify applicant
+        Notification.objects.create(
+            user=application.user,
+            notification_type='system',
+            title='Interview Scheduled',
+            message=f'Interview scheduled for {application.job.title}',
+            link=f'/interviews/',
+            related_user=request.user
+        )
+
+        # Email ICS invite to applicant
+        if application.interview_scheduled_at:
+            start = application.interview_scheduled_at
+            end = start + timedelta(minutes=duration_minutes)
+            dtstamp = _format_ics_dt(timezone.now())
+            dtstart = _format_ics_dt(start)
+            dtend = _format_ics_dt(end)
+            summary = f"Interview: {application.job.title}"
+            description_lines = [
+                f"Job: {application.job.title}",
+            ]
+            if application.interview_meeting_url:
+                description_lines.append(f"Meeting URL: {application.interview_meeting_url}")
+            if application.interview_location:
+                description_lines.append(f"Location: {application.interview_location}")
+            description = "\\n".join(description_lines)
+
+            ics = (
+                "BEGIN:VCALENDAR\n"
+                "VERSION:2.0\n"
+                "PRODID:-//ADS Django//EN\n"
+                "METHOD:REQUEST\n"
+                "BEGIN:VEVENT\n"
+                f"UID:jobapp-{application.id}@mysite\n"
+                f"DTSTAMP:{dtstamp}\n"
+                f"DTSTART:{dtstart}\n"
+                f"DTEND:{dtend}\n"
+                f"SUMMARY:{summary}\n"
+                f"DESCRIPTION:{description}\n"
+                "END:VEVENT\n"
+                "END:VCALENDAR\n"
+            )
+
+            subject = f"Interview Scheduled: {application.job.title}"
+            body = (
+                f"Hi {application.user.first_name or application.user.username},\n\n"
+                f"Your interview for '{application.job.title}' has been scheduled.\n"
+                f"When: {start.strftime('%b %d, %Y %I:%M %p %Z')}\n"
+                f"Where: {application.interview_location or 'Online'}\n"
+                f"Meeting: {application.interview_meeting_url or 'N/A'}\n\n"
+                "An event invite is attached."
+            )
+            email = EmailMessage(
+                subject,
+                body,
+                settings.DEFAULT_FROM_EMAIL,
+                [application.user.email]
+            )
+            email.attach(filename=f"interview-{application.id}.ics", content=ics, mimetype='text/calendar')
+            try:
+                email.send(fail_silently=True)
+            except Exception:
+                pass
+
+        messages.success(request, 'Interview scheduled; invite emailed and ready to download.')
+    return redirect('job_applications')
+
+
+def _format_ics_dt(dt):
+    dt_utc = dt.astimezone(timezone.utc)
+    return dt_utc.strftime('%Y%m%dT%H%M%SZ')
+
+
+@login_required
+def download_interview_invite(request, app_id: int):
+    application = get_object_or_404(JobApplication, id=app_id)
+    # Allow applicant or job owner
+    if not (application.user == request.user or application.job.user == request.user):
+        messages.error(request, 'You do not have access to this invite.')
+        return redirect('homepage')
+
+    if not application.interview_scheduled_at:
+        messages.error(request, 'No interview schedule set for this application.')
+        return redirect('job_applications')
+
+    start = application.interview_scheduled_at
+    end = start + timedelta(minutes=45)
+    dtstamp = _format_ics_dt(timezone.now())
+    dtstart = _format_ics_dt(start)
+    dtend = _format_ics_dt(end)
+
+    summary = f"Interview: {application.job.title}"
+    description_lines = []
+    if application.interview_meeting_url:
+        description_lines.append(f"Meeting URL: {application.interview_meeting_url}")
+    if application.interview_location:
+        description_lines.append(f"Location: {application.interview_location}")
+    description = "\\n".join(description_lines) or 'Interview'
+
+    ics = (
+        "BEGIN:VCALENDAR\n"
+        "VERSION:2.0\n"
+        "PRODID:-//ADS Django//EN\n"
+        "BEGIN:VEVENT\n"
+        f"UID:jobapp-{application.id}@mysite\n"
+        f"DTSTAMP:{dtstamp}\n"
+        f"DTSTART:{dtstart}\n"
+        f"DTEND:{dtend}\n"
+        f"SUMMARY:{summary}\n"
+        f"DESCRIPTION:{description}\n"
+        "END:VEVENT\n"
+        "END:VCALENDAR\n"
+    )
+
+    response = HttpResponse(ics, content_type='text/calendar')
+    response['Content-Disposition'] = f'attachment; filename=interview-{application.id}.ics'
+    return response
 
 
 # ============================

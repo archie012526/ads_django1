@@ -159,6 +159,7 @@ class JobApplication(models.Model):
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
         ('Reviewed', 'Reviewed'),
+        ('Interview', 'Interview'),
         ('Accepted', 'Accepted'),
         ('Rejected', 'Rejected'),
     ]
@@ -168,6 +169,11 @@ class JobApplication(models.Model):
         choices=STATUS_CHOICES,
         default='Pending'
     )
+
+    # Interview scheduling details (optional)
+    interview_scheduled_at = models.DateTimeField(blank=True, null=True)
+    interview_location = models.CharField(max_length=255, blank=True, null=True)
+    interview_meeting_url = models.CharField(max_length=500, blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username} → {self.job.title}"
