@@ -76,7 +76,6 @@ urlpatterns = [
     # ===============================
     # ADMIN PANEL (SUPERUSER ONLY)
     # ===============================
-
     path("admin-panel/login/", views.admin_login, name="admin_login"),
     path("admin-panel/logout/", views.logout_view, name="admin_logout"),
     path("admin-panel/dashboard/", views.admin_dashboard, name="admin_dashboard"),
@@ -85,6 +84,11 @@ urlpatterns = [
     path("admin-panel/jobs/", views.admin_jobs, name="admin_jobs"),
     path("admin-panel/jobs/<int:job_id>/toggle-approval/", views.toggle_job_approval, name="toggle_job_approval"),
     path("admin-panel/jobs/<int:job_id>/delete/", views.delete_job, name="delete_job"),
+
+    # Employer Section
+    path("employer/dashboard/", views.employer_dashboard, name="employer_dashboard"),
+    path("employer/jobs/", views.manage_jobs, name="manage_jobs"),
+    path("employer/post-job/", views.post_job, name="post_job"),
 ]   
 
     

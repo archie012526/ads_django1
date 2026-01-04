@@ -1,13 +1,38 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.conf import settings
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # =========================
-#        PROFILE
+#      CUSTOM USER MODEL
+# =========================
+# Moved to the top so other models can reference it properly
+class User(AbstractUser):
+    ROLE_CHOICES = [
+        ('job_seeker', 'Job Seeker'),
+        ('employer', 'Employer'),
+    ]
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='job_seeker')
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    birthday = models.DateField(null=True, blank=True)
+
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='main_user_groups',
+        blank=True
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='main_user_permissions',
+        blank=True
+    )
+
+# =========================
+#           PROFILE
 # =========================
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
 
     ROLE_CHOICES = (
         ("job_seeker", "Job Seeker"),
@@ -65,9 +90,8 @@ class Profile(models.Model):
     def __str__(self):
         return f"{self.user.username}'s profile"
 
-
 # =========================
-#         SKILLS
+#           SKILLS
 # =========================
 class Skill(models.Model):
     LEVEL_CHOICES = [
@@ -93,10 +117,15 @@ class Skill(models.Model):
     def __str__(self):
         return f"{self.name} ({self.level})"
 
+# =========================
+#            JOBS
+# =========================
+class SkillTag(models.Model):
+    name = models.CharField(max_length=100, unique=True)
 
-# =========================
-#         JOBS
-# =========================
+    def __str__(self):
+        return self.name
+
 class Job(models.Model):
     EMPLOYMENT_TYPE_CHOICES = [
         ('FULLTIME', 'Full time'),
@@ -111,7 +140,7 @@ class Job(models.Model):
         ('shift', 'Shift work'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     company_name = models.CharField(max_length=200, blank=True, null=True)
     description = models.TextField()
@@ -129,28 +158,16 @@ class Job(models.Model):
         null=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    skills = models.ManyToManyField('SkillTag', blank=True, related_name='jobs')
-    
-    # Tags/skills required for the job
-    # Defined below; declared here for type reference
-    # skills = models.ManyToManyField('SkillTag', blank=True, related_name='jobs')
+    skills = models.ManyToManyField(SkillTag, blank=True, related_name='jobs')
 
     def __str__(self):
         return self.title
 
-
-class SkillTag(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.name
-
-
 # =========================
-#     JOB APPLICATIONS
+#      JOB APPLICATIONS
 # =========================
 class JobApplication(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     resume = models.FileField(upload_to="resumes/")
     cover_letter = models.TextField(blank=True, null=True)
@@ -170,7 +187,6 @@ class JobApplication(models.Model):
         default='Pending'
     )
 
-    # Interview scheduling details (optional)
     interview_scheduled_at = models.DateTimeField(blank=True, null=True)
     interview_location = models.CharField(max_length=255, blank=True, null=True)
     interview_meeting_url = models.CharField(max_length=500, blank=True, null=True)
@@ -178,9 +194,8 @@ class JobApplication(models.Model):
     def __str__(self):
         return f"{self.user.username} → {self.job.title}"
 
-
 # =========================
-#      NOTIFICATIONS
+#        NOTIFICATIONS
 # =========================
 class Notification(models.Model):
     NOTIFICATION_TYPES = [
@@ -193,14 +208,14 @@ class Notification(models.Model):
         ('system', 'System'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
     notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, default='system')
     title = models.CharField(max_length=255, default='Notification')
     message = models.CharField(max_length=255)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     link = models.CharField(max_length=500, blank=True, null=True)
-    related_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications_from', blank=True, null=True)
+    related_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications_from', blank=True, null=True)
 
     def __str__(self):
         return f"Notification for {self.user.username}"
@@ -208,18 +223,17 @@ class Notification(models.Model):
     class Meta:
         ordering = ['-created_at']
 
-
 # =========================
-#         MESSAGES
+#           MESSAGES
 # =========================
 class Message(models.Model):
     sender = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         related_name="sent_messages",
         on_delete=models.CASCADE
     )
     receiver = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         related_name="received_messages",
         on_delete=models.CASCADE
     )
@@ -230,9 +244,8 @@ class Message(models.Model):
     def __str__(self):
         return f"{self.sender} → {self.receiver}"
 
-
 # =========================
-#   CONTACT SUBMISSION
+#      CONTACT/POSTS/SAVED
 # =========================
 class ContactSubmission(models.Model):
     name = models.CharField(max_length=255)
@@ -243,7 +256,6 @@ class ContactSubmission(models.Model):
     def __str__(self):
         return f"Message from {self.name}"
 
-
 class Post(models.Model):
     POST_TYPE_CHOICES = [
         ('text', 'Text Post'),
@@ -252,7 +264,7 @@ class Post(models.Model):
         ('article', 'Article'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content = models.TextField()
     post_type = models.CharField(max_length=20, choices=POST_TYPE_CHOICES, default='text')
     image = models.ImageField(upload_to='post_images/', blank=True, null=True)
@@ -263,11 +275,8 @@ class Post(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.created_at}"
 
-# =========================
-#      SAVED JOBS
-# =========================
 class SavedJob(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_jobs')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='saved_jobs')
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='saved_by')
     saved_at = models.DateTimeField(auto_now_add=True)
 
@@ -276,13 +285,27 @@ class SavedJob(models.Model):
 
     def __str__(self):
         return f"{self.user.username} saved {self.job.title}"
-    
 
 class AuditLog(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    action = models.CharField(max_length=255)  # e.g., "Deleted Job #42"
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=255)
     timestamp = models.DateTimeField(auto_now_add=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user} - {self.action} - {self.timestamp}"
+        return f"{self.user} - {self.action}"
+
+# =========================
+#         SIGNALS
+# =========================
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.get_or_create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    try:
+        instance.profile.save()
+    except Profile.DoesNotExist:
+        Profile.objects.create(user=instance)

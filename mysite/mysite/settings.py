@@ -197,3 +197,7 @@ SECURE_HSTS_PRELOAD = not DEBUG
 # SameSite to mitigate CSRF; relax if flow requires
 SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SAMESITE = "Lax"
+
+
+# settings.py
+AUTH_USER_MODEL = 'main.User'
