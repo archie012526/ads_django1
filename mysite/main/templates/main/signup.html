@@ -9,6 +9,45 @@
     <link rel="stylesheet" href="{% static 'style/login.css' %}">
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Password eye icon and spacing */
+        .password-wrapper { position: relative; }
+        .password-wrapper .password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #6b7280; }
+        .password-input { padding-right: 44px; }
+        .password-toggle:focus { outline: none; }
+
+        /* Role selection */
+        .role-label { display:flex; align-items:center; gap:12px; cursor:pointer; padding:12px; border:2px solid #e5e7eb; border-radius:8px; transition: all .2s; background: transparent; }
+        .role-radio { position:absolute; left:-9999px; }
+        .role-indicator {
+            width:18px;
+            height:18px;
+            min-width:18px;
+            min-height:18px;
+            aspect-ratio: 1 / 1;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            box-sizing:border-box;
+            border-radius:50%;
+            border:2px solid #cbd5e1;
+            background:transparent;
+            flex:0 0 auto;
+            transition: background-color .15s ease, border-color .15s ease, transform .12s ease;
+        }
+        .role-text { display:flex; flex-direction:column; justify-content:center; }
+        .role-text strong { color: #ffffff; }
+        .role-text span { color: rgba(255,255,255,0.85); font-size:13px; }
+        .role-label.active { background:#fff; }
+        .role-label.active .role-text strong { color: #111827; }
+        .role-label.active .role-text span { color: #6b7280; }
+        .role-label.active .role-indicator { background:#10b981; border-color:#10b981; }
+
+        /* Slim scrollbars */
+        .login-panel, .login-container, .form-group { scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.18) transparent; }
+        .login-panel::-webkit-scrollbar, .login-container::-webkit-scrollbar, .form-group::-webkit-scrollbar { width:6px; height:6px; }
+        .login-panel::-webkit-scrollbar-thumb, .login-container::-webkit-scrollbar-thumb, .form-group::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.18); border-radius:6px; }
+    </style>
 </head>
 
 <body>
@@ -40,51 +79,62 @@
                 <form method="post">
                     {% csrf_token %}
 
+                    {# Show messages returned from server #}
+                    {% if messages %}
+                        <div class="messages">
+                            {% for message in messages %}
+                                <div class="message {{ message.tags }}">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
                     <div class="form-group">
                         <label>First Name</label>
-                        <input type="text" name="first_name" placeholder="Enter first name" required>
+                        <input type="text" name="first_name" placeholder="Enter first name" required value="{{ first_name|default:'' }}">
                     </div>
 
                     <div class="form-group">
                         <label>Last Name</label>
-                        <input type="text" name="last_name" placeholder="Enter last name" required>
+                        <input type="text" name="last_name" placeholder="Enter last name" required value="{{ last_name|default:'' }}">
                     </div>
 
                     <div class="form-group">
                         <label>Username</label>
-                        <input type="text" name="username" placeholder="Enter username" required>
+                        <input type="text" name="username" placeholder="Enter username" required value="{{ username|default:'' }}">
                     </div>
 
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" name="email" placeholder="Enter email" required>
+                        <input type="email" name="email" placeholder="Enter email" required value="{{ email|default:'' }}">
                     </div>
 
                     <div class="form-group">
                         <label>Phone Number</label>
-                        <input type="text" name="phone_number" placeholder="Enter phone number" required>
+                        <input type="text" name="phone_number" placeholder="Enter phone number" required value="{{ phone_number|default:'' }}">
                     </div>
 
                     <div class="form-group">
                         <label>Birthday</label>
-                        <input type="date" name="birthday" required>
+                        <input type="date" name="birthday" value="{{ birthday|default:'' }}">
                     </div>
 
                     <div class="form-group">
                         <label style="margin-bottom: 12px; display: block;">I am a:</label>
                         <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <label style="display: flex; align-items: center; cursor: pointer; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; transition: all 0.2s;">
-                                <input type="radio" name="role" value="job_seeker" checked style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
-                                <div>
-                                    <strong style="display: block; color: #1a1a1a;">Job Seeker</strong>
-                                    <span style="font-size: 13px; color: #666;">I'm looking for job opportunities</span>
+                            <label class="role-label">
+                                <input class="role-radio" type="radio" name="role" value="job_seeker" {% if role == 'job_seeker' or not role %}checked{% endif %}>
+                                <span class="role-indicator" aria-hidden="true"></span>
+                                <div class="role-text">
+                                    <strong>Job Seeker</strong>
+                                    <span>I'm looking for job opportunities</span>
                                 </div>
                             </label>
-                            <label style="display: flex; align-items: center; cursor: pointer; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; transition: all 0.2s;">
-                                <input type="radio" name="role" value="employer" style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
-                                <div>
-                                    <strong style="display: block; color: #1a1a1a;">Employer</strong>
-                                    <span style="font-size: 13px; color: #666;">I'm hiring employees</span>
+                            <label class="role-label">
+                                <input class="role-radio" type="radio" name="role" value="employer" {% if role == 'employer' %}checked{% endif %}>
+                                <span class="role-indicator" aria-hidden="true"></span>
+                                <div class="role-text">
+                                    <strong>Employer</strong>
+                                    <span>I'm hiring employees</span>
                                 </div>
                             </label>
                         </div>
@@ -92,14 +142,27 @@
 
                     <div class="form-group password-group">
                         <label>Password</label>
-                        <input type="password" id="password1" name="password1" placeholder="Enter password" required>
-                        <i class="fa-solid fa-eye password-toggle" data-target="password1"></i>
+                        <div class="password-wrapper">
+                            <input class="password-input" type="password" id="password1" name="password1" placeholder="Enter password" required>
+                            <i class="fa-solid fa-eye password-toggle" data-target="password1" aria-hidden="true"></i>
+                        </div>
+                        <div class="password-hint" style="font-size:13px; color:#555; margin-top:8px;">
+                            <div>Password must include:</div>
+                            <ul style="margin:6px 0 0 18px; padding:0; list-style: disc;">
+                                <li id="rule-length">At least <strong>8 characters</strong></li>
+                                <li id="rule-upper">At least <strong>one uppercase letter</strong></li>
+                                <li id="rule-number">At least <strong>one number</strong></li>
+                                <li id="rule-symbol">At least <strong>one symbol</strong></li>
+                            </ul>
+                        </div>
                     </div>
 
                     <div class="form-group password-group">
                         <label>Confirm Password</label>
-                        <input type="password" id="password2" name="password2" placeholder="Re-enter password" required>
-                        <i class="fa-solid fa-eye password-toggle" data-target="password2"></i>
+                        <div class="password-wrapper">
+                            <input class="password-input" type="password" id="password2" name="password2" placeholder="Re-enter password" required>
+                            <i class="fa-solid fa-eye password-toggle" data-target="password2" aria-hidden="true"></i>
+                        </div>
                     </div>
 
                     <button type="submit" class="sign-in-button">
@@ -131,10 +194,12 @@
 </div>
 
 <script>
+    // Toggle password visibility
     document.querySelectorAll(".password-toggle").forEach(icon => {
         icon.addEventListener("click", () => {
             const input = document.getElementById(icon.dataset.target);
 
+            if (!input) return;
             if (input.type === "password") {
                 input.type = "text";
                 icon.classList.replace("fa-eye", "fa-eye-slash");
@@ -143,43 +208,102 @@
                 icon.classList.replace("fa-eye-slash", "fa-eye");
             }
         });
+
+        // make icons keyboard-focusable
+        icon.tabIndex = 0;
+        icon.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                icon.click();
+            }
+        });
     });
 
-    // Add interactive styling for role selection
-    document.querySelectorAll('input[name="role"]').forEach(radio => {
-        const label = radio.closest('label');
-        
-        radio.addEventListener('change', function() {
-            document.querySelectorAll('input[name="role"]').forEach(r => {
-                const lbl = r.closest('label');
-                if (r.checked) {
-                    lbl.style.borderColor = '#0a66c2';
-                    lbl.style.backgroundColor = '#f0f7ff';
-                } else {
-                    lbl.style.borderColor = '#e5e7eb';
-                    lbl.style.backgroundColor = 'transparent';
-                }
-            });
-        });
+    // Password rules
+    function checkPasswordRules(pw) {
+        return {
+            length: pw.length >= 8,
+            upper: /[A-Z]/.test(pw),
+            number: /\d/.test(pw),
+            symbol: /[^A-Za-z0-9]/.test(pw)
+        };
+    }
 
-        label.addEventListener('mouseenter', function() {
-            if (!radio.checked) {
-                label.style.borderColor = '#0a66c2';
+    const pwInput = document.getElementById('password1');
+    const pwInput2 = document.getElementById('password2');
+
+    function updatePwUI() {
+        const val = pwInput ? pwInput.value : '';
+        const val2 = pwInput2 ? pwInput2.value : '';
+        const rules = checkPasswordRules(val);
+        const allValid = rules.length && rules.upper && rules.number && rules.symbol;
+
+        document.getElementById('rule-length').style.color = rules.length ? 'green' : '#555';
+        document.getElementById('rule-upper').style.color = rules.upper ? 'green' : '#555';
+        document.getElementById('rule-number').style.color = rules.number ? 'green' : '#555';
+        document.getElementById('rule-symbol').style.color = rules.symbol ? 'green' : '#555';
+
+        if (pwInput) {
+            if (val.length === 0) {
+                pwInput.style.borderColor = '';
+            } else {
+                pwInput.style.borderColor = allValid ? 'green' : 'red';
             }
-        });
+        }
 
-        label.addEventListener('mouseleave', function() {
-            if (!radio.checked) {
-                label.style.borderColor = '#e5e7eb';
+        if (pwInput2) {
+            const match = val2 && val === val2;
+            if (val2.length === 0) {
+                pwInput2.style.borderColor = '';
+            } else {
+                pwInput2.style.borderColor = (match && allValid) ? 'green' : 'red';
             }
-        });
+        }
+    }
 
-        // Set initial state
-        if (radio.checked) {
-            label.style.borderColor = '#0a66c2';
-            label.style.backgroundColor = '#f0f7ff';
+    if (pwInput) pwInput.addEventListener('input', updatePwUI);
+    if (pwInput2) pwInput2.addEventListener('input', updatePwUI);
+
+    // If server flagged password invalid during last submit, focus and highlight password fields
+    {% if password_invalid %}
+    document.addEventListener('DOMContentLoaded', () => {
+        if (pwInput) {
+            pwInput.value = '';
+            pwInput.style.borderColor = 'red';
+            pwInput.focus();
+        }
+        if (pwInput2) {
+            pwInput2.value = '';
+            pwInput2.style.borderColor = 'red';
         }
     });
+    {% endif %}
+
+    // Role selection: toggle active class and keep behavior accessible
+    function updateRoleStates() {
+        document.querySelectorAll('input[name="role"]').forEach(r => {
+            const lbl = r.closest('label');
+            if (r.checked) lbl.classList.add('active'); else lbl.classList.remove('active');
+        });
+    }
+
+    document.querySelectorAll('input[name="role"]').forEach(radio => {
+        const label = radio.closest('label');
+        label.addEventListener('click', (e) => {
+            // clicking the label should select the radio
+            radio.checked = true;
+            updateRoleStates();
+        });
+
+        label.addEventListener('mouseenter', () => { if (!radio.checked) label.style.borderColor = '#0a66c2'; });
+        label.addEventListener('mouseleave', () => { if (!radio.checked) label.style.borderColor = '#e5e7eb'; });
+
+        // Keyboard selection
+        radio.addEventListener('change', updateRoleStates);
+    });
+
+    // Initialize role states on load
+    document.addEventListener('DOMContentLoaded', updateRoleStates);
 </script>
 
 </body>
