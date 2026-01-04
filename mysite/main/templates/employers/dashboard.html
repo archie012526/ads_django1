@@ -6,35 +6,61 @@
 <div class="max-w-6xl mx-auto">
     <div class="flex justify-between items-center mb-8">
         <div>
-            <h2 class="text-3xl font-bold text-[#1e293b]">Welcome, Employer!</h2>
+            <h2 class="text-3xl font-bold text-[#1e293b]">Welcome, {{ request.user.first_name|default:request.user.username }}!</h2>
             <p class="text-gray-500">Track your recruitment progress at a glance.</p>
         </div>
-        <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg transition">
+        <a href="{% url 'employerpost_job' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg transition">
             Post a Job
-        </button>
+        </a>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Active Postings</p>
-            <h3 class="text-4xl font-bold text-[#1e293b] mt-1">{{ active_jobs_count|default:"0" }}</h3>
+            <h3 class="text-4xl font-bold text-[#1e293b] mt-1">{{ active_jobs_count }}</h3>
         </div>
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">New Applicants</p>
-            <h3 class="text-4xl font-bold text-blue-600 mt-1">12</h3>
-        </div>
+            <h3 class="text-4xl font-bold text-blue-600 mt-1">0</h3> </div>
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Interviews</p>
-            <h3 class="text-4xl font-bold text-orange-500 mt-1">4</h3>
-        </div>
+            <h3 class="text-4xl font-bold text-orange-500 mt-1">0</h3> </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="p-6 border-b border-gray-50">
-            <h3 class="font-bold text-[#1e293b]">Recent Applications</h3>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+        <div class="p-6 border-b border-gray-50 flex justify-between items-center">
+            <h3 class="font-bold text-[#1e293b]">Your Active Postings</h3>
+            <span class="text-sm text-blue-600 font-medium">Manage All</span>
         </div>
-        <div class="p-12 text-center">
-            <p class="text-gray-400">No recent applications found.</p>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 text-gray-400 text-xs uppercase font-bold">
+                    <tr>
+                        <th class="px-6 py-4">Job Title</th>
+                        <th class="px-6 py-4">Type</th>
+                        <th class="px-6 py-4">Location</th>
+                        <th class="px-6 py-4">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for job in my_jobs %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 font-semibold text-[#1e293b]">{{ job.title }}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm">{{ job.get_employment_type_display }}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm">{{ job.location }}</td>
+                        <td class="px-6 py-4">
+                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Active</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="p-12 text-center text-gray-400">
+                            You haven't posted any jobs yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

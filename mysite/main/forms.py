@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Profile, Skill, Job, Post, JobApplication
+from .models import Profile, Skill, Job, Post, JobApplication, SkillTag
 
 
 class UserForm(forms.ModelForm):
@@ -157,3 +157,20 @@ class SignUpForm(UserCreationForm):
             "class": "form-input",
             "placeholder": "Confirm password"
         })
+
+
+class JobPostForm(forms.ModelForm):
+    # This allows employers to select multiple skills
+    skills = forms.ModelMultipleChoiceField(
+        queryset=SkillTag.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+
+    class Meta:
+        model = Job
+        fields = ['title', 'company_name', 'description', 'location', 'employment_type', 'working_schedule', 'skills']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 5, 'placeholder': 'Describe the role...'}),
+            'title': forms.TextInput(attrs={'placeholder': 'e.g. Senior Python Developer'}),
+        }
