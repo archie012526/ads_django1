@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -19,48 +19,47 @@ from .models import Profile, Job, JobApplication, Notification, Skill, Message, 
 from .forms import JobForm, PostForm, SkillForm, UserForm, ProfileForm, SettingsForm, SignUpForm, JobApplicationForm
 
 from django.contrib.auth import logout as django_logout
-# ===============================
-# ADMIN LOGIN
-# ===============================
+# ============= AUTHENTICATION =============
+
 def admin_login(request):
-    # Already logged in admin → go to dashboard
     if request.user.is_authenticated and request.user.is_superuser:
         return redirect('admin_dashboard')
 
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-
         user = authenticate(request, username=username, password=password)
 
         if user and user.is_superuser:
             login(request, user)
             return redirect('admin_dashboard')
 
-        return render(request, "main/admin_login.html", {
+        return render(request, "admin/admin_login.html", {
             "error": "Invalid admin credentials"
         })
 
-    return render(request, "main/admin_login.html")
+    return render(request, "admin/admin_login.html")
+def logout_view(request):
+    logout(request)
+    return render(request, "admin/admin_login.html")
 
+# ============= ADMIN DASHBOARD =============
 
-# ===============================
-# ADMIN DASHBOARD
-# ===============================
 @login_required(login_url="/admin-panel/login/")
 def admin_dashboard(request):
     if not request.user.is_superuser:
         return HttpResponseForbidden()
 
-    # This gets the data from the database
     recent_logs = AuditLog.objects.select_related('user').order_by('-timestamp')[:10]
 
     context = {
         "total_users": User.objects.count(),
         "total_jobs": Job.objects.count(),
-        'recent_logs': recent_logs,  # Pass the variable, don't call it
+        "recent_logs": recent_logs,
     }
-    return render(request, "main/admin_dashboard.html", context)
+    return render(request, "admin/admin_dashboard.html", context)
+
+# ============= USER MANAGEMENT =============
 
 @login_required(login_url="/admin-panel/login/")
 def admin_users(request):
@@ -68,30 +67,29 @@ def admin_users(request):
         return HttpResponseForbidden()
 
     users = User.objects.exclude(is_superuser=True)
-    return render(request, "main/admin_users.html", {"users": users})
+    return render(request, "admin/admin_users.html", {"users": users})
 
 @login_required(login_url="/admin-panel/login/")
 def toggle_user_ban(request, user_id):
     if not request.user.is_superuser:
         return HttpResponseForbidden()
 
-    user = User.objects.get(id=user_id)
+    user = get_object_or_404(User, id=user_id)
     user.is_active = not user.is_active
     user.save()
-
     return redirect("admin_users")
+
+# ============= JOB MANAGEMENT =============
 
 @login_required(login_url="/admin-panel/login/")
 def admin_jobs(request):
     if not request.user.is_superuser:
-        return HttpResponseForbidden("403 Forbidden")
+        return HttpResponseForbidden()
 
-    jobs = Job.objects.all()
-    return render(request, "main/admin_jobs.html", {
-        "jobs": jobs
-    })
+    jobs = Job.objects.all().order_by('-id')
+    return render(request, "admin/admin_jobs.html", {"jobs": jobs})
 
-@login_required
+@login_required(login_url="/admin-panel/login/")
 def toggle_job_approval(request, job_id):
     if not request.user.is_superuser:
         return HttpResponseForbidden()
@@ -99,33 +97,15 @@ def toggle_job_approval(request, job_id):
     job = get_object_or_404(Job, id=job_id)
     job.is_approved = not job.is_approved
     job.save()
+    return redirect('admin_jobs')
 
-    # Log this action to your new Audit Log!
-    status = "Approved" if job.is_approved else "Rejected"
-    AuditLog.objects.create(
-        user=request.user,
-        action=f"{status} Job: {job.title} (ID: {job.id})",
-        ip_address=request.META.get('REMOTE_ADDR')
-    )
-
-    return redirect('admin_jobs') # Make sure 'admin_jobs' matches your URL name for the jobs list
-
-@login_required
+@login_required(login_url="/admin-panel/login/")
 def delete_job(request, job_id):
     if not request.user.is_superuser:
         return HttpResponseForbidden()
 
     job = get_object_or_404(Job, id=job_id)
-    job_title = job.title # Store title before deleting for the log
     job.delete()
-
-    # Log the deletion
-    AuditLog.objects.create(
-        user=request.user,
-        action=f"Deleted Job: {job_title} (ID: {job_id})",
-        ip_address=request.META.get('REMOTE_ADDR')
-    )
-
     return redirect('admin_jobs')
 
 # ============================
