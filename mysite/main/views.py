@@ -109,6 +109,47 @@ def delete_job(request, job_id):
     job.delete()
     return redirect('admin_jobs')
 
+def admin_skills(request):
+    # 1. Get the Profile instance linked to the logged-in User
+    # This prevents the ValueError by ensuring we pass a Profile object
+    try:
+        user_profile = Profile.objects.get(user=request.user)
+    except Profile.DoesNotExist:
+        # Handle cases where the admin user doesn't have a profile yet
+        # You could redirect to a profile creation page or show an error
+        return render(request, 'admin/admin_skills.html', {'error': 'Profile not found for this user.'})
+
+    if request.method == "POST":
+        name = request.POST.get('skill_name')
+        level = request.POST.get('level', 'Beginner')
+        description = request.POST.get('description', '')
+
+        if name:
+            # 2. Assign user_profile (the Profile instance) to the user field
+            Skill.objects.create(
+                user=user_profile, 
+                name=name,
+                level=level,
+                description=description
+            )
+        return redirect('admin_skills')
+
+    skills = Skill.objects.filter(user=user_profile).order_by('-id')
+    context = {
+        'skills': skills,
+        'levels': Skill.LEVEL_CHOICES
+    }
+    return render(request, 'admin/admin_skills.html', context)
+
+def admin_skill_delete(request, pk):
+    # Retrieve the skill or return a 404 error if not found
+    skill = get_object_or_404(Skill, pk=pk)
+    
+    if request.method == "POST":
+        skill.delete()
+        
+    return redirect('admin_skills')
+
 # ============================
 #          EMPLOYERS
 # ============================
