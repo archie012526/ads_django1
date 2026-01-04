@@ -14,17 +14,109 @@
         </a>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Active Postings</p>
             <h3 class="text-4xl font-bold text-[#1e293b] mt-1">{{ active_jobs_count }}</h3>
         </div>
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">New Applicants</p>
-            <h3 class="text-4xl font-bold text-blue-600 mt-1">0</h3> </div>
+            <h3 class="text-4xl font-bold text-blue-600 mt-1">{{ total_applicants }}</h3> 
+        </div>
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Interviews</p>
-            <h3 class="text-4xl font-bold text-orange-500 mt-1">0</h3> </div>
+            <h3 class="text-4xl font-bold text-green-600 mt-1">{{ total_interviews }}</h3>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <a href="{% url 'employer_messages' %}" class="block hover:opacity-80 transition">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Unread Messages</p>
+                <h3 class="text-4xl font-bold text-orange-500 mt-1">{{ unread_messages_count }}</h3>
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Recent Messages -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-50 flex justify-between items-center">
+                <h3 class="font-bold text-[#1e293b]">Recent Messages</h3>
+                <a href="{% url 'employer_messages' %}" class="text-sm text-blue-600 font-medium hover:text-blue-700">View All</a>
+            </div>
+            <div class="divide-y divide-gray-100">
+                {% if recent_conversations %}
+                    {% for conversation in recent_conversations|slice:":5" %}
+                    <a href="{% url 'employer_message_conversation' conversation.user.id %}" 
+                       class="block p-4 hover:bg-blue-50 transition group">
+                        <div class="flex items-center gap-3">
+                            <!-- Avatar -->
+                            {% if conversation.avatar_url %}
+                                <img src="{{ conversation.avatar_url }}" alt="{{ conversation.display_name }}" 
+                                     class="w-10 h-10 rounded-full object-cover">
+                            {% else %}
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                    {{ conversation.display_name|first|upper }}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Info -->
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-[#1e293b] text-sm group-hover:text-blue-600">{{ conversation.display_name }}</p>
+                                <p class="text-xs text-gray-600 truncate">{{ conversation.last_message.content|truncatewords:4 }}</p>
+                            </div>
+                            
+                            <!-- Time -->
+                            <p class="text-xs text-gray-500 flex-shrink-0">{{ conversation.last_message.sent_at|timesince }} ago</p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                <div class="p-6 text-center text-gray-400 text-sm">
+                    No messages yet. Messages will appear here.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Job Applicants Summary -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-50">
+                <h3 class="font-bold text-[#1e293b]">Latest Applicants</h3>
+            </div>
+            <div class="divide-y divide-gray-100">
+                {% if recent_applicants %}
+                    {% for application in recent_applicants|slice:":5" %}
+                    <div class="p-4 hover:bg-blue-50 transition">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-3 flex-1 min-w-0">
+                                {% if application.user.profile.profile_image %}
+                                    <img src="{{ application.user.profile.profile_image.url }}" alt="{{ application.user.username }}" 
+                                         class="w-10 h-10 rounded-full object-cover">
+                                {% else %}
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                        {{ application.user.username|first|upper }}
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-semibold text-[#1e293b] text-sm">{{ application.user.profile.full_name|default:application.user.username }}</p>
+                                    <p class="text-xs text-gray-600">{{ application.job.title }}</p>
+                                </div>
+                            </div>
+                            
+                            <a href="{% url 'employer_message_conversation' application.user.id %}"
+                               class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-100 rounded transition flex-shrink-0">
+                                Message
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="p-6 text-center text-gray-400 text-sm">
+                    No applicants yet.
+                </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">

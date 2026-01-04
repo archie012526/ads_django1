@@ -118,13 +118,50 @@ def employer_dashboard(request):
     # Fetch only jobs posted by the logged-in user
     my_jobs = Job.objects.filter(user=request.user).order_by('-created_at')
     
-    # You can also fetch recent applications here later
-    # recent_applications = JobApplication.objects.filter(job__user=request.user)[:5]
+    # Get total applicants
+    employer_jobs = Job.objects.filter(user=request.user)
+    total_applicants = JobApplication.objects.filter(job__in=employer_jobs).count()
+    
+    # Get total interviews scheduled
+    total_interviews = JobApplication.objects.filter(job__in=employer_jobs, status='Interview').count()
+    
+    # Get recent applicants
+    recent_applicants = JobApplication.objects.filter(job__in=employer_jobs).select_related('user', 'job').order_by('-applied_at')[:5]
+    
+    # Get recent conversations
+    conversations_dict = {}
+    for application in JobApplication.objects.filter(job__in=employer_jobs).select_related('user', 'job'):
+        if application.user not in conversations_dict:
+            last_msg = Message.objects.filter(
+                Q(sender=request.user, receiver=application.user) |
+                Q(sender=application.user, receiver=request.user)
+            ).select_related('sender', 'receiver').order_by('-sent_at').first()
+            
+            conversations_dict[application.user] = {
+                'user': application.user,
+                'display_name': application.user.profile.full_name or application.user.username,
+                'avatar_url': application.user.profile.profile_image.url if application.user.profile.profile_image else None,
+                'last_message': last_msg,
+                'applied_job': application.job.title,
+            }
+    
+    recent_conversations = sorted(
+        conversations_dict.values(),
+        key=lambda x: x['last_message'].sent_at if x['last_message'] else timezone.now(),
+        reverse=True
+    )[:5]
+    
+    # Get unread messages count
+    unread_messages_count = Message.objects.filter(receiver=request.user, is_read=False).count()
 
     context = {
         'my_jobs': my_jobs,
         'active_jobs_count': my_jobs.count(),
-        # 'recent_apps': recent_applications,
+        'total_applicants': total_applicants,
+        'total_interviews': total_interviews,
+        'recent_applicants': recent_applicants,
+        'recent_conversations': recent_conversations,
+        'unread_messages_count': unread_messages_count,
     }
     return render(request, "employers/dashboard.html", context)
 
@@ -1401,6 +1438,139 @@ def toggle_save_job(request, job_id):
         return JsonResponse({'saved': is_saved})
     
     return redirect(request.META.get('HTTP_REFERER', 'find_job'))
+
+
+# ============================
+# EMPLOYER MESSAGING
+# ============================
+@login_required
+def employer_messages_inbox(request):
+    """Employer inbox showing all conversations with job applicants"""
+    if request.user.profile.role != 'employer':
+        return HttpResponseForbidden()
+    
+    # Get all job applicants for jobs posted by this employer
+    employer_jobs = Job.objects.filter(user=request.user)
+    job_applicants = JobApplication.objects.filter(job__in=employer_jobs).select_related('user', 'job')
+    
+    # Get messages sent by this employer
+    messages_sent = Message.objects.filter(sender=request.user).select_related('receiver', 'receiver__profile')
+    
+    # Build conversations dictionary with applicants
+    conversations = {}
+    
+    # Add conversations from job applicants
+    for application in job_applicants:
+        if application.user not in conversations:
+            # Get last message in conversation
+            last_msg = Message.objects.filter(
+                Q(sender=request.user, receiver=application.user) |
+                Q(sender=application.user, receiver=request.user)
+            ).select_related('sender', 'receiver').order_by('-sent_at').first()
+            
+            conversations[application.user] = {
+                'user': application.user,
+                'display_name': application.user.profile.full_name or application.user.username,
+                'avatar_url': application.user.profile.profile_image.url if application.user.profile.profile_image else None,
+                'last_message': last_msg,
+                'applied_job': application.job.title,
+                'unread_count': Message.objects.filter(sender=application.user, receiver=request.user, is_read=False).count()
+            }
+    
+    return render(request, "employers/employer_messages.html", {
+        "conversations": sorted(conversations.values(), key=lambda x: x['last_message'].sent_at if x['last_message'] else timezone.now(), reverse=True)
+    })
+
+
+@login_required
+def employer_message_conversation(request, applicant_id):
+    """Employer conversation view with a job applicant"""
+    if request.user.profile.role != 'employer':
+        return HttpResponseForbidden()
+    
+    applicant = get_object_or_404(User, id=applicant_id)
+    
+    # Verify this applicant has applied to one of the employer's jobs
+    employer_jobs = Job.objects.filter(user=request.user)
+    has_applied = JobApplication.objects.filter(user=applicant, job__in=employer_jobs).exists()
+    
+    if not has_applied:
+        return HttpResponseForbidden()
+    
+    if request.method == "POST":
+        content = request.POST.get("message")
+        if content:
+            Message.objects.create(
+                sender=request.user,
+                receiver=applicant,
+                content=content
+            )
+            # Create notification for applicant
+            Notification.objects.create(
+                user=applicant,
+                notification_type='message',
+                title='New Message from Employer',
+                message=f'{request.user.profile.full_name or request.user.username} sent you a message',
+                link=f'/messages/{request.user.id}/',
+                related_user=request.user
+            )
+        return redirect("employer_message_conversation", applicant_id=applicant_id)
+    
+    # Get all messages in the conversation
+    convo = Message.objects.filter(
+        Q(sender=request.user, receiver=applicant) |
+        Q(sender=applicant, receiver=request.user)
+    ).select_related('sender', 'receiver').order_by("sent_at")
+    
+    # Mark unread messages as read
+    Message.objects.filter(
+        sender=applicant, receiver=request.user, is_read=False
+    ).update(is_read=True)
+    
+    # Get job applications from this applicant
+    applications = JobApplication.objects.filter(user=applicant, job__user=request.user).select_related('job')
+    
+    return render(request, "employers/employer_conversation.html", {
+        "applicant": applicant,
+        "conversation": convo,
+        "applications": applications
+    })
+
+
+@login_required
+def employer_applicants(request):
+    """Employer applicants view showing all applications to their jobs"""
+    if request.user.profile.role != 'employer':
+        return HttpResponseForbidden()
+    
+    # Get all job applicants for jobs posted by this employer
+    employer_jobs = Job.objects.filter(user=request.user)
+    applications = JobApplication.objects.filter(job__in=employer_jobs).select_related('user', 'job', 'user__profile').order_by('-applied_at')
+    
+    # Get filter options
+    status_filter = request.GET.get('status', '')
+    job_filter = request.GET.get('job', '')
+    
+    # Apply filters
+    if status_filter:
+        applications = applications.filter(status=status_filter)
+    if job_filter:
+        applications = applications.filter(job__id=job_filter)
+    
+    # Get available statuses and jobs for filter dropdown
+    available_statuses = JobApplication.STATUS_CHOICES
+    available_jobs = employer_jobs.all()
+    
+    context = {
+        'applications': applications,
+        'available_statuses': available_statuses,
+        'available_jobs': available_jobs,
+        'current_status': status_filter,
+        'current_job': job_filter,
+        'total_applicants': JobApplication.objects.filter(job__in=employer_jobs).count(),
+    }
+    
+    return render(request, "employers/employer_applicants.html", context)
 
 
 

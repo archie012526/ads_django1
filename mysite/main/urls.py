@@ -89,6 +89,9 @@ urlpatterns = [
     path("employers/dashboard/", views.employer_dashboard, name="employer_dashboard"),
     path("employers/jobs/", views.manage_jobs, name="manage_jobs"),
     path("employers/employerpost_job/", views.employerpost_job, name="employerpost_job"),
+    path("employers/messages/", views.employer_messages_inbox, name="employer_messages"),
+    path("employers/messages/<int:applicant_id>/", views.employer_message_conversation, name="employer_message_conversation"),
+    path("employers/applicants/", views.employer_applicants, name="employer_applicants"),
 ]   
 
     
