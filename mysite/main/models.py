@@ -103,11 +103,11 @@ class Skill(models.Model):
 
     # Add null=True and blank=True here
     user = models.ForeignKey(
-        Profile, 
+        'Profile', # Using string name if Profile is defined later in file
         on_delete=models.CASCADE, 
         related_name="skills",
-        null=True, 
-        blank=True
+        null=True,   # Allows the database to store NULL
+        blank=True   # Allows forms to be submitted empty
     )
     name = models.CharField(max_length=255)
     level = models.CharField(
