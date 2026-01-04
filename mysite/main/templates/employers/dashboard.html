@@ -1,0 +1,41 @@
+{% extends "employers/base_employer.html" %}
+
+{% block title %}Employer Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-[#1e293b]">Welcome, Employer!</h2>
+            <p class="text-gray-500">Track your recruitment progress at a glance.</p>
+        </div>
+        <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg transition">
+            Post a Job
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Active Postings</p>
+            <h3 class="text-4xl font-bold text-[#1e293b] mt-1">{{ active_jobs_count|default:"0" }}</h3>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">New Applicants</p>
+            <h3 class="text-4xl font-bold text-blue-600 mt-1">12</h3>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Interviews</p>
+            <h3 class="text-4xl font-bold text-orange-500 mt-1">4</h3>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-6 border-b border-gray-50">
+            <h3 class="font-bold text-[#1e293b]">Recent Applications</h3>
+        </div>
+        <div class="p-12 text-center">
+            <p class="text-gray-400">No recent applications found.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
