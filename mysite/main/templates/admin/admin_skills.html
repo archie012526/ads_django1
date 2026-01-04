@@ -1,0 +1,52 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="p-6">
+    <h2 class="text-2xl font-bold mb-4">Manage Skills</h2>
+    
+    <div class="bg-white p-6 rounded-lg shadow-sm mb-6 border border-gray-100">
+        <form method="POST" class="flex gap-4">
+            {% csrf_token %}
+            <input type="text" name="skill_name" placeholder="Enter skill (e.g. PHP, React)" 
+                   class="flex-1 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700 transition">
+                Add Skill
+            </button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="border-b bg-gray-50">
+                    <th class="p-4 text-sm font-semibold text-gray-600 uppercase">Skill Name</th>
+                    <th class="p-4 text-sm font-semibold text-gray-600 uppercase text-right">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+{% for skill in skills %}
+<tr style="border-bottom: 1px solid #edf2f7;">
+    <td style="padding: 15px; font-weight: 500;">{{ skill.name }}</td>
+    <td style="padding: 15px;">
+        <span style="background: #ebf8ff; color: #2b6cb0; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem;">
+            {{ skill.level }}
+        </span>
+    </td>
+    <td style="padding: 15px; color: #718096; font-size: 0.9rem;">{{ skill.description|default:"-" }}</td>
+    
+    <td style="padding: 15px; text-align: right;">
+        <form action="{% url 'admin_skill_delete' skill.pk %}" method="POST" 
+              onsubmit="return confirm('Are you sure you want to delete this skill?');" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" style="color: #e53e3e; background: none; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 600;">
+                Delete
+            </button>
+        </form>
+    </td>
+</tr>
+{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

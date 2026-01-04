@@ -77,15 +77,18 @@ class Skill(models.Model):
         ("Expert", "Expert"),
     ]
 
+    # Add null=True and blank=True here
     user = models.ForeignKey(
-        Profile,
-        on_delete=models.CASCADE,
-        related_name="skills"
+        Profile, 
+        on_delete=models.CASCADE, 
+        related_name="skills",
+        null=True, 
+        blank=True
     )
     name = models.CharField(max_length=255)
     level = models.CharField(
-        max_length=50,
-        choices=LEVEL_CHOICES,
+        max_length=50, 
+        choices=LEVEL_CHOICES, 
         default="Beginner"
     )
     description = models.TextField(blank=True, null=True)
