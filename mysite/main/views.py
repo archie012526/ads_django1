@@ -115,12 +115,16 @@ def delete_job(request, job_id):
 
 @login_required
 def employer_dashboard(request):
-    # Filter by 'user' as defined in your model
+    # Fetch only jobs posted by the logged-in user
     my_jobs = Job.objects.filter(user=request.user).order_by('-created_at')
     
+    # You can also fetch recent applications here later
+    # recent_applications = JobApplication.objects.filter(job__user=request.user)[:5]
+
     context = {
-        "active_jobs_count": my_jobs.count(), # You can add an is_approved field later if needed
-        "recent_jobs": my_jobs[:5], 
+        'my_jobs': my_jobs,
+        'active_jobs_count': my_jobs.count(),
+        # 'recent_apps': recent_applications,
     }
     return render(request, "employers/dashboard.html", context)
 
@@ -130,7 +134,7 @@ def manage_jobs(request):
     return render(request, "employers/manage_jobs.html", {"jobs": my_jobs})
 
 @login_required
-def post_job(request):
+def employerpost_job(request):
     if request.method == "POST":
         # Extract data from the form
         title = request.POST.get('title')
@@ -160,7 +164,7 @@ def post_job(request):
         
     # Get skills to show in the form dropdown
     all_skills = SkillTag.objects.all()
-    return render(request, "employers/post_job.html", {"skills": all_skills})
+    return render(request, "employers/employerpost_job.html", {"skills": all_skills})
 
 # ============================
 # LANDING / STATIC

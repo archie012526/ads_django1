@@ -10,14 +10,14 @@
 </head>
 <body class="bg-[#f4f7fe]">
     <div class="flex min-h-screen">
-        <aside class="w-64 bg-[#1e293b] text-white flex flex-col fixed h-full">
+        <aside class="w-64 bg-[#1e293b] text-white flex flex-col fixed h-full z-10">
             <div class="p-6 border-b border-gray-700">
-                <h1 class="text-xl font-bold flex items-center gap-2">JobSeek</h1>
+                <h1 class="text-xl font-bold flex items-center gap-2 text-blue-400">JobSeek</h1>
                 <p class="text-[10px] text-gray-400 uppercase tracking-widest">Employer Portal</p>
             </div>
             
             <nav class="flex-1 px-4 py-6 space-y-2">
-                <a href="{% url 'employer_dashboard' %}" class="flex items-center gap-3 bg-[#2d3a4f] text-white px-4 py-3 rounded-lg">
+                <a href="{% url 'employer_dashboard' %}" class="flex items-center gap-3 text-gray-300 hover:bg-[#2d3a4f] hover:text-white px-4 py-3 rounded-lg transition">
                     Dashboard
                 </a>
                 <a href="#" class="flex items-center gap-3 text-gray-400 hover:text-white px-4 py-3 rounded-lg transition">
@@ -33,7 +33,7 @@
             </div>
         </aside>
 
-        <main class="flex-1 ml-64 p-8">
+        <main class="flex-1 ml-64 p-8 min-h-screen">
             {% block content %}
             {% endblock %}
         </main>

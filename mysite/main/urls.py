@@ -86,9 +86,9 @@ urlpatterns = [
     path("admin-panel/jobs/<int:job_id>/delete/", views.delete_job, name="delete_job"),
 
     # Employer Section
-    path("employer/dashboard/", views.employer_dashboard, name="employer_dashboard"),
-    path("employer/jobs/", views.manage_jobs, name="manage_jobs"),
-    path("employer/post-job/", views.post_job, name="post_job"),
+    path("employers/dashboard/", views.employer_dashboard, name="employer_dashboard"),
+    path("employers/jobs/", views.manage_jobs, name="manage_jobs"),
+    path("employers/employerpost_job/", views.employerpost_job, name="employerpost_job"),
 ]   
 
     
