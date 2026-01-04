@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Profile, Skill, Job, Post, JobApplication
+import re
+from .models import Profile, Skill, Job, Post, JobApplication, SkillTag
 
 
 class UserForm(forms.ModelForm):
@@ -157,3 +158,27 @@ class SignUpForm(UserCreationForm):
             "class": "form-input",
             "placeholder": "Confirm password"
         })
+
+    def clean_password1(self):
+        """Enforce password policy: min 8 chars, at least one uppercase, one digit, and one symbol."""
+        password = self.cleaned_data.get("password1") or ""
+        if len(password) < 8 or not re.search(r"[A-Z]", password) or not re.search(r"\d", password) or not re.search(r"[^A-Za-z0-9]", password):
+            raise forms.ValidationError("Password must be at least 8 characters and include at least one uppercase letter, one number, and one symbol.")
+        return password
+
+
+class JobPostForm(forms.ModelForm):
+    # This allows employers to select multiple skills
+    skills = forms.ModelMultipleChoiceField(
+        queryset=SkillTag.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+
+    class Meta:
+        model = Job
+        fields = ['title', 'company_name', 'description', 'location', 'employment_type', 'working_schedule', 'skills']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 5, 'placeholder': 'Describe the role...'}),
+            'title': forms.TextInput(attrs={'placeholder': 'e.g. Senior Python Developer'}),
+        }

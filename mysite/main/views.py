@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from django.contrib import messages
 from django.db import IntegrityError
 from django.db.models import Q
@@ -15,7 +16,7 @@ from .models import Post
 from django.http import HttpResponseForbidden
 from .models import AuditLog
 
-from .models import Profile, Job, JobApplication, Notification, Skill, Message, SavedJob
+from .models import Profile, Job, JobApplication, Notification, Skill, Message, SavedJob,SkillTag
 from .forms import JobForm, PostForm, SkillForm, UserForm, ProfileForm, SettingsForm, SignUpForm, JobApplicationForm
 
 from django.contrib.auth import logout as django_logout
@@ -150,6 +151,63 @@ def admin_skill_delete(request, pk):
     return redirect('admin_skills')
 
 # ============================
+#          EMPLOYERS
+# ============================
+
+@login_required
+def employer_dashboard(request):
+    # Fetch only jobs posted by the logged-in user
+    my_jobs = Job.objects.filter(user=request.user).order_by('-created_at')
+    
+    # You can also fetch recent applications here later
+    # recent_applications = JobApplication.objects.filter(job__user=request.user)[:5]
+
+    context = {
+        'my_jobs': my_jobs,
+        'active_jobs_count': my_jobs.count(),
+        # 'recent_apps': recent_applications,
+    }
+    return render(request, "employers/dashboard.html", context)
+
+@login_required
+def manage_jobs(request):
+    my_jobs = Job.objects.filter(posted_by=request.user).order_by('-created_at')
+    return render(request, "employers/manage_jobs.html", {"jobs": my_jobs})
+
+@login_required
+def employerpost_job(request):
+    if request.method == "POST":
+        # Extract data from the form
+        title = request.POST.get('title')
+        company = request.POST.get('company_name')
+        desc = request.POST.get('description')
+        loc = request.POST.get('location')
+        emp_type = request.POST.get('employment_type')
+        sched = request.POST.get('working_schedule')
+
+        # Create the Job object
+        job = Job.objects.create(
+            user=request.user, # Links to the logged-in Employer
+            title=title,
+            company_name=company,
+            description=desc,
+            location=loc,
+            employment_type=emp_type,
+            working_schedule=sched
+        )
+        
+        # Handle ManyToMany Skills if sent via form
+        skills_list = request.POST.getlist('skills') # Expects IDs
+        if skills_list:
+            job.skills.set(skills_list)
+            
+        return redirect('employer_dashboard')
+        
+    # Get skills to show in the form dropdown
+    all_skills = SkillTag.objects.all()
+    return render(request, "employers/employerpost_job.html", {"skills": all_skills})
+
+# ============================
 # LANDING / STATIC
 # ============================
 def landingpage(request):
@@ -173,14 +231,12 @@ def login_page(request):
         password = request.POST.get("password", "")
 
         user = None
-        
         # Try to authenticate with username first
         user = authenticate(request, username=username_or_email, password=password)
         
         # If that fails and input looks like email, try email lookup
         if user is None and "@" in username_or_email:
             try:
-                # Case-insensitive email lookup
                 user_obj = User.objects.get(email__iexact=username_or_email)
                 user = authenticate(request, username=user_obj.username, password=password)
             except User.DoesNotExist:
@@ -188,50 +244,84 @@ def login_page(request):
         
         if user is not None:
             login(request, user)
-            return redirect("homepage")
+            
+            # --- ROLE BASED REDIRECT ---
+            # Check the profile role you saved during signup
+            try:
+                if user.profile.role == 'employer':
+                    return redirect("employer_dashboard")
+            except AttributeError:
+                # Fallback if profile doesn't exist for some reason
+                pass
+                
+            return redirect("homepage") # Default for job seekers
         else:
             messages.error(request, "Invalid username/email or password.")
 
     return render(request, "main/login.html")
 
+from django.db import IntegrityError
 
 def signup_page(request):
     if request.method == "POST":
         email = request.POST.get("email", "").strip().lower()
         username = request.POST.get("username", "").strip() or email
-        password = request.POST.get("password", "") or request.POST.get("password1", "")
+        password = request.POST.get("password1", "")
         password2 = request.POST.get("password2", "")
         first_name = request.POST.get("first_name", "")
         last_name = request.POST.get("last_name", "")
-        role = request.POST.get("role", "job_seeker")  # Get role from form
+        role = request.POST.get("role", "job_seeker")
+        phone = request.POST.get("phone_number", "")
+        birthday = request.POST.get("birthday", None)
 
-        # Validate passwords match
+        # Preserve entered (non-password) fields when re-rendering the form
+        context = {
+            "first_name": first_name,
+            "last_name": last_name,
+            "username": username,
+            "email": email,
+            "phone_number": phone,
+            "birthday": birthday,
+            "role": role,
+        }
+
         if password != password2:
             messages.error(request, "Passwords do not match.")
-            return render(request, "main/signup.html")
+            context["password_invalid"] = True
+            return render(request, "main/signup.html", context)
 
-        # Validate password is not empty
-        if not password:
-            messages.error(request, "Password is required.")
-            return render(request, "main/signup.html")
+        # Password policy validation
+        import re
+        if len(password) < 8 or not re.search(r"[A-Z]", password) or not re.search(r"\d", password) or not re.search(r"[^A-Za-z0-9]", password):
+            messages.error(request, "Password must be at least 8 characters and include at least one uppercase letter, one number, and one symbol.")
+            context["password_invalid"] = True
+            return render(request, "main/signup.html", context)
 
         try:
+            # 1. Create User with role and phone (since they are now in your Custom User model)
             user = User.objects.create_user(
                 username=username,
                 email=email,
                 password=password,
                 first_name=first_name,
                 last_name=last_name,
+                role=role,             # Added to User model
+                phone_number=phone,    # Added to User model
+                birthday=birthday if birthday else None # Added to User model
             )
-            # Set the role and full_name on the profile
-            user.profile.role = role
-            user.profile.full_name = f"{first_name} {last_name}".strip()
-            user.profile.save()
-        except IntegrityError:
-            messages.error(request, "Email already registered.")
-            return render(request, "main/signup.html")
 
-        messages.success(request, "Account created successfully.")
+            # 2. Update the Profile (Signals create this automatically)
+            profile = user.profile 
+            profile.role = role
+            profile.phone_number = phone
+            profile.full_name = f"{first_name} {last_name}".strip()
+            profile.save()
+            
+        except IntegrityError:
+            messages.error(request, "Username or Email already registered.")
+            return render(request, "main/signup.html", context)
+
+        messages.success(request, "Account created successfully. Please login.")
         return redirect("login")
 
     return render(request, "main/signup.html")

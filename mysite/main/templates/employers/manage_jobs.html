@@ -1,0 +1,15 @@
+{% extends "employers/base_employer.html" %}
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-center items-center h-screen">
+        <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+            <h1 class="text-2xl font-bold mb-4 text-center">Edit Job</h1>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
