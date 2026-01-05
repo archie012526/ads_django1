@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # "channels",  # Commented out for development
+    "channels",
     # "axes",  # Commented out for development
     "main.apps.MainConfig",
 ]
@@ -77,13 +77,11 @@ TEMPLATES = [
         },
     },
 ]
-
-
 # ======================
 # WSGI / ASGI / CHANNELS
 # ======================
 WSGI_APPLICATION = "mysite.wsgi.application"
-# ASGI_APPLICATION = "mysite.asgi.application"  # Commented out - channels disabled
+ASGI_APPLICATION = "mysite.asgi.application"
 
 # CHANNEL_LAYERS = {
 #     "default": {
@@ -202,3 +200,9 @@ CSRF_COOKIE_SAMESITE = "Lax"
 
 # settings.py
 AUTH_USER_MODEL = 'main.User'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
+}
