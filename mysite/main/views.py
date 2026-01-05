@@ -260,7 +260,28 @@ def employerpost_job(request):
         
         skills_list = request.POST.getlist('skills')
         if skills_list:
-            job.skills.set(skills_list)
+            # Map submitted ids (which may be Skill or SkillTag ids) to SkillTag ids
+            tag_ids = []
+            for sid in skills_list:
+                try:
+                    # First, try interpreting as a SkillTag id
+                    tag = SkillTag.objects.get(pk=int(sid))
+                    tag_ids.append(tag.pk)
+                    continue
+                except (SkillTag.DoesNotExist, ValueError):
+                    pass
+
+                try:
+                    # Fallback: it's a Skill id (admin-created skill). Map by name to SkillTag (create if missing)
+                    skill_obj = Skill.objects.get(pk=int(sid))
+                    tag, _ = SkillTag.objects.get_or_create(name=skill_obj.name)
+                    tag_ids.append(tag.pk)
+                except (Skill.DoesNotExist, ValueError):
+                    # ignore invalid values
+                    continue
+
+            if tag_ids:
+                job.skills.set(tag_ids)
             
         return redirect('employer_dashboard')
         
