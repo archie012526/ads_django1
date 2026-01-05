@@ -65,10 +65,17 @@ def admin_dashboard(request):
 
     recent_logs = AuditLog.objects.select_related('user').order_by('-timestamp')[:10]
 
+    # <-- added: fetch recent user-level notifications for admin overview
+    recent_user_notifications = Notification.objects.select_related('user', 'related_user').order_by('-created_at')[:10]
+    unread_user_notifications_count = Notification.objects.filter(is_read=False).count()
+
     context = {
         "total_users": User.objects.count(),
         "total_jobs": Job.objects.count(),
         "recent_logs": recent_logs,
+        # <-- added keys
+        "user_notifications": recent_user_notifications,
+        "unread_user_notifications_count": unread_user_notifications_count,
     }
     return render(request, "admin/admin_dashboard.html", context)
 
