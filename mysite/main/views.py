@@ -151,6 +151,32 @@ def admin_skill_delete(request, pk):
         skill.delete()
     return redirect('admin_skills')
 
+
+@login_required(login_url="/admin-panel/login/")
+def seed_skills_view(request):
+    """Create a set of default global skills (user=NULL) for the admin panel.
+    Idempotent: will not duplicate existing skill names."""
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+
+    default_skills = [
+        "Python", "Django", "JavaScript", "React", "SQL", "HTML", "CSS",
+        "DevOps", "Docker", "Kubernetes", "AWS", "Product Management", "Data Analysis"
+    ]
+
+    created = 0
+    for name in default_skills:
+        obj, created_flag = Skill.objects.get_or_create(user=None, name=name, defaults={"level": "Beginner", "description": ""})
+        if created_flag:
+            created += 1
+
+    if created:
+        messages.success(request, f"Seeded {created} skills.")
+    else:
+        messages.info(request, "Skills already seeded.")
+
+    return redirect('admin_skills')
+
 # ============================
 #          EMPLOYERS
 # ============================
@@ -234,7 +260,28 @@ def employerpost_job(request):
         
         skills_list = request.POST.getlist('skills')
         if skills_list:
-            job.skills.set(skills_list)
+            # Map submitted ids (which may be Skill or SkillTag ids) to SkillTag ids
+            tag_ids = []
+            for sid in skills_list:
+                try:
+                    # First, try interpreting as a SkillTag id
+                    tag = SkillTag.objects.get(pk=int(sid))
+                    tag_ids.append(tag.pk)
+                    continue
+                except (SkillTag.DoesNotExist, ValueError):
+                    pass
+
+                try:
+                    # Fallback: it's a Skill id (admin-created skill). Map by name to SkillTag (create if missing)
+                    skill_obj = Skill.objects.get(pk=int(sid))
+                    tag, _ = SkillTag.objects.get_or_create(name=skill_obj.name)
+                    tag_ids.append(tag.pk)
+                except (Skill.DoesNotExist, ValueError):
+                    # ignore invalid values
+                    continue
+
+            if tag_ids:
+                job.skills.set(tag_ids)
             
         return redirect('employer_dashboard')
         
@@ -1055,21 +1102,44 @@ def download_interview_invite(request, app_id: int):
 # ============================
 @login_required
 def skills_page(request):
-    skills = Skill.objects.filter(user=request.user.profile)
+    """Show available admin-provided (global) skills and let jobseekers add from that list only."""
+
+    # User's own selected skills
+    skills = Skill.objects.filter(user=request.user.profile).order_by('name')
+
+    # Available admin/global skills
+    global_skills_qs = Skill.objects.filter(user__isnull=True).order_by('name')
 
     if request.method == "POST":
         form = SkillForm(request.POST)
         if form.is_valid():
-            skill = form.save(commit=False)
-            skill.user = request.user.profile
-            skill.save()
+            selected_name = form.cleaned_data['name']
+            level = form.cleaned_data['level']
+
+            # Ensure selected skill exists among global skills
+            if not global_skills_qs.filter(name=selected_name).exists():
+                messages.error(request, "That skill is not available. Please choose from the admin-provided list.")
+                return redirect('skills')
+
+            # Prevent duplicate skill entries for the same user
+            if Skill.objects.filter(user=request.user.profile, name=selected_name).exists():
+                messages.info(request, "You already have this skill added.")
+                return redirect('skills')
+
+            # Create a user-owned skill record referring to the chosen global skill name
+            Skill.objects.create(user=request.user.profile, name=selected_name, level=level)
+            messages.success(request, f"Added skill: {selected_name}")
             return redirect("skills")
     else:
         form = SkillForm()
 
+    # Pass options for datalist in template (name,label pairs)
+    SKILL_OPTIONS = [(s.name, s.name) for s in global_skills_qs]
+
     return render(request, "main/skills.html", {
         "skills": skills,
         "form": form,
+        "SKILL_OPTIONS": SKILL_OPTIONS,
     })
 
 
