@@ -265,9 +265,15 @@
                         </div>
 
                         <div class="application-actions">
-                            <a href="{% url 'conversation' app.user.id %}" class="btn btn-message">
-                                💬 Message
-                            </a>
+                            {% if is_employer %}
+                                <a href="{% url 'employer_message_conversation' app.user.id %}" class="btn btn-message">
+                                    💬 Message
+                                </a>
+                            {% else %}
+                                <a href="{% url 'conversation' app.user.id %}" class="btn btn-message">
+                                    💬 Message
+                                </a>
+                            {% endif %}
                             <button class="btn btn-view">👁️ View Resume</button>
                             <form method="POST" action="{% url 'update_application_status' app.id %}" style="display:flex; gap:8px; align-items:center;">
                                 {% csrf_token %}
