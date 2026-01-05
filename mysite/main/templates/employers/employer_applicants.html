@@ -18,27 +18,15 @@
         </div>
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
             <p class="text-xs font-bold text-gray-400 uppercase">Pending</p>
-            <h3 class="text-3xl font-bold text-yellow-600 mt-1">
-                {% for app in applications %}
-                    {% if app.status == 'Pending' %}1{% endif %}
-                {% endfor %}
-            </h3>
+            <h3 class="text-3xl font-bold text-yellow-600 mt-1">{{ pending_count }}</h3>
         </div>
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
             <p class="text-xs font-bold text-gray-400 uppercase">Interviews</p>
-            <h3 class="text-3xl font-bold text-blue-600 mt-1">
-                {% for app in applications %}
-                    {% if app.status == 'Interview' %}1{% endif %}
-                {% endfor %}
-            </h3>
+            <h3 class="text-3xl font-bold text-blue-600 mt-1">{{ interview_count }}</h3>
         </div>
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
             <p class="text-xs font-bold text-gray-400 uppercase">Accepted</p>
-            <h3 class="text-3xl font-bold text-green-600 mt-1">
-                {% for app in applications %}
-                    {% if app.status == 'Accepted' %}1{% endif %}
-                {% endfor %}
-            </h3>
+            <h3 class="text-3xl font-bold text-green-600 mt-1">{{ accepted_count }}</h3>
         </div>
     </div>
 
@@ -420,4 +408,117 @@
     opacity: 0.95;
 }
 </style>
+
+<script>
+// Keep dropdown open when interacting with it
+document.querySelectorAll('.dropdown-menu').forEach(menu => {
+    menu.addEventListener('mouseenter', function() {
+        this.closest('.group').classList.add('group-force-open');
+    });
+    menu.addEventListener('mouseleave', function() {
+        this.closest('.group').classList.remove('group-force-open');
+    });
+});
+
+// Update status button click handler
+document.querySelectorAll('.update-status-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const applicationId = this.getAttribute('data-app-id');
+        const cardDiv = document.querySelector(`[data-app-id="${applicationId}"]`);
+        const select = cardDiv.querySelector('.status-select');
+        const newStatus = select.value;
+        const csrfToken = cardDiv.querySelector('form')?.querySelector('[name="csrfmiddlewaretoken"]')?.value;
+        
+        if (!csrfToken) {
+            alert('Error: CSRF token not found');
+            return;
+        }
+        
+        // Send AJAX request
+        fetch(`/applications/${applicationId}/status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: `status=${encodeURIComponent(newStatus)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the status badge in the UI
+                const statusBadge = cardDiv.querySelector('.status-badge');
+                if (statusBadge) {
+                    // Remove old status classes
+                    statusBadge.classList.remove('bg-yellow-100', 'text-yellow-700', 'bg-blue-100', 'text-blue-700', 'bg-purple-100', 'text-purple-700', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+                    
+                    // Add new status classes based on status
+                    statusBadge.textContent = newStatus;
+                    switch(newStatus) {
+                        case 'Pending':
+                            statusBadge.classList.add('bg-yellow-100', 'text-yellow-700');
+                            break;
+                        case 'Reviewed':
+                            statusBadge.classList.add('bg-blue-100', 'text-blue-700');
+                            break;
+                        case 'Interview':
+                            statusBadge.classList.add('bg-purple-100', 'text-purple-700');
+                            break;
+                        case 'Accepted':
+                            statusBadge.classList.add('bg-green-100', 'text-green-700');
+                            break;
+                        case 'Rejected':
+                            statusBadge.classList.add('bg-red-100', 'text-red-700');
+                            break;
+                    }
+                }
+            } else {
+                alert('Error updating status: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating status');
+        });
+    });
+});
+
+// Handle "Mark as Reviewed" button via AJAX
+document.querySelectorAll('form[data-reviewed-form]').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const applicationId = this.getAttribute('data-app-id');
+        const csrfToken = this.querySelector('[name="csrfmiddlewaretoken"]').value;
+        
+        fetch(`/applications/${applicationId}/status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: 'status=Reviewed'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const cardDiv = document.querySelector(`[data-app-id="${applicationId}"]`);
+                const statusBadge = cardDiv.querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.classList.remove('bg-yellow-100', 'text-yellow-700', 'bg-blue-100', 'text-blue-700', 'bg-purple-100', 'text-purple-700', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+                    statusBadge.classList.add('bg-blue-100', 'text-blue-700');
+                    statusBadge.textContent = 'Reviewed';
+                }
+            } else {
+                alert('Error marking as reviewed: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
+</script>
 {% endblock %}

@@ -102,6 +102,7 @@ urlpatterns = [
     path("employers/messages/<int:applicant_id>/", views.employer_message_conversation, name="employer_message_conversation"),
     path("employers/messages/search/", views.employer_search_messages, name="employer_search_messages"),
     path("employers/applicants/", views.employer_applicants, name="employer_applicants"),
+    path("employers/applicants/<int:app_id>/interview/", views.employer_interview_detail, name="employer_schedule_interview"),
     path("employers/notifications/", views.employer_notifications, name="employer_notifications"),
     path("employers/notifications/mark-all-read/", views.employer_mark_all_read, name="employer_mark_all_read"),
     # Employer interview detail (for scheduling/confirmation)

@@ -282,7 +282,9 @@ body {
     stroke: white !important;
 }
 
-/* ============= GLOBAL NOTIFICATIONS ============= */
+/* ============= GLOBAL NOTIFICATIONS (DISABLED) ============= */
+/* These styles are disabled - global notifications have been removed */
+/*
 .global-notifications-container {
     position: fixed;
     top: 80px;
@@ -338,6 +340,7 @@ body {
     gap: 12px;
     flex: 1;
 }
+*/
 
 .global-notification-icon {
     width: 24px;

@@ -39,11 +39,6 @@
 
   <main class="flex-1 ml-64 min-h-screen p-8">
     <div class="max-w-7xl mx-auto">
-{% for note in global_notifications %}
-  <div class="bg-blue-600 text-white p-3 text-center">
-    <strong>{{ note.title }}</strong> — {{ note.message }}
-  </div>
-{% endfor %}
 
         {% block admin_content %}{% endblock %}
     </div>

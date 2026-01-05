@@ -78,10 +78,10 @@
                             <!-- Edit/Delete buttons (only for own messages) -->
                             {% if message.sender == request.user %}
                             <div class="absolute top-2 right-2 hidden group-hover:flex gap-1">
-                                <button onclick="editMessage({{ message.id }})" class="text-xs text-white bg-blue-500 hover:bg-blue-700 rounded px-2 py-1">
+                                <button onclick="editMessage('{{ message.id }}')" class="text-xs text-white bg-blue-500 hover:bg-blue-700 rounded px-2 py-1">
                                     ✏️
                                 </button>
-                                <button onclick="deleteMessage({{ message.id }})" class="text-xs text-white bg-red-500 hover:bg-red-700 rounded px-2 py-1">
+                                <button onclick="deleteMessage('{{ message.id }}')" class="text-xs text-white bg-red-500 hover:bg-red-700 rounded px-2 py-1">
                                     🗑️
                                 </button>
                             </div>
@@ -131,7 +131,7 @@
             <span id="charCount" class="text-xs text-gray-500">0 / 1000</span>
         </div>
 
-        <form method="POST" class="space-y-3" id="messageForm">
+        <form method="POST" action="{% url 'employer_message_conversation' applicant.id %}" class="space-y-3" id="messageForm">
             {% csrf_token %}
             
             <!-- Textarea with Better UX -->

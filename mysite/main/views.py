@@ -13,6 +13,12 @@ from django.utils import timezone
 from django.urls import reverse
 from django.http import JsonResponse, HttpResponse
 from datetime import timedelta, datetime, timezone as dt_timezone
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from .models import Post
 from django.http import HttpResponseForbidden
 from .models import AuditLog
@@ -262,26 +268,24 @@ def seed_skills_view(request):
 
 @login_required
 def employer_dashboard(request):
-    # Fetch only jobs posted by the logged-in user
+    # Fetch only jobs posted by the logged-in employer
     my_jobs = Job.objects.filter(user=request.user).order_by('-created_at')
-    
-    # Get total applicants
-    employer_jobs = Job.objects.filter(user=request.user)
-    total_applicants = JobApplication.objects.filter(job__in=employer_jobs).count()
-    
-    # Get total interviews scheduled
-    total_interviews = JobApplication.objects.filter(job__in=employer_jobs, status='Interview').count()
-    
+    my_job_ids = list(my_jobs.values_list('id', flat=True))
+
+    # Get totals scoped to the employer's jobs
+    total_applicants = JobApplication.objects.filter(job_id__in=my_job_ids).count()
+    total_interviews = JobApplication.objects.filter(job_id__in=my_job_ids, status='Interview').count()
+
     # Get notifications
     recent_notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:5]
     unread_notifications_count = Notification.objects.filter(user=request.user, is_read=False).count()
-    
+
     # Get recent applicants
-    recent_applicants = JobApplication.objects.filter(job__in=employer_jobs).select_related('user', 'job').order_by('-applied_at')[:5]
-    
+    recent_applicants = JobApplication.objects.filter(job_id__in=my_job_ids).select_related('user', 'job').order_by('-applied_at')[:5]
+
     # Get recent conversations
     conversations_dict = {}
-    for application in JobApplication.objects.filter(job__in=employer_jobs).select_related('user', 'job'):
+    for application in JobApplication.objects.filter(job_id__in=my_job_ids).select_related('user', 'job'):
         if application.user not in conversations_dict:
             last_msg = Message.objects.filter(
                 Q(sender=request.user, receiver=application.user) |
@@ -296,13 +300,13 @@ def employer_dashboard(request):
                 'last_message': last_msg,
                 'applied_job': application.job.title,
             }
-    
+
     recent_conversations = sorted(
         conversations_dict.values(),
         key=lambda x: x['last_message'].sent_at if x['last_message'] else timezone.now(),
         reverse=True
     )[:5]
-    
+
     # Get unread messages count
     unread_messages_count = Message.objects.filter(receiver=request.user, is_read=False).count()
 
@@ -915,59 +919,6 @@ def find_job(request):
     working_schedule = request.GET.get("job_requirements", "")
     skill = request.GET.get("skill", "")
 
-    # If no jobs exist (fresh DB), seed a handful so the page always has content
-    if not Job.objects.exists():
-        owner = User.objects.first()
-        if owner:
-            sample_jobs = [
-                Job(
-                    user=owner,
-                    title="Frontend Engineer",
-                    company_name="Aurora Labs",
-                    description="Build delightful UIs in React and Tailwind, ship features fast, and collaborate with product/design.",
-                    location="Remote",
-                    employment_type="FULLTIME",
-                    working_schedule="flexible",
-                ),
-                Job(
-                    user=owner,
-                    title="Backend Developer",
-                    company_name="BlueRiver Tech",
-                    description="Design and scale APIs with Django/DRF, write clean code, and improve performance and observability.",
-                    location="New York, NY",
-                    employment_type="FULLTIME",
-                    working_schedule="full_day",
-                ),
-                Job(
-                    user=owner,
-                    title="Data Analyst",
-                    company_name="InsightIQ",
-                    description="Explore datasets, build dashboards, and communicate insights using SQL, Python, and modern BI tools.",
-                    location="Austin, TX",
-                    employment_type="PARTTIME",
-                    working_schedule="flexible",
-                ),
-                Job(
-                    user=owner,
-                    title="Product Designer",
-                    company_name="Northwind Studio",
-                    description="Own end-to-end design from research to high-fidelity, prototype interactions, and partner with engineering.",
-                    location="San Francisco, CA",
-                    employment_type="CONTRACT",
-                    working_schedule="flexible",
-                ),
-                Job(
-                    user=owner,
-                    title="DevOps Engineer",
-                    company_name="CloudForge",
-                    description="Automate CI/CD, harden cloud infra, improve reliability, and drive cost optimizations.",
-                    location="Remote",
-                    employment_type="FULLTIME",
-                    working_schedule="full_day",
-                ),
-            ]
-            Job.objects.bulk_create(sample_jobs)
-    
     jobs = Job.objects.select_related('user', 'user__profile').prefetch_related('skills').all()
 
     if query:
@@ -1093,6 +1044,8 @@ def update_application_status(request, app_id: int):
     application = get_object_or_404(JobApplication, id=app_id)
     # Only the job owner can change status
     if application.job.user != request.user:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
         messages.error(request, "You do not have permission to update this application.")
         return redirect('job_applications')
 
@@ -1117,14 +1070,27 @@ def update_application_status(request, app_id: int):
             # Otherwise persist status immediately
             application.status = canonical
             application.save(update_fields=['status'])
-
-            # If caller expects JSON (AJAX), return success without redirect so the UI can update in-place
+            
+            # Create notification for applicant
+            Notification.objects.create(
+                user=application.user,
+                notification_type='application_status',
+                title='Application Status Updated',
+                message=f'Your application status for {application.job.title} has been updated to {canonical}',
+                link=f'/job-applications/',
+                related_user=request.user
+            )
+            
+            # If caller expects JSON (AJAX), return success
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': True, 'status': canonical, 'message': 'Application status updated.'})
 
             messages.success(request, "Application status updated.")
         else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': 'Invalid status'}, status=400)
             messages.error(request, "Invalid status selected.")
+    
     # For non-AJAX submits keep the employer on the applicants page
     return redirect('employer_applicants')
 
@@ -1276,37 +1242,103 @@ def download_interview_invite(request, app_id: int):
         messages.error(request, 'No interview schedule set for this application.')
         return redirect('job_applications')
 
-    start = application.interview_scheduled_at
-    end = start + timedelta(minutes=45)
-    dtstamp = _format_ics_dt(timezone.now())
-    dtstart = _format_ics_dt(start)
-    dtend = _format_ics_dt(end)
-
-    summary = f"Interview: {application.job.title}"
-    description_lines = []
-    if application.interview_meeting_url:
-        description_lines.append(f"Meeting URL: {application.interview_meeting_url}")
-    if application.interview_location:
-        description_lines.append(f"Location: {application.interview_location}")
-    description = "\\n".join(description_lines) or 'Interview'
-
-    ics = (
-        "BEGIN:VCALENDAR\n"
-        "VERSION:2.0\n"
-        "PRODID:-//ADS Django//EN\n"
-        "BEGIN:VEVENT\n"
-        f"UID:jobapp-{application.id}@mysite\n"
-        f"DTSTAMP:{dtstamp}\n"
-        f"DTSTART:{dtstart}\n"
-        f"DTEND:{dtend}\n"
-        f"SUMMARY:{summary}\n"
-        f"DESCRIPTION:{description}\n"
-        "END:VEVENT\n"
-        "END:VCALENDAR\n"
+    # Create PDF in memory
+    pdf_buffer = BytesIO()
+    doc = SimpleDocTemplate(pdf_buffer, pagesize=letter,
+                           rightMargin=0.5*inch, leftMargin=0.5*inch,
+                           topMargin=0.75*inch, bottomMargin=0.75*inch)
+    
+    # Container for PDF elements
+    elements = []
+    
+    # Define styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#1e293b'),
+        spaceAfter=30,
+        alignment=1  # Center
     )
-
-    response = HttpResponse(ics, content_type='text/calendar')
-    response['Content-Disposition'] = f'attachment; filename=interview-{application.id}.ics'
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor('#1e293b'),
+        spaceAfter=12,
+        spaceBefore=12
+    )
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=11,
+        textColor=colors.HexColor('#475569'),
+        spaceAfter=6
+    )
+    
+    # Title
+    elements.append(Paragraph("Interview Invitation", title_style))
+    elements.append(Spacer(1, 0.2*inch))
+    
+    # Job and Applicant Info
+    elements.append(Paragraph("Interview Details", heading_style))
+    
+    interview_data = [
+        ["Position:", application.job.title],
+        ["Applicant:", application.user.profile.full_name or application.user.username],
+        ["Date:", application.interview_scheduled_at.strftime('%B %d, %Y')],
+        ["Time:", application.interview_scheduled_at.strftime('%I:%M %p')],
+    ]
+    
+    if application.interview_location:
+        interview_data.append(["Location:", application.interview_location])
+    
+    if application.interview_meeting_url:
+        interview_data.append(["Meeting URL:", application.interview_meeting_url])
+    
+    interview_table = Table(interview_data, colWidths=[1.5*inch, 4.5*inch])
+    interview_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f1f5f9')),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#1e293b')),
+        ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e2e8f0')),
+    ]))
+    elements.append(interview_table)
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Additional Information
+    elements.append(Paragraph("Important Information", heading_style))
+    elements.append(Paragraph("• Please arrive 5-10 minutes early", normal_style))
+    elements.append(Paragraph("• Have a valid ID ready for verification", normal_style))
+    if application.interview_meeting_url:
+        elements.append(Paragraph("• Test your internet connection and audio/video before the meeting", normal_style))
+    else:
+        elements.append(Paragraph("• Bring all necessary documents and references", normal_style))
+    elements.append(Spacer(1, 0.3*inch))
+    
+    # Footer
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.HexColor('#94a3b8'),
+        alignment=1
+    )
+    elements.append(Paragraph("This is an automated invitation. Please confirm your attendance at your earliest convenience.", footer_style))
+    
+    # Build PDF
+    doc.build(elements)
+    
+    # Return PDF as response
+    pdf_buffer.seek(0)
+    response = HttpResponse(pdf_buffer.read(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename=interview-invitation-{application.id}.pdf'
     return response
 
 
@@ -1469,8 +1501,8 @@ def conversation_view(request, user_id):
     other = get_object_or_404(User, id=user_id)
 
     if request.method == "POST":
-        content = request.POST.get("message")
-        if content:
+        content = request.POST.get("message", "").strip()
+        if content and len(content) > 0:
             msg = Message.objects.create(
                 sender=request.user,
                 receiver=other,
@@ -1770,18 +1802,60 @@ def create_job(request):
 @login_required
 def edit_job(request, job_id: int):
     job = get_object_or_404(Job, id=job_id, user=request.user)
+
     if request.method == "POST":
-        form = JobForm(request.POST, instance=job)
-        if form.is_valid():
-            job = form.save(commit=False)
-            job.user = request.user
-            job.save()
-            add_audit_log(request, request.user, f"Updated job '{job.title}' (id:{job.id})")
-            messages.success(request, "Job updated successfully!")
-            return redirect("homepage")
-    else:
-        form = JobForm(instance=job)
-    return render(request, "main/create_job.html", {"form": form, "editing": True})
+        title = request.POST.get('title')
+        company = request.POST.get('company_name')
+        desc = request.POST.get('description')
+        loc = request.POST.get('location')
+        emp_type = request.POST.get('employment_type')
+        sched = request.POST.get('working_schedule')
+
+        job.title = title
+        job.company_name = company
+        job.description = desc
+        job.location = loc
+        job.employment_type = emp_type
+        if sched is not None:
+            job.working_schedule = sched
+        job.save()
+
+        skills_list = request.POST.getlist('skills')
+        if skills_list is not None:
+            tag_ids = []
+            for sid in skills_list:
+                try:
+                    tag = SkillTag.objects.get(pk=int(sid))
+                    tag_ids.append(tag.pk)
+                    continue
+                except (SkillTag.DoesNotExist, ValueError):
+                    pass
+
+                try:
+                    skill_obj = Skill.objects.get(pk=int(sid))
+                    tag, _ = SkillTag.objects.get_or_create(name=skill_obj.name)
+                    tag_ids.append(tag.pk)
+                except (Skill.DoesNotExist, ValueError):
+                    continue
+
+            job.skills.set(tag_ids)
+
+        add_audit_log(request, request.user, f"Updated job '{job.title}' (id:{job.id})")
+        messages.success(request, "Job updated successfully!")
+        return redirect("manage_jobs")
+
+    all_skills = Skill.objects.filter(
+        Q(user__isnull=True) | Q(user__user=request.user)
+    ).order_by('name')
+
+    return render(
+        request,
+        "employers/employer_edit_job.html",
+        {
+            "job": job,
+            "skills": all_skills,
+        },
+    )
 
 
 @login_required
@@ -1984,13 +2058,14 @@ def employer_message_conversation(request, applicant_id):
         return HttpResponseForbidden()
     
     if request.method == "POST":
-        content = request.POST.get("message")
-        if content:
+        content = request.POST.get("message", "").strip()
+        if content and len(content) > 0:
             Message.objects.create(
                 sender=request.user,
                 receiver=applicant,
                 content=content
             )
+            add_audit_log(request, request.user, f"Sent message to applicant {applicant.username}: {content[:120]}")
             # Create notification for applicant
             Notification.objects.create(
                 user=applicant,
@@ -2094,9 +2169,67 @@ def employer_applicants(request):
         'current_status': status_filter,
         'current_job': job_filter,
         'total_applicants': JobApplication.objects.filter(job__in=employer_jobs).count(),
+        'pending_count': applications.filter(status='Pending').count(),
+        'interview_count': applications.filter(status='Interview').count(),
+        'accepted_count': applications.filter(status='Accepted').count(),
     }
     
     return render(request, "employers/employer_applicants.html", context)
+
+
+@login_required
+def employer_interview_detail(request, app_id):
+    """Employer view to schedule interview with an applicant"""
+    if request.user.profile.role != 'employer':
+        return HttpResponseForbidden()
+    
+    application = get_object_or_404(JobApplication, id=app_id)
+    
+    # Verify employer owns this job
+    if application.job.user != request.user:
+        return HttpResponseForbidden()
+    
+    if request.method == "POST":
+        scheduled_at_str = request.POST.get('scheduled_at')  # HTML datetime-local
+        location = request.POST.get('location', '')
+        meeting_url = request.POST.get('meeting_url', '')
+        try:
+            duration_minutes = int(request.POST.get('duration_minutes', '45'))
+        except ValueError:
+            duration_minutes = 45
+
+        try:
+            if scheduled_at_str:
+                naive = datetime.strptime(scheduled_at_str, '%Y-%m-%dT%H:%M')
+                aware_dt = timezone.make_aware(naive, timezone.get_current_timezone())
+            else:
+                aware_dt = None
+        except Exception:
+            messages.error(request, 'Invalid date/time format.')
+            return render(request, 'employers/employer_interview.html', {'application': application})
+
+        application.interview_scheduled_at = aware_dt
+        application.interview_location = location or None
+        application.interview_meeting_url = meeting_url or None
+        application.status = 'Interview'
+        application.save()
+
+        # Notify applicant
+        Notification.objects.create(
+            user=application.user,
+            notification_type='system',
+            title='Interview Scheduled',
+            message=f'Interview scheduled for {application.job.title}',
+            link=f'/interviews/',
+            related_user=request.user
+        )
+
+        messages.success(request, 'Interview scheduled successfully!')
+        return redirect('employer_applicants')
+
+    return render(request, 'employers/employer_interview.html', {
+        'application': application
+    })
 
 
 @login_required
@@ -2181,6 +2314,7 @@ def api_notifications_mark_all_read(request):
 def api_global_notifications_list(request):
     """REST API: Get all active global notifications"""
     from django.utils import timezone
+    from django.db import models
     
     now = timezone.now()
     notifications = GlobalNotification.objects.filter(

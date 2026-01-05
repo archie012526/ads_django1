@@ -171,13 +171,21 @@
             </div>
         </div>
 
-        <main class="flex-1 ml-64 mt-20 p-8 min-h-screen" style="{% if global_notifications %}padding-top: calc(2rem + {{ global_notifications|length }} * 5rem);{% endif %}">
+        <main class="flex-1 ml-64 mt-20 p-8 min-h-screen" id="main-content">
             {% block content %}
             {% endblock %}
         </main>
     </div>
 
     <style>
+        body { font-family: 'Inter', sans-serif; }
+        .notification-badge {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
         @keyframes slideDown {
             from {
                 opacity: 0;
@@ -191,6 +199,14 @@
     </style>
 
     <script>
+        // Adjust main content padding if notifications exist
+        const notificationCount = document.querySelectorAll('[role="alert"]').length;
+        if (notificationCount > 0) {
+            const mainContent = document.getElementById('main-content');
+            const padding = 2 + (notificationCount * 5);
+            mainContent.style.paddingTop = padding + 'rem';
+        }
+
         function toggleNotifications() {
             const panel = document.getElementById('notificationPanel');
             panel.classList.toggle('hidden');
@@ -207,7 +223,8 @@
         });
 
         // Real-time WebSocket connection for notifications
-        {% if user.is_authenticated %}
+        {% if request.user.is_authenticated %}
+        <script>
         (function() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = protocol + '//' + window.location.host + '/ws/notifications/';
@@ -380,9 +397,11 @@
                 }
             });
         })();
+        </script>
         {% endif %}
 
-        // Add CSS animation for toast
+        <!-- Add CSS animation for toast -->
+        <style>
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideInRight {
