@@ -20,11 +20,18 @@
                 <a href="{% url 'employer_dashboard' %}" class="flex items-center gap-3 text-gray-300 hover:bg-[#2d3a4f] hover:text-white px-4 py-3 rounded-lg transition">
                     Dashboard
                 </a>
-                <a href="#" class="flex items-center gap-3 text-gray-400 hover:text-white px-4 py-3 rounded-lg transition">
-                    Manage Jobs
+                <a href="{% url 'employer_messages' %}" class="flex items-center gap-3 text-gray-400 hover:text-white px-4 py-3 rounded-lg transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    Messages
                 </a>
-                <a href="#" class="flex items-center gap-3 text-gray-400 hover:text-white px-4 py-3 rounded-lg transition">
+                <a href="{% url 'employer_applicants' %}" class="flex items-center gap-3 text-gray-400 hover:text-white px-4 py-3 rounded-lg transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0zM6 20h12a6 6 0 00-6-6 6 6 0 00-6 6z"></path>
+                    </svg>
                     Applicants
+                </a>
                 </a>
             </nav>
 

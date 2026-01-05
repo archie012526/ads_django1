@@ -1,0 +1,97 @@
+{% extends "employers/employer_messages.html" %}
+
+{% block conversation_content %}
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col">
+    <!-- Header -->
+    <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <!-- Avatar -->
+            {% if applicant.profile.profile_image %}
+                <img src="{{ applicant.profile.profile_image.url }}" alt="{{ applicant.profile.full_name }}" 
+                     class="w-12 h-12 rounded-full object-cover">
+            {% else %}
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">
+                    {{ applicant.profile.full_name|first|upper|default:applicant.username|first|upper }}
+                </div>
+            {% endif %}
+            
+            <!-- User Info -->
+            <div>
+                <h3 class="font-bold text-[#1e293b]">{{ applicant.profile.full_name|default:applicant.username }}</h3>
+                <p class="text-xs text-gray-500">{{ applicant.email }}</p>
+                {% if applications %}
+                <p class="text-xs text-blue-600 font-medium mt-1">Applied for: {{ applications|first.job.title }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="flex gap-2">
+            <a href="{% url 'view_user_profile' applicant.id %}" 
+               class="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                View Profile
+            </a>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
+        {% if conversation %}
+            {% for message in conversation %}
+            <div class="flex {% if message.sender == request.user %}justify-end{% else %}justify-start{% endif %}">
+                <div class="flex gap-3 max-w-xs {% if message.sender == request.user %}flex-row-reverse{% endif %}">
+                    <!-- Avatar -->
+                    {% if message.sender == request.user %}
+                        <div class="w-8 h-8 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-white text-xs font-bold">
+                            E
+                        </div>
+                    {% else %}
+                        {% if applicant.profile.profile_image %}
+                            <img src="{{ applicant.profile.profile_image.url }}" alt="{{ applicant.username }}" 
+                                 class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                        {% else %}
+                            <div class="w-8 h-8 rounded-full bg-gray-300 flex-shrink-0 flex items-center justify-center text-gray-700 text-xs font-bold">
+                                {{ applicant.username|first|upper }}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
+                    <!-- Message Bubble -->
+                    <div class="{% if message.sender == request.user %}text-right{% endif %}">
+                        <div class="{% if message.sender == request.user %}bg-blue-600 text-white{% else %}bg-white text-gray-800 border border-gray-200{% endif %} rounded-2xl px-4 py-3 shadow-sm">
+                            <p class="text-sm break-words">{{ message.content }}</p>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            {{ message.sent_at|date:"M d, H:i" }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="h-full flex items-center justify-center">
+            <p class="text-gray-400 text-sm">No messages yet. Start the conversation!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Message Input -->
+    <div class="p-6 border-t border-gray-100 bg-white">
+        <form method="POST" class="flex gap-3">
+            {% csrf_token %}
+            <input type="text" 
+                   name="message" 
+                   placeholder="Type your message..." 
+                   required
+                   class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   autocomplete="off">
+            <button type="submit" 
+                    class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition shadow-sm">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.429a1 1 0 001.169-1.409l-7-14z"></path>
+                </svg>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
