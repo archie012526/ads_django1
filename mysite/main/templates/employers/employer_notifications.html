@@ -122,6 +122,30 @@
             </a>
             {% endfor %}
         </div>
+        {% elif global_notifications %}
+        <div class="divide-y divide-gray-100">
+            {% for gn in global_notifications %}
+            <div class="p-6 flex items-start justify-between {% if forloop.counter0|divisibleby:2 %}bg-gray-50{% endif %}">
+                <div class="flex gap-3">
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center
+                        {% if gn.level == 'info' %}bg-blue-100 text-blue-700{% elif gn.level == 'warning' %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">
+                        {% if gn.level == 'info' %}
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                        {% elif gn.level == 'warning' %}
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4m0 4h.01"/></svg>
+                        {% else %}
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="text-base font-semibold text-gray-900">{{ gn.title }}</p>
+                        <p class="text-sm text-gray-700 mt-1">{{ gn.message }}</p>
+                        <p class="text-xs text-gray-400 mt-2">{{ gn.created_at|timesince }} ago</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
         {% else %}
         <div class="p-12 text-center">
             <svg class="w-20 h-20 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

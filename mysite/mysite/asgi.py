@@ -1,23 +1,16 @@
 import os
 from django.core.asgi import get_asgi_application
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
+import main.routing
 
-# Channels disabled - not using WebSockets
-# from channels.routing import ProtocolTypeRouter, URLRouter
-# from channels.auth import AuthMiddlewareStack
-# import main.routing
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
-
-# Simple ASGI application without WebSocket support
-application = get_asgi_application()
-
-# Original channels configuration (commented out):
-# application = ProtocolTypeRouter({
-#     "http": get_asgi_application(),
-#     "websocket": AuthMiddlewareStack(
-#         URLRouter(
-#             main.routing.websocket_urlpatterns
-#         )
-#     ),
-# })
+# ASGI application with HTTP and WebSocket support
+application = ProtocolTypeRouter({
+	"http": get_asgi_application(),
+	"websocket": AuthMiddlewareStack(
+		URLRouter(main.routing.websocket_urlpatterns)
+	),
+})
 

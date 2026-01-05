@@ -172,6 +172,31 @@
         </div>
 
         <main class="flex-1 ml-64 mt-20 p-8 min-h-screen" id="main-content">
+            {% if global_notifications and not suppress_global_banner %}
+            <div class="space-y-3 mb-6" aria-live="polite">
+                {% for gn in global_notifications %}
+                <div class="flex items-center justify-between p-4 rounded-lg shadow-sm border border-gray-200
+                    {% if gn.level == 'info' %}bg-blue-50 text-blue-900{% elif gn.level == 'warning' %}bg-yellow-50 text-yellow-900{% else %}bg-red-50 text-red-900{% endif %}">
+                    <div class="flex items-start gap-3">
+                        <div class="flex-shrink-0 mt-0.5">
+                            {% if gn.level == 'info' %}
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                            {% elif gn.level == 'warning' %}
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4m0 4h.01"/></svg>
+                            {% else %}
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <p class="font-semibold">{{ gn.title }}</p>
+                            <p class="text-sm leading-relaxed">{{ gn.message }}</p>
+                            <p class="text-xs opacity-70 mt-1">{{ gn.created_at|timesince }} ago</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
             {% block content %}
             {% endblock %}
         </main>
