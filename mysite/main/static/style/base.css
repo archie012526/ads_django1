@@ -235,6 +235,16 @@ body {
     align-items: center;
     font-size: 13px;
     color: white !important;
+    padding: 10px 14px;
+    border-radius: 14px;
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+    box-shadow: none;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.25s ease,
+                background-color 0.2s ease,
+                color 0.2s ease;
 }
 
 .nav-item img {
@@ -265,21 +275,72 @@ body {
     height: 28px;
     object-fit: contain;
     display: block;
-    stroke: white !important;
+    stroke: #e5e7eb;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                filter 0.25s ease,
+                stroke 0.2s ease;
 }
 
 .nav-link {
     text-decoration: none;
     font-size: 14px;
-    color: white !important;
+    color: #e5e7eb;
 }
 
 .nav-link:hover {
-    color: #e0e0e0 !important;
+    color: #f1f5f9;
 }
 
 .nav-link svg {
-    stroke: white !important;
+    stroke: inherit;
+}
+
+/* Icon hover + active animation */
+.nav-item::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 6px;
+    height: 3px;
+    background: linear-gradient(90deg, #2563eb, #0ea5e9);
+    border-radius: 999px;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.25s ease;
+    opacity: 0.85;
+}
+
+.nav-item:hover {
+    transform: translateY(-3px);
+    background: rgba(37, 99, 235, 0.14);
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.22);
+}
+
+.nav-item:hover .nav-icon {
+    transform: translateY(-2px) scale(1.05);
+    filter: drop-shadow(0 6px 14px rgba(14, 165, 233, 0.3));
+    stroke: #0ea5e9;
+}
+
+.nav-item:hover::after {
+    transform: scaleX(1);
+}
+
+.nav-active {
+    color: #f8fbff !important;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(14, 165, 233, 0.95));
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.28);
+}
+
+.nav-active .nav-icon {
+    stroke: #0ea5e9 !important;
+    transform: translateY(-1px);
+    filter: drop-shadow(0 6px 16px rgba(255, 255, 255, 0.35));
+}
+
+.nav-active::after {
+    transform: scaleX(1);
 }
 
 /* ============= GLOBAL NOTIFICATIONS (DISABLED) ============= */

@@ -2,115 +2,102 @@
 {% load static %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'style/settings.css' %}">
-{% endblock %}
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'style/settings.css' %}?v=3">
+{% endblock extra_head %}
 
 {% block content %}
-
-<div class="min-h-screen bg-gray-100 flex">
-
-    <!-- LEFT SIDEBAR -->
-    <div class="w-64 bg-white shadow-md p-6">
-        <ul class="space-y-4 text-gray-700">
-            <li>
-                <a href="{% url 'profile' %}" class="hover:text-purple-600 cursor-pointer">
-                    Profile
-                </a>
-            </li>
-
-            <li class="bg-purple-600 text-white py-2 px-3 rounded-lg shadow">
-                Settings
-            </li>
-
-            <li>
-                <a href="{% url 'edit_profile' %}" class="hover:text-purple-600 cursor-pointer">
-                    Edit Profile
-                </a>
-            </li>
-
-            <li>
-                <a href="{% url 'skills' %}" class="hover:text-purple-600 cursor-pointer">
-                    Skills
-                </a>
-            </li>
-
-            <li class="pt-10">
-                <a href="{% url 'logout' %}" class="text-red-500 hover:text-red-600">Log Out</a>
-            </li>
-        </ul>
+<div class="settings-shell">
+    <div class="settings-hero">
+        <div class="hero-left">
+            <div>
+                <p class="eyebrow">Settings</p>
+                <h1 class="hero-title">Tune your experience</h1>
+                <p class="hero-subtitle">Control privacy, security, and account preferences from one place.</p>
+                <div class="hero-actions">
+                    <a class="primary-cta" href="{% url 'settings_account' %}">Account</a>
+                    <a class="ghost-btn" href="{% url 'profile' %}">Back to profile</a>
+                </div>
+            </div>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-chip">
+                <span class="stat-label">Email</span>
+                <span class="stat-value small">{{ user.email|default:"Not set" }}</span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-label">Role</span>
+                <span class="stat-value small">{{ user.profile.role|default:"Jobseeker"|title }}</span>
+            </div>
+        </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div class="flex-1 p-10">
-        <h2 class="text-2xl font-semibold mb-8">Settings</h2>
-
-        <div class="bg-white rounded-xl shadow-md p-10 relative overflow-hidden">
-
-            <!-- Settings Links with Descriptions -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                <!-- Account -->
-                <div class="md:col-span-2">
-                    <h3 class="text-xl font-semibold mb-1">
-                        <a href="{% url 'settings_account' %}" class="text-blue-600 hover:underline">
-                            Account
-                        </a>
-                    </h3>
-                    <p class="text-gray-600">Manage your phone number, email, and account details.</p>
-                </div>
-
-                <!-- Privacy -->
-                <div class="md:col-span-2">
-                    <h3 class="text-xl font-semibold mb-1">
-                        <a href="{% url 'settings_privacy' %}" class="text-blue-600 hover:underline">
-                            Privacy
-                        </a>
-                    </h3>
-                    <p class="text-gray-600">Control who can see your profile and contact you.</p>
-                </div>
-
-                <!-- Language & Appearance -->
-                <div class="md:col-span-2">
-                    <h3 class="text-xl font-semibold mb-1">
-                        <a href="{% url 'settings_language' %}" class="text-blue-600 hover:underline">
-                            Language &amp; Appearance
-                        </a>
-                    </h3>
-                    <p class="text-gray-600">Choose your preferred language and display settings.</p>
-                </div>
-
-                <!-- Security -->
-                <div class="md:col-span-2">
-                    <h3 class="text-xl font-semibold mb-1">
-                        <a href="{% url 'settings_security' %}" class="text-blue-600 hover:underline">
-                            Security
-                        </a>
-                    </h3>
-                    <p class="text-gray-600">Change your password, enable two-factor authentication, and review sessions.</p>
-                </div>
-
-                <!-- Data & Account Control -->
-                <div class="md:col-span-2">
-                    <h3 class="text-xl font-semibold mb-1">
-                        <a href="{% url 'settings_data_control' %}" class="text-blue-600 hover:underline">
-                            Data &amp; Account Control
-                        </a>
-                    </h3>
-                    <p class="text-gray-600">Download your data or deactivate/delete your account.</p>
-                </div>
-
-                <!-- Help & Support -->
-                <div class="md:col-span-2">
-                    <h3 class="text-xl font-semibold mb-1">
-                        <a href="{% url 'settings_help' %}" class="text-blue-600 hover:underline">
-                            Help &amp; Support
-                        </a>
-                    </h3>
-                    <p class="text-gray-600">Find help articles or contact support for assistance.</p>
-                </div>
-
+    <div class="settings-grid">
+        <aside class="settings-sidebar">
+            <p class="eyebrow">Navigation</p>
+            <div class="link-stack">
+                <a href="{% url 'profile' %}">Profile</a>
+                <span class="active-link">Settings</span>
+                <a href="{% url 'edit_profile' %}">Edit profile</a>
+                <a href="{% url 'skills' %}">Skills</a>
+                <a class="danger" href="{% url 'logout' %}">Log out</a>
             </div>
+        </aside>
 
+        <div class="settings-main">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <p class="eyebrow">Sections</p>
+                        <h2 class="card-title">Manage your account</h2>
+                        <p class="muted">Jump into any area to update preferences and security.</p>
+                    </div>
+                </div>
+                <div class="link-grid">
+                    <a class="link-card" href="{% url 'settings_account' %}">
+                        <div>
+                            <p class="link-title">Account</p>
+                            <p class="link-sub">Manage phone, email, and account details.</p>
+                        </div>
+                        <span class="link-arrow">→</span>
+                    </a>
+                    <a class="link-card" href="{% url 'settings_privacy' %}">
+                        <div>
+                            <p class="link-title">Privacy</p>
+                            <p class="link-sub">Control visibility and who can contact you.</p>
+                        </div>
+                        <span class="link-arrow">→</span>
+                    </a>
+                    <a class="link-card" href="{% url 'settings_language' %}">
+                        <div>
+                            <p class="link-title">Language &amp; appearance</p>
+                            <p class="link-sub">Choose language and display preferences.</p>
+                        </div>
+                        <span class="link-arrow">→</span>
+                    </a>
+                    <a class="link-card" href="{% url 'settings_security' %}">
+                        <div>
+                            <p class="link-title">Security</p>
+                            <p class="link-sub">Update password, 2FA, and sessions.</p>
+                        </div>
+                        <span class="link-arrow">→</span>
+                    </a>
+                    <a class="link-card" href="{% url 'settings_data_control' %}">
+                        <div>
+                            <p class="link-title">Data &amp; control</p>
+                            <p class="link-sub">Download data or deactivate account.</p>
+                        </div>
+                        <span class="link-arrow">→</span>
+                    </a>
+                    <a class="link-card" href="{% url 'settings_help' %}">
+                        <div>
+                            <p class="link-title">Help &amp; support</p>
+                            <p class="link-sub">Browse help articles or contact support.</p>
+                        </div>
+                        <span class="link-arrow">→</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

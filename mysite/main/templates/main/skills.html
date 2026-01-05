@@ -1,113 +1,115 @@
 {% extends "main/base.html" %}
 {% load static %}
 
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'style/skills.css' %}?v=1">
+{% endblock extra_head %}
+
 {% block content %}
 
-<div class="min-h-screen bg-gray-100 flex">
+<datalist id="skill-options">
+{% for value, label in SKILL_OPTIONS %}
+    <option value="{{ label }}"></option>
+{% endfor %}
+</datalist>
 
-    <!-- SIDEBAR -->
-    <div class="w-64 bg-white shadow-md p-6">
-        <ul class="space-y-4 text-gray-700">
-
-            <li>
-                <a href="{% url 'profile' %}" class="hover:text-purple-600 cursor-pointer">
-                    Profile
-                </a>
-            </li>
-
-           <li>
-                <a href="{% url 'settings' %}" class="hover:text-purple-600 cursor-pointer">
-                    Settings
-                </a>
-            </li>
-
-            <li>
-                <a href="{% url 'edit_profile' %}" class="hover:text-purple-600 cursor-pointer">
-                    Edit Profile
-                </a>
-            </li>
-
-            <li class="bg-purple-600 text-white py-2 px-3 rounded-lg shadow">
-                Skills
-            </li>
-
-            <li class="pt-10">
-                <a href="{% url 'logout' %}" class="text-red-500 hover:text-red-600">Log Out</a>
-            </li>
-        </ul>
+<div class="skills-shell">
+    <div class="skills-hero">
+        <div class="hero-left">
+            <div>
+                <p class="eyebrow">Skills</p>
+                <h1 class="hero-title">Grow your stack</h1>
+                <p class="hero-subtitle">Add the skills that best represent you and keep them fresh.</p>
+                <div class="hero-actions">
+                    <a class="primary-cta" href="#add-skill">Add a skill</a>
+                    <a class="ghost-btn" href="{% url 'profile' %}">Back to profile</a>
+                </div>
+            </div>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-chip">
+                <span class="stat-label">Total skills</span>
+                <span class="stat-value">{{ skills|length }}</span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-label">Suggestions</span>
+                <span class="stat-value">{{ SKILL_OPTIONS|length }}</span>
+            </div>
+        </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div class="flex-1 p-10">
+    <div class="skills-grid">
+        <aside class="skills-sidebar">
+            <p class="eyebrow">Navigation</p>
+            <div class="link-stack">
+                <a href="{% url 'profile' %}">Profile</a>
+                <a href="{% url 'settings' %}">Settings</a>
+                <a href="{% url 'edit_profile' %}">Edit profile</a>
+                <span class="active-link">Skills</span>
+                <a class="danger" href="{% url 'logout' %}">Log out</a>
+            </div>
+        </aside>
 
-        <h2 class="text-2xl font-semibold mb-8">Your Skills</h2>
-
-        <datalist id="skill-options">
-        {% for value, label in SKILL_OPTIONS %}
-            <option value="{{ label }}"></option>
-        {% endfor %}
-        </datalist>
-
-
-        <!-- ADD SKILL FORM -->
-        <div class="bg-white shadow p-6 rounded-xl mb-8">
-            <h3 class="text-lg font-semibold mb-4">Add a New Skill</h3>
-
-            <form method="POST">
-                {% csrf_token %}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {{ form.name }}
-                    {{ form.level }}
+        <div class="skills-main">
+            <div class="card" id="add-skill">
+                <div class="card-header">
+                    <div>
+                        <p class="eyebrow">Add skill</p>
+                        <h2 class="card-title">Add a new skill</h2>
+                        <p class="muted">Use the suggestions or type your own and set your proficiency.</p>
+                    </div>
                 </div>
+                <form method="POST" class="form-grid">
+                    {% csrf_token %}
+                    <div class="field">
+                        <label>Skill</label>
+                        {{ form.name }}
+                    </div>
+                    <div class="field">
+                        <label>Level</label>
+                        {{ form.level }}
+                    </div>
+                    <div class="field full">
+                        <label>Description</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="form-actions">
+                        <button class="primary-cta" type="submit">Add skill</button>
+                    </div>
+                </form>
+            </div>
 
-                <div class="mt-4">
-                    {{ form.description }}
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <p class="eyebrow">Your list</p>
+                        <h2 class="card-title">Current skills</h2>
+                        <p class="muted">Edit or remove items to keep your profile accurate.</p>
+                    </div>
                 </div>
-
-                <button class="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                    Add Skill
-                </button>
-            </form>
-        </div>
-
-        <!-- LIST OF SKILLS -->
-        <div class="bg-white p-6 rounded-xl shadow">
-
-            <h3 class="text-lg font-semibold mb-4">Your Current Skills</h3>
-
-            {% if skills %}
-                <ul class="space-y-4">
-                    {% for skill in skills %}
-                    <li class="p-4 border rounded-lg flex justify-between items-center">
-
-                        <div>
-                            <p class="font-semibold text-gray-800">{{ skill.name }}</p>
-                            {% if skill.level %}
-                                <p class="text-gray-600 text-sm">Level: {{ skill.level }}</p>
-                            {% endif %}
-                            {% if skill.description %}
-                                <p class="text-gray-600 text-sm">{{ skill.description }}</p>
-                            {% endif %}
+                {% if skills %}
+                    <div class="skill-list">
+                        {% for skill in skills %}
+                        <div class="skill-row">
+                            <div>
+                                <p class="skill-name">{{ skill.name }}</p>
+                                {% if skill.level %}<p class="skill-meta">Level: {{ skill.level }}</p>{% endif %}
+                                {% if skill.description %}<p class="skill-meta">{{ skill.description }}</p>{% endif %}
+                            </div>
+                            <div class="row-actions">
+                                <a href="{% url 'edit_skill' skill.id %}" class="ghost-btn small">Edit</a>
+                                <a href="{% url 'delete_skill' skill.id %}" class="ghost-btn small danger-btn">Delete</a>
+                            </div>
                         </div>
-
-                        <div class="space-x-3">
-                            <a href="{% url 'edit_skill' skill.id %}" class="text-blue-500 hover:underline">
-                                Edit
-                            </a>
-                            <a href="{% url 'delete_skill' skill.id %}" class="text-red-500 hover:underline">
-                                Delete
-                            </a>
-                        </div>
-
-                    </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-gray-500">You have no skills added yet.</p>
-            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="muted">You have no skills added yet.</p>
+                {% endif %}
+            </div>
         </div>
-
     </div>
 </div>
 
-{% endblock %}
+{% endblock content %}

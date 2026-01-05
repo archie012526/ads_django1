@@ -902,27 +902,45 @@ def find_job(request):
     working_schedule = request.GET.get("job_requirements", "")
     skill = request.GET.get("skill", "")
 
-    jobs = Job.objects.select_related('user', 'user__profile').prefetch_related('skills').all()
+    # Fetch real-time jobs from Remotive API (public, no key) and show only here
+    external_jobs = []
+    try:
+        import requests
 
-    if query:
-        jobs = jobs.filter(
-            Q(title__icontains=query) |
-            Q(description__icontains=query) |
-            Q(location__icontains=query) |
-            Q(company_name__icontains=query)
-        )
-    
-    if employment_type:
-        jobs = jobs.filter(employment_type=employment_type)
-    
-    if working_schedule:
-        jobs = jobs.filter(working_schedule=working_schedule)
+        params = {
+            "search": query or "developer",
+            "limit": 30,
+        }
+        resp = requests.get("https://remotive.com/api/remote-jobs", params=params, timeout=6)
+        if resp.status_code == 200:
+            data = resp.json()
+            for job in data.get("jobs", []):
+                # Filter by employment type if provided
+                job_type = (job.get("job_type") or "").upper()
+                if employment_type and employment_type not in job_type:
+                    continue
 
-    if skill:
-        jobs = jobs.filter(skills__name__iexact=skill).distinct()
+                # Simple skill filter (keywords)
+                if skill:
+                    if skill.lower() not in (job.get("description") or "").lower():
+                        continue
+
+                external_jobs.append({
+                    "id": job.get("id"),
+                    "title": job.get("title"),
+                    "company": job.get("company_name"),
+                    "location": job.get("candidate_required_location") or "Remote",
+                    "type": job_type or "REMOTE",
+                    "url": job.get("url"),
+                    "published": job.get("publication_date"),
+                    "snippet": job.get("description")[:280] if job.get("description") else "",
+                })
+    except Exception:
+        # Fail silently; show nothing on error
+        external_jobs = []
 
     return render(request, "main/find_job.html", {
-        "jobs": jobs,
+        "external_jobs": external_jobs,
         "query": query,
     })
 
@@ -1474,6 +1492,32 @@ def messages_inbox(request):
                 'last_message': m
             }
 
+    # Seed contacts from prior interactions (applications) even if no messages yet
+    if request.user.profile.role == 'job_seeker':
+        employer_users = User.objects.filter(
+            job__jobapplication__user=request.user
+        ).distinct().select_related('profile')
+        for emp in employer_users:
+            if emp not in conversations:
+                conversations[emp] = {
+                    'user': emp,
+                    'display_name': emp.profile.full_name or emp.username,
+                    'avatar_url': emp.profile.profile_image.url if emp.profile.profile_image else None,
+                    'last_message': None,
+                }
+    else:  # employer
+        applicant_users = User.objects.filter(
+            jobapplication__job__user=request.user
+        ).distinct().select_related('profile')
+        for appl in applicant_users:
+            if appl not in conversations:
+                conversations[appl] = {
+                    'user': appl,
+                    'display_name': appl.profile.full_name or appl.username,
+                    'avatar_url': appl.profile.profile_image.url if appl.profile.profile_image else None,
+                    'last_message': None,
+                }
+
     return render(request, "main/messages.html", {
         "conversations": conversations.values()
     })
@@ -1531,6 +1575,32 @@ def conversation_view(request, user_id):
                 'avatar_url': conv_other.profile.profile_image.url if conv_other.profile.profile_image else None,
                 'last_message': m
             }
+
+    # Seed contacts from applications
+    if request.user.profile.role == 'job_seeker':
+        employer_users = User.objects.filter(
+            job__jobapplication__user=request.user
+        ).distinct().select_related('profile')
+        for emp in employer_users:
+            if emp not in conversations:
+                conversations[emp] = {
+                    'user': emp,
+                    'display_name': emp.profile.full_name or emp.username,
+                    'avatar_url': emp.profile.profile_image.url if emp.profile.profile_image else None,
+                    'last_message': None,
+                }
+    else:
+        applicant_users = User.objects.filter(
+            jobapplication__job__user=request.user
+        ).distinct().select_related('profile')
+        for appl in applicant_users:
+            if appl not in conversations:
+                conversations[appl] = {
+                    'user': appl,
+                    'display_name': appl.profile.full_name or appl.username,
+                    'avatar_url': appl.profile.profile_image.url if appl.profile.profile_image else None,
+                    'last_message': None,
+                }
 
     return render(request, "main/messages.html", {
         "conversation_user": other,

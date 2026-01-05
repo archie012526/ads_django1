@@ -1,101 +1,44 @@
-/* ==================================== */
-/* 1. Global & Base Styles (Accent: #007AFF) */
-/* ==================================== */
+/* Design tokens */
+:root {
+    --bg: #f7f9ff;
+    --bg-strong: #eef2ff;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --line: rgba(15, 23, 42, 0.08);
+    --accent: #2563eb;
+    --accent-2: #0ea5e9;
+    --soft: #e0f2fe;
+    --radius: 18px;
+    --shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+}
 
 body {
-    background-color: #f0f2f5; 
-    font-family: 'Inter', sans-serif;
+    background:
+        radial-gradient(circle at 20% 20%, #f1f5ff 0, rgba(241, 245, 255, 0) 35%),
+        radial-gradient(circle at 80% 0%, #e0f2fe 0, rgba(224, 242, 254, 0) 28%),
+        linear-gradient(135deg, #f8fbff 0%, #eef2ff 100%);
+    font-family: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     margin: 0;
     padding: 0;
-    color: #1a1a1a;
+    color: var(--text);
 }
 
 a, button {
-    transition: all 0.3s ease; 
+    transition: all 0.2s ease; 
     text-decoration: none;
+    color: inherit;
 }
 
-/* ==================================== */
-/* 2. Main Container & Layout */
-/* ==================================== */
-
-.profile-container {
+.profile-shell {
     width: 100%;
-    max-width: 1050px; 
-    margin: 40px auto;
-    background: #ffffff;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e0e0e0;
-}
-
-/* Small, subtle banner strip */
-.profile-banner {
-    width: 100%;
-    height: 60px; 
-    overflow: hidden;
-    background-color: #f8f8f8;
-}
-.banner-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.3; 
-}
-
-/* Two-Column Structure */
-.profile-layout-wrapper {
-    display: flex;
-    align-items: flex-start;
-    padding: 0;
-}
-
-/* LEFT COLUMN: Sidebar */
-.profile-sidebar {
-    flex: 0 0 320px; 
-    padding: 30px;
-    background-color: #ffffff;
-    border-right: 1px solid #f0f0f0;
-    position: sticky;
-    top: 0;
-}
-
-/* RIGHT COLUMN: Main Content */
-.profile-main-content {
-    flex: 1;
-    padding: 30px 40px;
-    background-color: #f9f9f9; 
-    min-height: 800px;
-}
-
-/* Two-column layout inside main content */
-.profile-content-wrapper {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 35px;
-}
-
-.profile-left-column {
+    max-width: 1140px;
+    margin: 20px auto 32px;
+    padding: 0 16px;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 28px;
-}
-
-.profile-right-column {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
-/* Responsive: stack on smaller screens */
-@media (max-width: 1200px) {
-    .profile-content-wrapper {
-        grid-template-columns: 1fr;
-    }
-    .profile-right-column {
-        margin-top: 20px;
-    }
+    gap: 18px;
 }
 
 /* ==================================== */
@@ -103,96 +46,166 @@ a, button {
 /* ==================================== */
 
 /* Profile Header */
-.profile-header {
-    text-align: center;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #eeeeee;
+.profile-hero {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 18px;
+    background: linear-gradient(135deg, #e0f2fe 0%, #eef2ff 100%);
+    border-radius: 22px;
+    border: 1px solid rgba(14, 165, 233, 0.18);
+    box-shadow: 0 18px 50px rgba(59, 130, 246, 0.12);
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
 }
 
-.profile-img {
-    width: 110px;
-    height: 110px;
-    border-radius: 100%;
-    object-fit: cover;
-    border: 4px solid #ffffff; 
-    margin-top: -80px; 
-    background: #e6f0ff;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+.profile-hero::after {
+    content: '';
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    right: -60px;
+    top: -80px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, rgba(37, 99, 235, 0) 70%);
+    transform: rotate(-8deg);
 }
 
-.profile-name {
-    display: block;
-    font-size: 1.75rem; 
-    font-weight: 700;
-    color: #1a1a1a;
-    margin-top: 20px; 
-}
-.profile-name:hover {
-    color: #007AFF;
-}
-
-.profile-role {
-    color: #666;
-    margin: 5px 0 15px; 
-    font-size: 1rem;
-}
-
-.edit-btn {
-    display: block; 
-    width: 100%;
-    padding: 10px 0;
-    background: #2c3e50; 
-    color: white;
-    border-radius: 8px; 
-    font-weight: 600;
-}
-.edit-btn:hover {
-    background: #0068db;
-}
-
-/* Info Cards (Vertical Stacked in Sidebar) */
-.profile-info {
+.hero-left {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 0;
-    margin-top: 25px;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
 }
 
-.info-card {
-    background: #ffffff;
-    padding: 14px 16px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    border: 1px solid #f0f0f0;
-    transition: all 0.2s ease;
+.profile-avatar {
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #fff;
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
+    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+    flex-shrink: 0;
 }
 
-.info-card:hover {
-    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-    border-color: #e0e0e0;
+.profile-avatar.placeholder {
+    display: inline-block;
 }
 
-.info-card h3 {
-    margin: 0;
-    color: #888; 
-    font-weight: 500;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
+.hero-title {
+    margin: 4px 0 10px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #0b1223;
+    letter-spacing: -0.4px;
 }
 
-.info-number {
-    font-size: 1.6rem; 
+.hero-bio {
+    margin: 0 0 10px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.hero-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.meta-pill {
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--accent);
+    padding: 6px 12px;
+    border-radius: 999px;
     font-weight: 700;
-    margin-top: 6px;
-    color: #1a1a1a; 
+    font-size: 13px;
+    border: 1px solid rgba(37, 99, 235, 0.2);
 }
 
-.status-good {
-    color: #22c55e;
+.hero-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.primary-cta,
+.ghost-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.primary-cta {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+    color: white;
+    box-shadow: 0 12px 30px rgba(37, 99, 235, 0.25);
+}
+
+.primary-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 36px rgba(37, 99, 235, 0.32);
+}
+
+.ghost-btn {
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--accent);
+    border-color: rgba(37, 99, 235, 0.2);
+}
+
+.ghost-btn.small {
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.ghost-btn:hover {
+    transform: translateY(-1px);
+    background: rgba(37, 99, 235, 0.12);
+}
+
+.hero-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    align-self: center;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-chip {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0b1223;
 }
 
 /* ==================================== */
@@ -200,337 +213,279 @@ a, button {
 /* ==================================== */
 
 /* Headings */
-.skills-section h2, .section-title {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin-bottom: 25px;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 10px;
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
 }
 
-/* Skills */
-.skills-section {
-    padding-bottom: 30px;
-    margin-bottom: 30px;
+.profile-main {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
-.skills-list {
+.profile-aside {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
+    transition: all 0.25s ease;
+}
+
+.card:hover {
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12);
+    transform: translateY(-2px);
+    border-color: rgba(37, 99, 235, 0.18);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.card-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.eyebrow {
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 800;
+    color: #0f52c8;
+    margin: 0 0 6px;
+}
+
+.muted {
+    color: var(--muted);
+    margin: 6px 0 0;
+}
+
+.chip-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px; 
+    gap: 10px;
 }
 
-.skill-tag {
-    background: #f0f5ff; 
-    padding: 8px 16px; 
-    border-radius: 20px; 
-    font-size: 0.9rem;
-    color: #007AFF;
-    font-weight: 600;
-    border: 1px solid #d0e0ff;
-}
-.skill-tag:hover {
-    background: #007AFF;
-    color: #ffffff;
-    border-color: #007AFF;
-    cursor: default;
-}
-
-.note, .suggestion-intro {
-    color: #999;
-    font-style: italic;
-    margin-bottom: 20px;
-}
-
-/* Job Suggestions */
-.suggestion-list {
-    display: grid;
-    grid-template-columns: 1fr; 
-    gap: 15px;
-    padding: 0;
-    list-style: none;
-}
-
-.suggestion-item {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.suggestion-item h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0;
-}
-
-.skill-match {
-    font-size: 0.9rem;
-    /* Use the same green as the action button for match visual */
-    color: #28A745; 
-    font-weight: 600;
-    margin-top: 5px;
-}
-
-.apply-btn {
-    padding: 8px 18px;
-    background: #28A745; /* CHANGED: Darker professional green */
-    color: white;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-.apply-btn:hover {
-    background: #1e7e34; /* Darker hover state */
-}
-
-/* ==================================== */
-/* 5. Responsive Design */
-/* ==================================== */
-
-@media (max-width: 992px) {
-    .profile-layout-wrapper {
-        flex-direction: column; 
-    }
-    .profile-sidebar {
-        flex: 1 1 auto;
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    .profile-header {
-        margin-top: 0;
-        border-bottom: none;
-    }
-    .profile-img {
-        margin-top: 0; 
-    }
-    .profile-info {
-        flex-direction: row; 
-        flex-wrap: wrap;
-        justify-content: space-around;
-        gap: 10px;
-    }
-    .info-card {
-        flex: 1 1 30%; 
-        text-align: center;
-        border-left: none;
-        /* Fallback border for mobile view is also monochrome */
-        border-bottom: 4px solid #C0C0C0; 
-    }
-    .profile-main-content {
-        padding: 30px 20px;
-    }
-}
-
-/* Job Suggestions */
-.job-suggestions {
-    margin-top: 40px;
-}
-
-.section-title {
-    font-size: 22px;
+.skill-chip {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(14, 165, 233, 0.08) 100%);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 8px 14px;
     font-weight: 700;
-    margin-bottom: 5px;
-}
-
-.suggestion-intro {
-    color: #666;
-    margin-bottom: 20px;
+    border: 1px solid rgba(37, 99, 235, 0.28);
+    font-size: 13px;
 }
 
 .job-list {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
 }
 
 .job-card {
     display: grid;
-    grid-template-columns: 3fr 1fr 1fr;
+    grid-template-columns: 1fr auto auto;
+    gap: 14px;
     align-items: center;
-    padding: 18px 20px;
-    background: #ffffff;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    padding: 16px;
+    background: #f8fbff;
+    border-radius: 14px;
+    border: 1px solid rgba(37, 99, 235, 0.12);
 }
 
 .job-info {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .job-title {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
 }
 
 .job-company {
     font-size: 14px;
-    color: #444;
+    color: var(--muted);
+    margin: 0;
+    font-weight: 600;
 }
 
 .job-location {
     font-size: 13px;
-    color: #777;
+    color: var(--muted);
+    margin: 0;
 }
 
-.job-match {
+.job-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(14, 165, 233, 0.08) 100%);
+    color: var(--accent);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid rgba(37, 99, 235, 0.28);
+}
+
+.job-description {
+    color: #475569;
+    line-height: 1.6;
+    margin: 4px 0 0;
+}
+
+.job-meta {
     text-align: center;
-    font-size: 14px;
-    color: #16a34a;
-    font-weight: 600;
 }
 
-.job-match span {
+.match-label {
     display: block;
     font-size: 12px;
-    color: #666;
-}
-
-.job-action {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.apply-btn {
-    background: #22c55e;
-    color: white;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: background 0.2s ease;
-}
-
-.apply-btn:hover {
-    background: #16a34a;
-}
-/* ==================================== */
-/* Posts Section */
-/* ==================================== */
-
-.posts-section {
-    padding: 20px;
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    max-height: 600px;
-    overflow-y: auto;
-}
-
-.posts-section .section-title {
-    font-size: 16px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     font-weight: 700;
-    margin: 0 0 15px 0;
-    color: #1a1a1a;
+}
+
+.match-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.job-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background: #fff;
+}
+
+.icon-btn:hover {
+    border-color: rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
+}
+
+/* Quick links & posts */
+.link-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.link-stack a {
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: #f8fbff;
+    font-weight: 700;
+}
+
+.link-stack a:hover {
+    border-color: rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
 }
 
 .posts-list {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
 }
 
-.post-card {
-    background: #f9f9f9;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+.post-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
     padding: 12px;
-    transition: box-shadow 0.2s ease;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #f8fbff;
 }
 
-.post-card:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.post-header {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 10px;
-    align-items: flex-start;
-}
-
-.post-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.post-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.post-info h4 {
+.post-title {
     margin: 0;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.post-meta-line {
+    margin: 0 0 4px;
+    color: var(--muted);
     font-size: 12px;
-    font-weight: 600;
-    color: #1a1a1a;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
-.post-time {
-    font-size: 10px;
-    color: #999;
-    display: block;
-    margin-top: 2px;
+.post-link {
+    color: var(--accent);
+    font-weight: 700;
 }
 
-.post-content {
-    margin: 8px 0;
+/* Responsive */
+@media (max-width: 1100px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
-.post-image,
-.post-video {
-    width: 100%;
-    max-height: 200px;
-    object-fit: cover;
-    border-radius: 6px;
-    margin-bottom: 8px;
+@media (max-width: 900px) {
+    .profile-hero {
+        grid-template-columns: 1fr;
+    }
+    .hero-stats {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
 }
 
-.post-text {
-    margin: 8px 0;
-    font-size: 12px;
-    line-height: 1.4;
-    color: #333;
-    word-break: break-word;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.post-meta {
-    display: flex;
-    gap: 6px;
-    font-size: 10px;
-    color: #999;
-    margin-top: 8px;
-}
-
-.post-type {
-    background: #e8e8e8;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-weight: 500;
-    color: #666;
-}
-
-.article-title {
-    font-style: italic;
-    color: #666;
+@media (max-width: 720px) {
+    .profile-shell {
+        padding: 0 12px 20px;
+    }
+    .profile-hero {
+        padding: 18px;
+    }
+    .job-card {
+        grid-template-columns: 1fr;
+        align-items: flex-start;
+    }
+    .job-meta {
+        text-align: left;
+    }
+    .job-actions {
+        justify-content: flex-start;
+    }
 }

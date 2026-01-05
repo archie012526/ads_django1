@@ -2,8 +2,8 @@
 {% load static %}
 
 {% block extra_head %}
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'style/home.css' %}?v=7">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'style/home.css' %}?v=9">
 {% endblock extra_head %}
 
 {% block content %}
@@ -60,12 +60,58 @@
     <!-- CENTER COLUMN -->
     <div class="center-column">
 
-        <!-- Create Post Tabs -->
-        <div class="create-post-card">
-            <div style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb;">
-                <button type="button" onclick="showTab('post')" id="postTab" class="tab-button active" style="padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: 600; border-bottom: 3px solid #0a66c2;">Create Post</button>
+        <div class="hero-card">
+            <div>
+                <p class="eyebrow">Home</p>
+                <h1 class="hero-title">
+                    Welcome back, {{ profile.full_name|default:user.first_name|default:user.username }}
+                </h1>
+                <p class="hero-subtitle">
+                    {% if is_employer %}
+                        Share updates, nurture applicants, and keep roles fresh.
+                    {% else %}
+                        Share what you're working on and spot roles that match your skills.
+                    {% endif %}
+                </p>
+                <div class="hero-actions">
+                    <a class="primary-cta" href="#createPost">Start a post</a>
+                    {% if is_employer %}
+                        <a class="ghost-btn" href="{% url 'employerpost_job' %}">Post a role</a>
+                    {% else %}
+                        <a class="ghost-btn" href="{% url 'find_job' %}">Discover jobs</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-chip">
+                    <span class="stat-label">Applications</span>
+                    <span class="stat-value">{{ applications_count }}</span>
+                </div>
+                {% if not is_employer %}
+                <div class="stat-chip">
+                    <span class="stat-label">Saved jobs</span>
+                    <span class="stat-value">{{ saved_jobs_count }}</span>
+                </div>
+                {% endif %}
+                <div class="stat-chip">
+                    <span class="stat-label">Unread</span>
+                    <span class="stat-value">{{ unread_notifications }}</span>
+                </div>
                 {% if is_employer %}
-                <button type="button" onclick="showTab('job')" id="jobTab" class="tab-button" style="padding: 10px 20px; border: none; background: none; cursor: pointer; font-weight: 600;">Create Job</button>
+                <div class="stat-chip">
+                    <span class="stat-label">Active roles</span>
+                    <span class="stat-value">{{ my_jobs|length|default:0 }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Create Post Tabs -->
+        <div class="create-post-card" id="createPost">
+            <div class="tab-bar">
+                <button type="button" onclick="showTab('post')" id="postTab" class="tab-button active">Create Post</button>
+                {% if is_employer %}
+                <button type="button" onclick="showTab('job')" id="jobTab" class="tab-button">Create Job</button>
                 {% endif %}
             </div>
 
@@ -167,15 +213,15 @@
                 <input type="hidden" name="post_type" value="job">
 
                 <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <input type="text" name="job_title" placeholder="Job Title" required style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                    <input type="text" name="job_title" placeholder="Job Title" required class="input-field">
                     
-                    <input type="text" name="job_company" placeholder="Company Name" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                    <input type="text" name="job_company" placeholder="Company Name" class="input-field">
                     
-                    <textarea name="job_description" placeholder="Job Description" required rows="4" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
+                    <textarea name="job_description" placeholder="Job Description" required rows="4" class="input-field"></textarea>
                     
-                    <input type="text" name="job_location" placeholder="Location" required style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                    <input type="text" name="job_location" placeholder="Location" required class="input-field">
                     
-                    <select name="job_employment_type" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                    <select name="job_employment_type" class="input-field">
                         <option value="">-- Employment Type --</option>
                         <option value="FULLTIME">Full time</option>
                         <option value="PARTTIME">Part-time</option>
@@ -183,7 +229,7 @@
                         <option value="CONTRACT">Project / Contract</option>
                     </select>
                     
-                    <select name="job_working_schedule" style="padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                    <select name="job_working_schedule" class="input-field">
                         <option value="">-- Working Schedule --</option>
                         <option value="full_day">Full day</option>
                         <option value="flexible">Flexible schedule</option>

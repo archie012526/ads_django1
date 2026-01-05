@@ -480,9 +480,17 @@
                         <div class="conversation-info">
                             <div class="conversation-name">
                                 <span>{{ c.display_name }}</span>
+                                {% if c.last_message %}
                                 <span class="conversation-time">{{ c.last_message.sent_at|date:"h:i A" }}</span>
+                                {% endif %}
                             </div>
-                            <div class="conversation-preview">{{ c.last_message.content|truncatechars:45 }}</div>
+                            <div class="conversation-preview">
+                                {% if c.last_message %}
+                                    {{ c.last_message.content|truncatechars:45 }}
+                                {% else %}
+                                    Start a conversation
+                                {% endif %}
+                            </div>
                         </div>
                     </a>
                 {% endfor %}
