@@ -202,7 +202,8 @@ def employer_dashboard(request):
         if application.user not in conversations_dict:
             last_msg = Message.objects.filter(
                 Q(sender=request.user, receiver=application.user) |
-                Q(sender=application.user, receiver=request.user)
+                Q(sender=application.user, receiver=request.user),
+                is_deleted=False
             ).select_related('sender', 'receiver').order_by('-sent_at').first()
             
             conversations_dict[application.user] = {
@@ -1176,7 +1177,8 @@ def delete_skill(request, skill_id):
 @login_required
 def messages_inbox(request):
     msgs = Message.objects.filter(
-        Q(sender=request.user) | Q(receiver=request.user)
+        Q(sender=request.user) | Q(receiver=request.user),
+        is_deleted=False
     ).select_related('sender', 'receiver', 'sender__profile', 'receiver__profile').order_by("-sent_at")
 
     conversations = {}
@@ -1221,7 +1223,8 @@ def conversation_view(request, user_id):
     # Get all messages in the conversation
     convo = Message.objects.filter(
         Q(sender=request.user, receiver=other) |
-        Q(sender=other, receiver=request.user)
+        Q(sender=other, receiver=request.user),
+        is_deleted=False
     ).select_related('sender', 'receiver').order_by("sent_at")
 
     # Mark unread messages as read
@@ -1231,7 +1234,8 @@ def conversation_view(request, user_id):
 
     # Get all conversations for sidebar
     msgs = Message.objects.filter(
-        Q(sender=request.user) | Q(receiver=request.user)
+        Q(sender=request.user) | Q(receiver=request.user),
+        is_deleted=False
     ).select_related('sender', 'receiver', 'sender__profile', 'receiver__profile').order_by("-sent_at")
 
     conversations = {}
@@ -1252,6 +1256,67 @@ def conversation_view(request, user_id):
         "messages_qs": convo,
         "conversations": conversations.values(),
     })
+
+
+@login_required
+def edit_message(request, message_id):
+    """Edit a message (only by sender)"""
+    message = get_object_or_404(Message, id=message_id, sender=request.user)
+    
+    if request.method == "POST":
+        content = request.POST.get("content")
+        if content:
+            message.content = content
+            message.is_edited = True
+            message.edited_at = timezone.now()
+            message.save()
+            return JsonResponse({"success": True, "content": content, "edited_at": message.edited_at.strftime("%b %d, %H:%M")})
+    
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+@login_required
+def delete_message(request, message_id):
+    """Delete a message (only by sender)"""
+    message = get_object_or_404(Message, id=message_id, sender=request.user)
+    
+    if request.method == "POST":
+        message.is_deleted = True
+        message.deleted_at = timezone.now()
+        message.content = "[Message deleted]"
+        message.save()
+        return JsonResponse({"success": True})
+    
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+@login_required
+def search_messages(request):
+    """Search messages in conversations"""
+    query = request.GET.get("q", "")
+    if not query:
+        return JsonResponse({"results": []})
+    
+    # Search in messages where user is sender or receiver
+    messages_found = Message.objects.filter(
+        Q(sender=request.user) | Q(receiver=request.user),
+        content__icontains=query,
+        is_deleted=False
+    ).select_related('sender', 'receiver', 'sender__profile', 'receiver__profile').order_by('-sent_at')[:20]
+    
+    results = []
+    for msg in messages_found:
+        other_user = msg.receiver if msg.sender == request.user else msg.sender
+        results.append({
+            "id": msg.id,
+            "content": msg.content,
+            "sent_at": msg.sent_at.strftime("%b %d, %H:%M"),
+            "other_user_id": other_user.id,
+            "other_user_name": other_user.profile.full_name or other_user.username,
+            "is_sender": msg.sender == request.user
+        })
+    
+    return JsonResponse({"results": results})
 
 
 # ============================
@@ -1598,7 +1663,8 @@ def employer_messages_inbox(request):
             # Get last message in conversation
             last_msg = Message.objects.filter(
                 Q(sender=request.user, receiver=application.user) |
-                Q(sender=application.user, receiver=request.user)
+                Q(sender=application.user, receiver=request.user),
+                is_deleted=False
             ).select_related('sender', 'receiver').order_by('-sent_at').first()
             
             conversations[application.user] = {
@@ -1652,7 +1718,8 @@ def employer_message_conversation(request, applicant_id):
     # Get all messages in the conversation
     convo = Message.objects.filter(
         Q(sender=request.user, receiver=applicant) |
-        Q(sender=applicant, receiver=request.user)
+        Q(sender=applicant, receiver=request.user),
+        is_deleted=False
     ).select_related('sender', 'receiver').order_by("sent_at")
     
     # Mark unread messages as read
@@ -1668,6 +1735,43 @@ def employer_message_conversation(request, applicant_id):
         "conversation": convo,
         "applications": applications
     })
+
+
+@login_required
+def employer_search_messages(request):
+    """Search messages for employers"""
+    if request.user.profile.role != 'employer':
+        return JsonResponse({"error": "Forbidden"}, status=403)
+    
+    query = request.GET.get("q", "")
+    if not query:
+        return JsonResponse({"results": []})
+    
+    # Get employer's jobs
+    employer_jobs = Job.objects.filter(user=request.user)
+    applicant_ids = JobApplication.objects.filter(job__in=employer_jobs).values_list('user_id', flat=True)
+    
+    # Search in messages where user is sender or receiver (and other party is an applicant)
+    messages_found = Message.objects.filter(
+        Q(sender=request.user, receiver_id__in=applicant_ids) | 
+        Q(sender_id__in=applicant_ids, receiver=request.user),
+        content__icontains=query,
+        is_deleted=False
+    ).select_related('sender', 'receiver', 'sender__profile', 'receiver__profile').order_by('-sent_at')[:20]
+    
+    results = []
+    for msg in messages_found:
+        other_user = msg.receiver if msg.sender == request.user else msg.sender
+        results.append({
+            "id": msg.id,
+            "content": msg.content,
+            "sent_at": msg.sent_at.strftime("%b %d, %H:%M"),
+            "other_user_id": other_user.id,
+            "other_user_name": other_user.profile.full_name or other_user.username,
+            "is_sender": msg.sender == request.user
+        })
+    
+    return JsonResponse({"results": results})
 
 
 @login_required

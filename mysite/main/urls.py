@@ -37,6 +37,9 @@ urlpatterns = [
     # Messages
     path("messages/", views.messages_inbox, name="messages"),
     path("messages/<int:user_id>/", views.conversation_view, name="conversation"),
+    path("messages/<int:message_id>/edit/", views.edit_message, name="edit_message"),
+    path("messages/<int:message_id>/delete/", views.delete_message, name="delete_message"),
+    path("messages/search/", views.search_messages, name="search_messages"),
 
     # Notifications
     path("notifications/", views.notifications_page, name="notifications"),
@@ -94,6 +97,7 @@ urlpatterns = [
     path("employers/employerpost_job/", views.employerpost_job, name="employerpost_job"),
     path("employers/messages/", views.employer_messages_inbox, name="employer_messages"),
     path("employers/messages/<int:applicant_id>/", views.employer_message_conversation, name="employer_message_conversation"),
+    path("employers/messages/search/", views.employer_search_messages, name="employer_search_messages"),
     path("employers/applicants/", views.employer_applicants, name="employer_applicants"),
 ]   
 
