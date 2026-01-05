@@ -87,6 +87,9 @@ urlpatterns = [
     path('admin-panel/seed-skills/', views.seed_skills_view, name='seed_skills'),
     path("admin-panel/skills/", views.admin_skills, name="admin_skills"),
     path('admin-panel/skills/delete/<int:pk>/', views.admin_skill_delete, name='admin_skill_delete'),
+    # Global notifications / announcements
+    path('admin-panel/notifications/', views.admin_notifications, name='admin_notifications'),
+    path('admin-panel/notifications/<int:pk>/delete/', views.admin_notification_delete, name='admin_notification_delete'),
 
     # Employer Section
     path("employers/dashboard/", views.employer_dashboard, name="employer_dashboard"),

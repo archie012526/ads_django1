@@ -24,6 +24,7 @@
       <a href="{% url 'admin_users' %}" class="block px-4 py-2 rounded transition-all hover:bg-gray-700 {% if request.resolver_match.url_name == 'admin_users' %}sidebar-link-active{% endif %}">Users</a>
       <a href="{% url 'admin_jobs' %}" class="block px-4 py-2 rounded transition-all hover:bg-gray-700 {% if request.resolver_match.url_name == 'admin_jobs' %}sidebar-link-active{% endif %}">Jobs</a>
       <a href="{% url 'admin_skills' %}" class="block px-4 py-2 rounded transition-all hover:bg-gray-700 {% if request.resolver_match.url_name == 'admin_skills' %}sidebar-link-active{% endif %}">Skills</a>
+      <a href="{% url 'admin_notifications' %}" class="block px-4 py-2 rounded transition-all hover:bg-gray-700 {% if request.resolver_match.url_name == 'admin_notifications' %}sidebar-link-active{% endif %}">Announcements</a>
 
     </nav>
     <div class="p-4 border-t border-gray-700 bg-gray-800">
@@ -38,6 +39,12 @@
 
   <main class="flex-1 ml-64 min-h-screen p-8">
     <div class="max-w-7xl mx-auto">
+{% for note in global_notifications %}
+  <div class="bg-blue-600 text-white p-3 text-center">
+    <strong>{{ note.title }}</strong> — {{ note.message }}
+  </div>
+{% endfor %}
+
         {% block admin_content %}{% endblock %}
     </div>
   </main>

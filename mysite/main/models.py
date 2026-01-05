@@ -312,3 +312,31 @@ def save_user_profile(sender, instance, **kwargs):
         instance.profile.save()
     except Profile.DoesNotExist:
         Profile.objects.create(user=instance)
+
+# =========================
+#         SIGNALS
+# =========================
+class GlobalNotification(models.Model):
+    INFO = 'info'
+    WARNING = 'warning'
+    DANGER = 'danger'
+
+    LEVEL_CHOICES = [
+        (INFO, 'Info'),
+        (WARNING, 'Warning'),
+        (DANGER, 'Danger'),
+    ]
+
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    level = models.CharField(max_length=10, choices=LEVEL_CHOICES, default=INFO)
+
+    show_on_site = models.BooleanField(default=True)
+    send_email = models.BooleanField(default=False)
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.title
