@@ -44,6 +44,12 @@
                     </svg>
                     Applicants
                 </a>
+                <a href="{% url 'manage_jobs' %}" class="flex items-center gap-3 text-gray-400 hover:text-white px-4 py-3 rounded-lg transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M9 8h6m5 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2z"></path>
+                    </svg>
+                    Manage Jobs
+                </a>
                 <a href="{% url 'employer_notifications' %}" class="flex items-center gap-3 text-gray-400 hover:text-white px-4 py-3 rounded-lg transition relative">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
@@ -165,11 +171,63 @@
             </div>
         </div>
 
-        <main class="flex-1 ml-64 mt-20 p-8 min-h-screen">
+        <!-- GLOBAL NOTIFICATIONS BANNER -->
+        {% if global_notifications %}
+            <div class="fixed top-20 right-0 left-64 px-8 pt-4 z-30">
+                {% for note in global_notifications %}
+                    <div class="mb-3 flex items-center justify-between p-4 rounded-lg shadow-lg {% if note.level == 'info' %}bg-gradient-to-r from-blue-500 to-blue-600 text-white{% elif note.level == 'warning' %}bg-gradient-to-r from-yellow-500 to-yellow-600 text-white{% elif note.level == 'danger' %}bg-gradient-to-r from-red-500 to-red-600 text-white{% endif %}" style="animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
+                        <div class="flex items-center gap-3">
+                            <div class="flex-shrink-0">
+                                {% if note.level == 'info' %}
+                                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <path d="M12 16v-4M12 8h.01"></path>
+                                    </svg>
+                                {% elif note.level == 'warning' %}
+                                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path>
+                                        <path d="M12 9v4M12 17h.01"></path>
+                                    </svg>
+                                {% elif note.level == 'danger' %}
+                                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <path d="M15 9l-6 6M9 9l6 6"></path>
+                                    </svg>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <p class="font-semibold">{{ note.title }}</p>
+                                <p class="text-sm opacity-95">{{ note.message }}</p>
+                            </div>
+                        </div>
+                        <button onclick="this.parentElement.remove()" class="ml-4 p-1 hover:bg-white hover:bg-opacity-20 rounded transition">
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 6L6 18M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <main class="flex-1 ml-64 mt-20 p-8 min-h-screen" style="{% if global_notifications %}padding-top: calc(2rem + {{ global_notifications|length }} * 5rem);{% endif %}">
             {% block content %}
             {% endblock %}
         </main>
     </div>
+
+    <style>
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 
     <script>
         function toggleNotifications() {

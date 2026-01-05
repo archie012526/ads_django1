@@ -86,7 +86,7 @@
     </style>
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'style/base.css' %}">
+    <link rel="stylesheet" href="{% static 'style/base.css' %}?v=7">
     <link rel="stylesheet" href="{% static 'style/styles.css' %}">
     <link rel="stylesheet" href="{% static 'style/landing.css' %}">
 
@@ -171,6 +171,45 @@
 
     
 </header>
+
+<!-- GLOBAL NOTIFICATIONS BANNER -->
+{% if global_notifications %}
+    <div class="global-notifications-container">
+        {% for note in global_notifications %}
+            <div class="global-notification global-notification-{{ note.level }}">
+                <div class="global-notification-content">
+                    <div class="global-notification-icon">
+                        {% if note.level == 'info' %}
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 16v-4M12 8h.01"></path>
+                            </svg>
+                        {% elif note.level == 'warning' %}
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path>
+                                <path d="M12 9v4M12 17h.01"></path>
+                            </svg>
+                        {% elif note.level == 'danger' %}
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M15 9l-6 6M9 9l6 6"></path>
+                            </svg>
+                        {% endif %}
+                    </div>
+                    <div class="global-notification-text">
+                        <strong>{{ note.title }}</strong>
+                        <span>{{ note.message }}</span>
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()" class="global-notification-close">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
 <!-- MAIN CONTENT -->
 {% block content %}{% endblock %}

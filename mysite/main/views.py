@@ -6,6 +6,7 @@ User = get_user_model()
 from django.contrib import messages
 from django.db import IntegrityError
 from django.db.models import Q
+from django.db.models import Count, Max
 from django.conf import settings
 from django.core.mail import send_mail, EmailMessage
 from django.utils import timezone
@@ -320,8 +321,86 @@ def employer_dashboard(request):
 
 @login_required
 def manage_jobs(request):
-    my_jobs = Job.objects.filter(posted_by=request.user).order_by('-created_at')
-    return render(request, "employers/manage_jobs.html", {"jobs": my_jobs})
+    if request.user.profile.role != 'employer':
+        return HttpResponseForbidden()
+
+    jobs_qs = Job.objects.filter(user=request.user)
+
+    # Bulk actions
+    if request.method == "POST":
+        action = request.POST.get('bulk_action') or request.POST.get('single_action')
+        ids = request.POST.getlist('job_ids') or ([request.POST.get('job_id')] if request.POST.get('job_id') else [])
+        ids = [i for i in ids if i]
+
+        if ids:
+            target_qs = jobs_qs.filter(id__in=ids)
+            if action == 'pause':
+                target_qs.update(status='paused')
+                messages.success(request, "Selected jobs paused.")
+            elif action == 'close':
+                target_qs.update(status='closed')
+                messages.success(request, "Selected jobs closed.")
+            elif action == 'reopen':
+                target_qs.update(status='active')
+                messages.success(request, "Selected jobs reopened.")
+            elif action == 'delete':
+                count = target_qs.count()
+                target_qs.delete()
+                messages.success(request, f"Deleted {count} job(s).")
+            elif action == 'duplicate':
+                for job in target_qs:
+                    Job.objects.create(
+                        user=request.user,
+                        title=f"{job.title} (Copy)",
+                        company_name=job.company_name,
+                        description=job.description,
+                        location=job.location,
+                        employment_type=job.employment_type,
+                        working_schedule=job.working_schedule,
+                        status='draft'
+                    )
+                messages.success(request, "Duplicated selected job(s) as drafts.")
+        return redirect('manage_jobs')
+
+    # Filters
+    status_filter = request.GET.get('status') or ''
+    type_filter = request.GET.get('employment_type') or ''
+    location_filter = request.GET.get('location') or ''
+    sort = request.GET.get('sort') or '-created_at'
+
+    if status_filter:
+        jobs_qs = jobs_qs.filter(status=status_filter)
+    if type_filter:
+        jobs_qs = jobs_qs.filter(employment_type=type_filter)
+    if location_filter:
+        jobs_qs = jobs_qs.filter(location__icontains=location_filter)
+
+    sort_map = {
+        'date_desc': '-created_at',
+        'date_asc': 'created_at',
+        'applicants_desc': '-applicants_count',
+        'applicants_asc': 'applicants_count',
+        'title_asc': 'title',
+        'title_desc': '-title',
+    }
+
+    jobs = jobs_qs.annotate(
+        applicants_count=Count('jobapplication'),
+        last_application=Max('jobapplication__applied_at')
+    ).order_by(sort_map.get(sort, '-created_at'))
+
+    # Stats for filters
+    status_counts = jobs_qs.values('status').annotate(count=Count('id'))
+
+    context = {
+        "jobs": jobs,
+        "status_filter": status_filter,
+        "type_filter": type_filter,
+        "location_filter": location_filter,
+        "sort": sort,
+        "status_counts": {item['status']: item['count'] for item in status_counts},
+    }
+    return render(request, "employers/manage_jobs.html", context)
 
 @login_required
 def employerpost_job(request):
@@ -1795,7 +1874,7 @@ def apply_job(request, job_id):
             )
             
             messages.success(request, "Application submitted successfully!")
-            return redirect("find_job")
+            return redirect("job_applications")
     else:
         form = JobApplicationForm()
     
