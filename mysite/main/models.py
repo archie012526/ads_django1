@@ -62,6 +62,7 @@ class Profile(models.Model):
     job_categories = models.CharField(max_length=255, blank=True)
     employment_type = models.CharField(max_length=50, blank=True)
     preferred_location = models.CharField(max_length=255, blank=True)
+    desired_skills = models.ManyToManyField('SkillTag', blank=True, related_name='desired_by_profiles')
 
     # Privacy settings
     profile_visibility = models.CharField(

@@ -48,15 +48,22 @@
                 placeholder="What are the requirements?"></textarea>
         </div>
 
-        <div>
-            <label class="block text-sm font-bold text-gray-700 mb-3">Required Skills</label>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {% for skill in skills %}
-                <label class="flex items-center space-x-2 p-2 border border-gray-50 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox" name="skills" value="{{ skill.id }}" class="w-4 h-4 text-blue-600">
-                    <span class="text-sm text-gray-600">{{ skill.name }}</span>
-                </label>
-                {% endfor %}
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-full bg-blue-200 text-blue-800 flex items-center justify-center font-bold">i</div>
+                <div>
+                    <p class="font-semibold text-blue-900">Required skills come from your Desired Skills</p>
+                    {% if desired_skills %}
+                    <p class="text-sm text-blue-800 mt-1">These will be attached automatically:</p>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        {% for skill in desired_skills %}
+                        <span class="px-3 py-1 bg-white border border-blue-200 rounded-full text-sm text-blue-800">{{ skill.name }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-sm text-blue-800 mt-1">You haven't set any desired skills yet. <a href="{% url 'employer_skill_preferences' %}" class="underline font-semibold">Set them here</a>.</p>
+                    {% endif %}
+                </div>
             </div>
         </div>
 
