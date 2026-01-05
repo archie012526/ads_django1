@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from django.shortcuts import render
 from . import views
 
 urlpatterns = [
@@ -104,6 +105,13 @@ urlpatterns = [
     path("employers/applicants/", views.employer_applicants, name="employer_applicants"),
     path("employers/notifications/", views.employer_notifications, name="employer_notifications"),
     path("employers/notifications/mark-all-read/", views.employer_mark_all_read, name="employer_mark_all_read"),
-]   
 
+    # REST API Endpoints
+    path("api/notifications/", views.api_notifications_list, name="api_notifications_list"),
+    path("api/notifications/<int:notification_id>/mark-read/", views.api_notification_mark_read, name="api_notification_mark_read"),
+    path("api/notifications/mark-all-read/", views.api_notifications_mark_all_read, name="api_notifications_mark_all_read"),
+    path("api/global-notifications/", views.api_global_notifications_list, name="api_global_notifications_list"),
     
+    # Real-time API Test Page
+    path("realtime-test/", lambda request: render(request, "main/realtime_test.html"), name="realtime_test"),
+]

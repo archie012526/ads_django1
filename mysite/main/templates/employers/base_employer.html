@@ -171,45 +171,6 @@
             </div>
         </div>
 
-        <!-- GLOBAL NOTIFICATIONS BANNER -->
-        {% if global_notifications %}
-            <div class="fixed top-20 right-0 left-64 px-8 pt-4 z-30">
-                {% for note in global_notifications %}
-                    <div class="mb-3 flex items-center justify-between p-4 rounded-lg shadow-lg {% if note.level == 'info' %}bg-gradient-to-r from-blue-500 to-blue-600 text-white{% elif note.level == 'warning' %}bg-gradient-to-r from-yellow-500 to-yellow-600 text-white{% elif note.level == 'danger' %}bg-gradient-to-r from-red-500 to-red-600 text-white{% endif %}" style="animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
-                        <div class="flex items-center gap-3">
-                            <div class="flex-shrink-0">
-                                {% if note.level == 'info' %}
-                                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <path d="M12 16v-4M12 8h.01"></path>
-                                    </svg>
-                                {% elif note.level == 'warning' %}
-                                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path>
-                                        <path d="M12 9v4M12 17h.01"></path>
-                                    </svg>
-                                {% elif note.level == 'danger' %}
-                                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <path d="M15 9l-6 6M9 9l6 6"></path>
-                                    </svg>
-                                {% endif %}
-                            </div>
-                            <div>
-                                <p class="font-semibold">{{ note.title }}</p>
-                                <p class="text-sm opacity-95">{{ note.message }}</p>
-                            </div>
-                        </div>
-                        <button onclick="this.parentElement.remove()" class="ml-4 p-1 hover:bg-white hover:bg-opacity-20 rounded transition">
-                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 6L6 18M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
         <main class="flex-1 ml-64 mt-20 p-8 min-h-screen" style="{% if global_notifications %}padding-top: calc(2rem + {{ global_notifications|length }} * 5rem);{% endif %}">
             {% block content %}
             {% endblock %}
@@ -244,6 +205,196 @@
                 panel.classList.add('hidden');
             }
         });
+
+        // Real-time WebSocket connection for notifications
+        {% if user.is_authenticated %}
+        (function() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = protocol + '//' + window.location.host + '/ws/notifications/';
+            
+            let notificationSocket = null;
+            let reconnectAttempts = 0;
+            const maxReconnectAttempts = 5;
+            
+            function connectWebSocket() {
+                notificationSocket = new WebSocket(wsUrl);
+                
+                notificationSocket.onopen = function(e) {
+                    console.log('✅ WebSocket connected for real-time notifications');
+                    reconnectAttempts = 0;
+                };
+                
+                notificationSocket.onmessage = function(e) {
+                    const data = JSON.parse(e.data);
+                    
+                    if (data.type === 'notification') {
+                        handleNotification(data.notification);
+                    } else if (data.type === 'global_notification') {
+                        handleGlobalNotification(data.notification);
+                    }
+                };
+                
+                notificationSocket.onclose = function(e) {
+                    console.log('❌ WebSocket disconnected');
+                    
+                    // Attempt to reconnect
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++;
+                        const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+                        console.log(`⏳ Reconnecting in ${delay/1000}s... (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
+                        setTimeout(connectWebSocket, delay);
+                    }
+                };
+                
+                notificationSocket.onerror = function(e) {
+                    console.error('WebSocket error:', e);
+                };
+            }
+            
+            function handleNotification(notification) {
+                console.log('🔔 New notification:', notification);
+                
+                // Show browser notification if permission granted
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification(notification.title, {
+                        body: notification.message,
+                        icon: '/static/media/logo.png'
+                    });
+                }
+                
+                // Update notification badge count
+                const badges = document.querySelectorAll('.notification-badge');
+                badges.forEach(badge => {
+                    const currentCount = parseInt(badge.textContent) || 0;
+                    badge.textContent = currentCount + 1;
+                    badge.style.display = 'flex';
+                });
+                
+                // Optionally reload notifications if on notifications page
+                if (window.location.pathname.includes('/notifications')) {
+                    setTimeout(() => location.reload(), 2000);
+                }
+            }
+            
+            function handleGlobalNotification(notification) {
+                console.log('📢 New global notification:', notification);
+                
+                // Add notification banner to page
+                const mainContent = document.querySelector('main');
+                if (mainContent) {
+                    const notifDiv = createGlobalNotificationElement(notification);
+                    mainContent.insertBefore(notifDiv, mainContent.firstChild);
+                    
+                    // Animate in
+                    setTimeout(() => notifDiv.style.opacity = '1', 10);
+                }
+            }
+            
+            function createGlobalNotificationElement(notification) {
+                const div = document.createElement('div');
+                div.className = 'mb-3 flex items-center justify-between p-4 rounded-lg shadow-lg';
+                div.style.opacity = '0';
+                div.style.transition = 'opacity 0.3s ease';
+                div.style.animation = 'slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                
+                if (notification.level === 'info') {
+                    div.className += ' bg-gradient-to-r from-blue-500 to-blue-600 text-white';
+                } else if (notification.level === 'warning') {
+                    div.className += ' bg-gradient-to-r from-yellow-500 to-yellow-600 text-white';
+                } else if (notification.level === 'danger') {
+                    div.className += ' bg-gradient-to-r from-red-500 to-red-600 text-white';
+                }
+                
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0">
+                            ${getIconSvg(notification.level)}
+                        </div>
+                        <div>
+                            <div class="font-semibold">${notification.title}</div>
+                            <div class="text-sm opacity-95">${notification.message}</div>
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.remove()" class="text-white hover:bg-white hover:bg-opacity-20 rounded p-1 transition">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                `;
+                
+                return div;
+            }
+            
+            function getIconSvg(level) {
+                const icons = {
+                    info: '<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>',
+                    warning: '<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path><path d="M12 9v4M12 17h.01"></path></svg>',
+                    danger: '<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M15 9l-6 6M9 9l6 6"></path></svg>'
+                };
+                return icons[level] || icons.info;
+            }
+            
+            function showToast(title, message, level) {
+                // Simple toast implementation
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: ${level === 'danger' ? '#E74C3C' : level === 'warning' ? '#F5A623' : '#4A90E2'};
+                    color: white;
+                    padding: 16px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                    z-index: 10000;
+                    max-width: 350px;
+                    animation: slideInRight 0.3s ease;
+                `;
+                
+                toast.innerHTML = `
+                    <div style="font-weight: 600; margin-bottom: 4px;">${title}</div>
+                    <div style="font-size: 14px; opacity: 0.95;">${message}</div>
+                `;
+                
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.animation = 'slideOutRight 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }, 5000);
+            }
+            
+            // Request notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+            
+            // Connect on page load
+            connectWebSocket();
+            
+            // Reconnect on window focus (if connection lost)
+            window.addEventListener('focus', function() {
+                if (!notificationSocket || notificationSocket.readyState === WebSocket.CLOSED) {
+                    console.log('🔄 Reconnecting WebSocket on window focus...');
+                    connectWebSocket();
+                }
+            });
+        })();
+        {% endif %}
+
+        // Add CSS animation for toast
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(400px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(400px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

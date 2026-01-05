@@ -133,4 +133,226 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+// Real-time notification updates for employer notifications page
+document.addEventListener('DOMContentLoaded', function() {
+    let unreadCount = {{ unread_count }};
+    let updateCheckInterval;
+    
+    // Function to setup WebSocket listener
+    function setupWebSocketListener() {
+        if (window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN) {
+            console.log('✅ WebSocket found - setting up employer listener');
+            setupListener();
+            return true;
+        }
+        return false;
+    }
+    
+    function setupListener() {
+        // Store original handlers
+        const originalHandleNotification = window.handleNotification;
+        
+        // Override handleNotification to also update the page
+        window.handleNotification = function(notification) {
+            console.log('📌 Adding notification to employer page:', notification);
+            addNotificationToPage(notification);
+            updateStats();
+            
+            // Call original if it exists
+            if (originalHandleNotification) {
+                originalHandleNotification.call(this, notification);
+            }
+        };
+    }
+    
+    // Try to setup immediately
+    if (!setupWebSocketListener()) {
+        // If WebSocket not ready, check periodically
+        updateCheckInterval = setInterval(() => {
+            if (setupWebSocketListener()) {
+                clearInterval(updateCheckInterval);
+            }
+        }, 500);
+        
+        // Clear interval after 10 seconds and fallback to polling
+        setTimeout(() => {
+            clearInterval(updateCheckInterval);
+            console.log('⚠️ WebSocket listener setup timeout - using API polling');
+            pollNotificationsAPI();
+        }, 10000);
+    }
+    
+    // Function to poll API for new notifications
+    function pollNotificationsAPI() {
+        let lastCount = document.querySelectorAll('.divide-y.divide-gray-100 > *').length;
+        
+        setInterval(() => {
+            fetch('/api/notifications/')
+                .then(response => response.json())
+                .then(data => {
+                    const currentCount = document.querySelectorAll('.divide-y.divide-gray-100 > *').length;
+                    
+                    // If there are new notifications, reload page
+                    if (data.count > currentCount) {
+                        console.log('📢 New notifications detected via API - reloading...');
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error('API Error:', error));
+        }, 5000);
+    }
+    
+    function addNotificationToPage(notification) {
+        const notificationsList = document.querySelector('.divide-y');
+        const noNotifsMsg = document.querySelector('.p-12.text-center');
+        
+        // Remove "no notifications" message if present
+        if (noNotifsMsg) {
+            noNotifsMsg.parentElement.innerHTML = '<div class="divide-y divide-gray-100"></div>';
+        }
+        
+        // Determine icon and color based on type
+        let iconHtml = '';
+        if (notification.notification_type === 'message') {
+            iconHtml = `<div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+            </div>`;
+        } else if (notification.notification_type === 'job_application') {
+            iconHtml = `<div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
+                <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>`;
+        } else {
+            iconHtml = `<div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center">
+                <svg class="w-7 h-7 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>`;
+        }
+        
+        // Create notification element
+        const notifDiv = document.createElement('a');
+        notifDiv.href = notification.link || '#';
+        notifDiv.className = 'block p-6 hover:bg-gray-50 transition bg-blue-50';
+        notifDiv.style.animation = 'slideInLeft 0.3s ease';
+        
+        notifDiv.innerHTML = `
+            <div class="flex gap-4">
+                <div class="flex-shrink-0">${iconHtml}</div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <p class="text-base font-semibold text-gray-900">${notification.title}</p>
+                            <p class="text-sm text-gray-600 mt-1">${notification.message}</p>
+                            <div class="flex items-center gap-4 mt-3">
+                                <p class="text-xs text-gray-400">Just now</p>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <div class="w-3 h-3 bg-blue-600 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Insert at the top
+        const container = document.querySelector('.divide-y.divide-gray-100');
+        if (container) {
+            container.insertBefore(notifDiv, container.firstChild);
+        }
+        
+        unreadCount++;
+    }
+    
+    function updateStats() {
+        // Update unread count display
+        const unreadStat = document.querySelector('.text-red-600.text-2xl');
+        if (unreadStat) {
+            unreadStat.textContent = unreadCount;
+        }
+        
+        // Update total count
+        const totalStat = document.querySelector('.text-\\[\\#1e293b\\].text-2xl');
+        if (totalStat) {
+            const currentTotal = parseInt(totalStat.textContent);
+            totalStat.textContent = currentTotal + 1;
+        }
+    }
+    
+    // Mark all as read with API
+    const markAllBtn = document.querySelector('a[href*="mark-all-read"]');
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            fetch('/api/notifications/mark-all-read/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI - remove blue backgrounds and unread indicators
+                    document.querySelectorAll('.bg-blue-50').forEach(el => {
+                        el.classList.remove('bg-blue-50');
+                    });
+                    document.querySelectorAll('.w-3.h-3.bg-blue-600').forEach(el => {
+                        el.remove();
+                    });
+                    
+                    // Update stats
+                    unreadCount = 0;
+                    updateStats();
+                    
+                    // Hide mark all as read button
+                    markAllBtn.style.display = 'none';
+                    
+                    console.log('✅ All notifications marked as read');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+
+// Add animation styles
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
 {% endblock %}
