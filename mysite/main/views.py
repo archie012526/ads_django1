@@ -409,6 +409,10 @@ def manage_jobs(request):
 
 @login_required
 def employerpost_job(request):
+    profile = getattr(request.user, "profile", None)
+    if not profile or profile.role != "employer":
+        return HttpResponseForbidden()
+
     if request.method == "POST":
         title = request.POST.get('title')
         company = request.POST.get('company_name')
@@ -426,42 +430,19 @@ def employerpost_job(request):
             employment_type=emp_type,
             working_schedule=sched
         )
-        
-        skills_list = request.POST.getlist('skills')
-        if skills_list:
-            # Map submitted ids (which may be Skill or SkillTag ids) to SkillTag ids
-            tag_ids = []
-            for sid in skills_list:
-                try:
-                    # First, try interpreting as a SkillTag id
-                    tag = SkillTag.objects.get(pk=int(sid))
-                    tag_ids.append(tag.pk)
-                    continue
-                except (SkillTag.DoesNotExist, ValueError):
-                    pass
 
-                try:
-                    # Fallback: it's a Skill id (admin-created skill). Map by name to SkillTag (create if missing)
-                    skill_obj = Skill.objects.get(pk=int(sid))
-                    tag, _ = SkillTag.objects.get_or_create(name=skill_obj.name)
-                    tag_ids.append(tag.pk)
-                except (Skill.DoesNotExist, ValueError):
-                    # ignore invalid values
-                    continue
-
-            if tag_ids:
-                job.skills.set(tag_ids)
+        # Auto-attach employer's desired skills (SkillTag) to the job
+        desired_tags = list(profile.desired_skills.all())
+        if desired_tags:
+            job.skills.set(desired_tags)
 
         add_audit_log(request, request.user, f"Employer posted job '{job.title}' (id:{job.id})")
         return redirect('employer_dashboard')
         
-    # THE FIX: Use the 'Skill' model and filter for Global + Employer skills
-    # This allows employers to see the skills added by the admin
-    all_skills = Skill.objects.filter(
-        Q(user__isnull=True) | Q(user__user=request.user)
-    ).order_by('name')
+    # Show which skills will be applied automatically
+    desired_skills = profile.desired_skills.all()
 
-    return render(request, "employers/employerpost_job.html", {"skills": all_skills})
+    return render(request, "employers/employerpost_job.html", {"desired_skills": desired_skills})
 
 # ============================
 # LANDING / STATIC
@@ -631,15 +612,30 @@ def homepage(request):
     # ========= Personalized Recommendations =========
     base_jobs = Job.objects.filter(user__is_staff=False).exclude(user=request.user)
 
-    # Skills-based
+    # Skills-based: only jobs sharing at least one of the user's skills
     user_skills = list(profile.skills.values_list('name', flat=True))
     rec_by_skills = []
     if user_skills:
-        for job in base_jobs[:200]:
-            text = f"{job.title} {job.description}"
-            match_count = sum(1 for s in user_skills if s.lower() in text.lower())
-            if match_count > 0:
-                rec_by_skills.append({"job": job, "match_count": match_count})
+        base_skill_set = {s.lower() for s in user_skills}
+        jobs_with_overlap = (
+            base_jobs
+            .filter(skills__name__in=user_skills)
+            .select_related('user', 'user__profile')
+            .prefetch_related('skills')
+            .distinct()[:200]
+        )
+        for job in jobs_with_overlap:
+            matched = {
+                name.lower()
+                for name in job.skills.filter(name__in=user_skills).values_list('name', flat=True)
+            }
+            if not matched:
+                continue
+            rec_by_skills.append({
+                "job": job,
+                "match_count": len(matched),
+                "matched_skills": sorted(matched),
+            })
         rec_by_skills.sort(key=lambda x: x["match_count"], reverse=True)
         rec_by_skills = rec_by_skills[:5]
 
@@ -799,49 +795,35 @@ def profile_page(request):
     suggestions = []
 
     if user_skill_names:
-        base = [s.lower() for s in user_skill_names]
-
-        q = Q()
-        for s in user_skill_names:
-            q |= Q(title__icontains=s) | Q(description__icontains=s) | Q(skills__name__iexact=s)
+        base = {s.lower() for s in user_skill_names}
 
         jobs_qs = (
             Job.objects
             .select_related("user", "user__profile")
             .prefetch_related("skills")
-            .filter(q)
+            .filter(skills__name__in=user_skill_names)
             .exclude(user=request.user)
             .distinct()
         )
 
         for job in jobs_qs:
-            text = f"{job.title} {(job.description or '')}"
-            matched_from_text = {s for s in base if s in text.lower()}
             matched_from_tags = set(
                 name.lower() for name in job.skills.filter(name__in=user_skill_names).values_list("name", flat=True)
             )
-            matched = matched_from_text.union(matched_from_tags)
-            match_percent = int(round((len(matched) / max(1, len(base))) * 100))
+            if not matched_from_tags:
+                continue
+
+            match_percent = int(round((len(matched_from_tags) / max(1, len(base))) * 100))
 
             suggestions.append({
                 "job": job,
                 "match_percent": match_percent,
-                "matched_skills": sorted(list(matched)),
+                "matched_skills": sorted(list(matched_from_tags)),
             })
 
         # Sort by highest match
         suggestions.sort(key=lambda x: x["match_percent"], reverse=True)
         suggestions = suggestions[:10]
-
-    # Fallback: if no suggestions (no skills or no matches), show recent jobs
-    if not suggestions:
-        fallback_jobs = Job.objects.select_related("user", "user__profile").prefetch_related("skills") \
-            .exclude(user=request.user).order_by("-created_at")[:6]
-        suggestions = [{
-            "job": job,
-            "match_percent": 0,
-            "matched_skills": [],
-        } for job in fallback_jobs]
 
     # Fetch user's posts
     user_posts = Post.objects.filter(user=request.user).order_by("-created_at")
@@ -2148,6 +2130,11 @@ def employer_applicants(request):
     # Get all job applicants for jobs posted by this employer
     employer_jobs = Job.objects.filter(user=request.user)
     applications = JobApplication.objects.filter(job__in=employer_jobs).select_related('user', 'job', 'user__profile').order_by('-applied_at')
+
+    # Filter applicants to those matching employer desired skills (by name)
+    desired_names = list(request.user.profile.desired_skills.values_list('name', flat=True))
+    if desired_names:
+        applications = applications.filter(user__profile__skills__name__in=desired_names).distinct()
     
     # Get filter options
     status_filter = request.GET.get('status', '')
@@ -2241,6 +2228,8 @@ def employer_notifications(request):
     
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     unread_count = notifications.filter(is_read=False).count()
+    total_count = notifications.count()
+    read_count = max(total_count - unread_count, 0)
 
     # Also fetch active global announcements so employers see admin posts in-page
     now = timezone.now()
@@ -2254,9 +2243,47 @@ def employer_notifications(request):
     return render(request, "employers/employer_notifications.html", {
         "notifications": notifications,
         "unread_count": unread_count,
+        "total_count": total_count,
+        "read_count": read_count,
         "global_notifications": global_notifications,
         "global_count": global_notifications.count(),
         "suppress_global_banner": True,  # avoid duplicate banner from base template
+    })
+
+
+@login_required
+def employer_skill_preferences(request):
+    """Allow employers to set the skills they are looking for."""
+    profile = getattr(request.user, "profile", None)
+    if not profile or profile.role != "employer":
+        return HttpResponseForbidden()
+
+    # Only allow admin-defined/global skills (Skill.user is null)
+    available_skills = Skill.objects.filter(user__isnull=True).order_by("name")
+
+    if request.method == "POST":
+        selected_ids = request.POST.getlist("desired_skills")
+        tag_ids = []
+
+        for sid in selected_ids:
+            try:
+                skill_obj = Skill.objects.get(pk=int(sid), user__isnull=True)
+                tag, _ = SkillTag.objects.get_or_create(name=skill_obj.name)
+                tag_ids.append(tag.id)
+            except (Skill.DoesNotExist, ValueError):
+                continue
+
+        profile.desired_skills.set(tag_ids)
+        messages.success(request, "Saved your desired skills.")
+        return redirect("employer_skill_preferences")
+
+    # Mark selected by comparing names
+    selected_names = set(profile.desired_skills.values_list("name", flat=True))
+
+    return render(request, "employers/employer_skill_preferences.html", {
+        "available_skills": available_skills,
+        "selected_names": selected_names,
+        "suppress_global_banner": True,
     })
 
 

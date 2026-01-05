@@ -108,6 +108,7 @@ urlpatterns = [
     # Employer interview detail (for scheduling/confirmation)
     path("employers/applicants/<int:app_id>/interview/", views.employer_interview_detail, name="employer_interview_detail"),
     path("employers/applicants/<int:app_id>/schedule/", views.employer_schedule_interview, name="employer_schedule_interview"),
+    path("employers/preferences/skills/", views.employer_skill_preferences, name="employer_skill_preferences"),
  
 
     # REST API Endpoints

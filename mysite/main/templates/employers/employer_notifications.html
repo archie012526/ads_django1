@@ -28,7 +28,7 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Total Notifications</p>
-                    <p class="text-2xl font-bold text-[#1e293b]">{{ notifications.count }}</p>
+                    <p id="total-count" class="text-2xl font-bold text-[#1e293b]">{{ total_count }}</p>
                 </div>
             </div>
         </div>
@@ -42,7 +42,7 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Unread</p>
-                    <p class="text-2xl font-bold text-red-600">{{ unread_count }}</p>
+                    <p id="unread-count" class="text-2xl font-bold text-red-600">{{ unread_count }}</p>
                 </div>
             </div>
         </div>
@@ -56,7 +56,7 @@
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Read</p>
-                    <p class="text-2xl font-bold text-green-600">{{ notifications.count|add:unread_count|add:'-'|add:unread_count }}</p>
+                    <p id="read-count" class="text-2xl font-bold text-green-600">{{ read_count }}</p>
                 </div>
             </div>
         </div>
@@ -296,16 +296,19 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function updateStats() {
         // Update unread count display
-        const unreadStat = document.querySelector('.text-red-600.text-2xl');
-        if (unreadStat) {
-            unreadStat.textContent = unreadCount;
-        }
+        const unreadStat = document.getElementById('unread-count');
+        if (unreadStat) unreadStat.textContent = unreadCount;
         
-        // Update total count
-        const totalStat = document.querySelector('.text-\\[\\#1e293b\\].text-2xl');
+        const totalStat = document.getElementById('total-count');
+        const readStat = document.getElementById('read-count');
         if (totalStat) {
-            const currentTotal = parseInt(totalStat.textContent);
-            totalStat.textContent = currentTotal + 1;
+            const currentTotal = parseInt(totalStat.textContent) || 0;
+            const newTotal = currentTotal + 1;
+            totalStat.textContent = newTotal;
+            if (readStat) {
+                const newRead = Math.max(newTotal - unreadCount, 0);
+                readStat.textContent = newRead;
+            }
         }
     }
     
