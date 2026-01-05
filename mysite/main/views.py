@@ -151,6 +151,32 @@ def admin_skill_delete(request, pk):
         skill.delete()
     return redirect('admin_skills')
 
+
+@login_required(login_url="/admin-panel/login/")
+def seed_skills_view(request):
+    """Create a set of default global skills (user=NULL) for the admin panel.
+    Idempotent: will not duplicate existing skill names."""
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+
+    default_skills = [
+        "Python", "Django", "JavaScript", "React", "SQL", "HTML", "CSS",
+        "DevOps", "Docker", "Kubernetes", "AWS", "Product Management", "Data Analysis"
+    ]
+
+    created = 0
+    for name in default_skills:
+        obj, created_flag = Skill.objects.get_or_create(user=None, name=name, defaults={"level": "Beginner", "description": ""})
+        if created_flag:
+            created += 1
+
+    if created:
+        messages.success(request, f"Seeded {created} skills.")
+    else:
+        messages.info(request, "Skills already seeded.")
+
+    return redirect('admin_skills')
+
 # ============================
 #          EMPLOYERS
 # ============================
