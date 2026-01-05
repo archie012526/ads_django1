@@ -74,7 +74,7 @@ class JobApplicationAdmin(admin.ModelAdmin):
 
 
 # ---------------------------
-# SKILLS
+# SKILLS (Individual user skills)
 # ---------------------------
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin):
@@ -85,10 +85,11 @@ class SkillAdmin(admin.ModelAdmin):
 
 
 # ---------------------------
-# SKILL TAGS (Job skills)
+# SKILL TAGS (The global list for the Job Form)
 # ---------------------------
 @admin.register(SkillTag)
 class SkillTagAdmin(admin.ModelAdmin):
+    list_display = ('name',) # Added this so you can see the name in the list
     search_fields = ('name',)
     ordering = ('name',)
 

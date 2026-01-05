@@ -20,6 +20,7 @@ from .models import Profile, Job, JobApplication, Notification, Skill, Message, 
 from .forms import JobForm, PostForm, SkillForm, UserForm, ProfileForm, SettingsForm, SignUpForm, JobApplicationForm
 
 from django.contrib.auth import logout as django_logout
+from django.db.models import Q
 # ============= AUTHENTICATION =============
 
 def admin_login(request):
@@ -109,6 +110,47 @@ def delete_job(request, job_id):
     job.delete()
     return redirect('admin_jobs')
 
+def admin_skills(request):
+    # 1. Get the Profile safely
+    try:
+        user_profile = Profile.objects.get(user=request.user)
+    except Profile.DoesNotExist:
+        return render(request, 'admin/admin_skills.html', {'error': 'Profile not found.'})
+
+    # 2. Handle adding a new skill
+    if request.method == "POST":
+        name = request.POST.get('skill_name')
+        level = request.POST.get('level', 'Beginner')
+        description = request.POST.get('description', '')
+
+        if name:
+            Skill.objects.create(
+                user=user_profile, 
+                name=name,
+                level=level,
+                description=description
+            )
+        return redirect('admin_skills')
+
+    # 3. Fetch BOTH Global skills and Admin-owned skills
+    # We do this AFTER the POST check so the list is always fresh
+    skills = Skill.objects.filter(
+        Q(user__isnull=True) | Q(user=user_profile)
+    ).order_by('-id')
+
+    context = {
+        'skills': skills,
+        'levels': Skill.LEVEL_CHOICES
+    }
+    return render(request, 'admin/admin_skills.html', context)
+
+def admin_skill_delete(request, pk):
+    from .models import Skill
+    skill = get_object_or_404(Skill, pk=pk)
+    if request.method == "POST":
+        skill.delete()
+    return redirect('admin_skills')
+
 # ============================
 #          EMPLOYERS
 # ============================
@@ -173,7 +215,6 @@ def manage_jobs(request):
 @login_required
 def employerpost_job(request):
     if request.method == "POST":
-        # Extract data from the form
         title = request.POST.get('title')
         company = request.POST.get('company_name')
         desc = request.POST.get('description')
@@ -181,9 +222,8 @@ def employerpost_job(request):
         emp_type = request.POST.get('employment_type')
         sched = request.POST.get('working_schedule')
 
-        # Create the Job object
         job = Job.objects.create(
-            user=request.user, # Links to the logged-in Employer
+            user=request.user,
             title=title,
             company_name=company,
             description=desc,
@@ -192,15 +232,18 @@ def employerpost_job(request):
             working_schedule=sched
         )
         
-        # Handle ManyToMany Skills if sent via form
-        skills_list = request.POST.getlist('skills') # Expects IDs
+        skills_list = request.POST.getlist('skills')
         if skills_list:
             job.skills.set(skills_list)
             
         return redirect('employer_dashboard')
         
-    # Get skills to show in the form dropdown
-    all_skills = SkillTag.objects.all()
+    # THE FIX: Use the 'Skill' model and filter for Global + Employer skills
+    # This allows employers to see the skills added by the admin
+    all_skills = Skill.objects.filter(
+        Q(user__isnull=True) | Q(user__user=request.user)
+    ).order_by('name')
+
     return render(request, "employers/employerpost_job.html", {"skills": all_skills})
 
 # ============================
@@ -270,9 +313,28 @@ def signup_page(request):
         phone = request.POST.get("phone_number", "")
         birthday = request.POST.get("birthday", None)
 
+        # Preserve entered (non-password) fields when re-rendering the form
+        context = {
+            "first_name": first_name,
+            "last_name": last_name,
+            "username": username,
+            "email": email,
+            "phone_number": phone,
+            "birthday": birthday,
+            "role": role,
+        }
+
         if password != password2:
             messages.error(request, "Passwords do not match.")
-            return render(request, "main/signup.html")
+            context["password_invalid"] = True
+            return render(request, "main/signup.html", context)
+
+        # Password policy validation
+        import re
+        if len(password) < 8 or not re.search(r"[A-Z]", password) or not re.search(r"\d", password) or not re.search(r"[^A-Za-z0-9]", password):
+            messages.error(request, "Password must be at least 8 characters and include at least one uppercase letter, one number, and one symbol.")
+            context["password_invalid"] = True
+            return render(request, "main/signup.html", context)
 
         try:
             # 1. Create User with role and phone (since they are now in your Custom User model)
@@ -296,7 +358,7 @@ def signup_page(request):
             
         except IntegrityError:
             messages.error(request, "Username or Email already registered.")
-            return render(request, "main/signup.html")
+            return render(request, "main/signup.html", context)
 
         messages.success(request, "Account created successfully. Please login.")
         return redirect("login")
@@ -1439,6 +1501,7 @@ def toggle_save_job(request, job_id):
     
     return redirect(request.META.get('HTTP_REFERER', 'find_job'))
 
+from .models import Skill
 
 # ============================
 # EMPLOYER MESSAGING
