@@ -42,7 +42,7 @@
                             <div class="meta">Applied {{ app.applied_at|date:"M d, Y" }}</div>
                         </div>
                         <span class="status-badge interview">Interview</span>
-                        <a href="{% url 'conversation' app.user.id %}" class="btn">Message</a>
+                        <a href="{% url 'employer_message_conversation' app.user.id %}" class="btn">Message</a>
                     {% else %}
                         <div class="application-info">
                             <div class="job-title">{{ app.job.title }}</div>

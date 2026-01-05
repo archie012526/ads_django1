@@ -61,142 +61,106 @@
     </div>
 
     <!-- Applicants List -->
-    {% if applications %}
-        <div class="space-y-3">
-            {% for application in applications %}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:pl-6 md:pr-4 hover:shadow-md transition grid grid-cols-1 md:grid-cols-12 items-center gap-6" data-app-id="{{ application.id }}">
-                <!-- Applicant Profile -->
-                <div class="flex items-center gap-4 md:col-span-3">
-                    {% if application.user.profile.profile_image %}
-                        <img src="{{ application.user.profile.profile_image.url }}" alt="{{ application.user.username }}" 
-                             class="w-12 h-12 rounded-full object-cover flex-shrink-0">
-                    {% else %}
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">
-                            {{ application.user.username|first|upper }}
-                        </div>
-                    {% endif %}
-                    <div class="min-w-0">
-                        <h3 class="font-bold text-[#1e293b]">{{ application.user.profile.full_name|default:application.user.username }}</h3>
-                        <p class="text-xs text-gray-600">{{ application.user.email }}</p>
-                    </div>
-                </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        {% if applications %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50 border-b border-gray-100">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Applicant</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Position</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Status</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Applied On</th>
+                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for application in applications %}
+                        <tr class="hover:bg-blue-50 transition">
+                            <!-- Applicant Info -->
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    {% if application.user.profile.profile_image %}
+                                        <img src="{{ application.user.profile.profile_image.url }}" alt="{{ application.user.username }}" 
+                                             class="w-10 h-10 rounded-full object-cover">
+                                    {% else %}
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                            {{ application.user.username|first|upper }}
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <p class="font-semibold text-[#1e293b]">{{ application.user.profile.full_name|default:application.user.username }}</p>
+                                        <p class="text-xs text-gray-500">{{ application.user.email }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Position -->
+                            <td class="px-6 py-4">
+                                <p class="font-medium text-gray-800">{{ application.job.title }}</p>
+                                <p class="text-xs text-gray-500">{{ application.job.location }}</p>
+                            </td>
+                            
+                            <!-- Status -->
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold
+                                    {% if application.status == 'Pending' %}bg-yellow-100 text-yellow-700
+                                    {% elif application.status == 'Reviewed' %}bg-blue-100 text-blue-700
+                                    {% elif application.status == 'Interview' %}bg-purple-100 text-purple-700
+                                    {% elif application.status == 'Accepted' %}bg-green-100 text-green-700
+                                    {% elif application.status == 'Rejected' %}bg-red-100 text-red-700
+                                    {% endif %}">
+                                    {{ application.status }}
+                                </span>
+                            </td>
+                            
+                            <!-- Applied On -->
+                            <td class="px-6 py-4">
+                                <p class="text-sm text-gray-600">{{ application.applied_at|date:"M d, Y" }}</p>
+                                <p class="text-xs text-gray-500">{{ application.applied_at|timesince }} ago</p>
+                            </td>
+                            
+                            <!-- Actions -->
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <a href="{% url 'view_user_profile' application.user.id %}" class="action-icon text-blue-600" title="View Profile" aria-label="View profile">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
+                                    <a href="{% url 'employer_message_conversation' application.user.id %}" class="action-icon text-green-600" title="Message" aria-label="Message applicant">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h6m2 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v6a2 2 0 01-2 2h-1" />
+                                        </svg>
+                                    </a>
 
-                <!-- Job & Status Info -->
-                <div class="flex items-center gap-6 md:col-span-5 min-w-0">
-                    <div class="min-w-0 flex items-center justify-center h-16">
-                        <div class="text-center">
-                            <p class="text-xs font-bold text-gray-400 uppercase">Position</p>
-                            <p class="font-semibold text-[#1e293b] text-sm">{{ application.job.title }}</p>
-                            <p class="text-xs text-gray-500">{{ application.job.location }}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-center h-16">
-                        <span class="status-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap
-                            {% if application.status == 'Pending' %}bg-yellow-100 text-yellow-700
-                            {% elif application.status == 'Reviewed' %}bg-blue-100 text-blue-700
-                            {% elif application.status == 'Interview' %}bg-purple-100 text-purple-700
-                            {% elif application.status == 'Accepted' %}bg-green-100 text-green-700
-                            {% elif application.status == 'Rejected' %}bg-red-100 text-red-700
-                            {% endif %}">
-                            {{ application.status }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Interview Info (if scheduled) - Fixed width -->
-                <div class="text-xs text-center flex items-center justify-center h-16 md:col-span-2">
-                    {% if application.interview_scheduled_at %}
-                        <div>
-                            <p class="font-bold text-blue-600">{{ application.interview_scheduled_at|date:"M d" }}</p>
-                            <p class="text-gray-600 text-xs">{{ application.interview_scheduled_at|time:"h:i A" }}</p>
-                        </div>
-                    {% endif %}
-                </div>
-
-                <!-- Actions (Icon Only) -->
-                <div class="flex items-center gap-2 md:col-span-2 justify-end">
-                    <!-- View Profile -->
-                    <a href="{% url 'view_user_profile' application.user.id %}" 
-                       title="View Profile"
-                       class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                        </svg>
-                    </a>
-
-                    <!-- Message -->
-                    <a href="{% url 'employer_message_conversation' application.user.id %}" 
-                       title="Send Message"
-                       class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                        </svg>
-                    </a>
-
-                    <!-- Download Invite (if scheduled) -->
-                    {% if application.interview_scheduled_at %}
-                    <a href="{% url 'download_interview_invite' application.id %}" 
-                       title="Download Interview Invite"
-                       class="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                        </svg>
-                    </a>
-                    {% endif %}
-
-                    <!-- More Actions Dropdown -->
-                    <div class="relative group">
-                        <button class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition" title="More Options" type="button">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
-                            </svg>
-                        </button>
-                        
-                        <!-- Dropdown Menu -->
-                        <div class="dropdown-menu absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-20">
-                            <!-- Mark as Reviewed -->
-                            <form method="POST" data-reviewed-form data-app-id="{{ application.id }}" class="block">
-                                {% csrf_token %}
-                                <input type="hidden" name="status" value="Reviewed">
-                                <button type="submit" class="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    Mark as Reviewed
-                                </button>
-                            </form>
-
-                            <!-- Schedule Interview -->
-                            <a href="{% url 'employer_schedule_interview' application.id %}" 
-                               class="block px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 border-b border-gray-100 transition flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                Schedule Interview
-                            </a>
-
-                            <!-- Status Dropdown -->
-                            <div class="px-4 py-3 border-b border-gray-100">
-                                <label class="text-xs font-bold text-gray-500 uppercase block mb-2">Change Status</label>
-                                <select class="status-select w-full text-xs border border-gray-200 rounded p-2" data-app-id="{{ application.id }}">
-                                    {% for value, label in application.STATUS_CHOICES %}
-                                        <option value="{{ value }}" {% if application.status == value %}selected{% endif %}>{{ label }}</option>
-                                    {% endfor %}
-                                </select>
-                                <button type="button" class="update-status-btn w-full mt-2 px-2 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded transition" data-app-id="{{ application.id }}">
-                                    Update
-                                </button>
-                            </div>
-
-                            <!-- Download Invite (if scheduled) - Now in main actions -->
-                        </div>
-                    </div>
-                </div>
+                                    <div>
+                                        <button type="button" data-toggle-menu="menu-{{ application.id }}" class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition" aria-haspopup="true" aria-expanded="false">
+                                            ⋯
+                                        </button>
+                                        <div id="menu-{{ application.id }}" class="menu hidden z-50" role="menu" aria-hidden="true">
+                                            <form method="POST" action="{% url 'update_application_status' application.id %}" class="p-2">
+                                                {% csrf_token %}
+                                                <select name="status" class="w-full text-sm border border-gray-200 rounded p-2 mb-2">
+                                                    {% for value, label in application.STATUS_CHOICES %}
+                                                        <option value="{{ value }}" {% if application.status == value %}selected{% endif %}>{{ label }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <button type="submit" class="w-full px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded transition">
+                                                    Update Status
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            {% endfor %}
-        </div>
-    {% else %}
+        {% else %}
             <div class="p-12 text-center">
                 <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0zM6 20h12a6 6 0 00-6-6 6 6 0 00-6 6z"></path>
@@ -212,17 +176,237 @@
 </div>
 
 <style>
-    .relative {
-        position: relative;
+    .relative { position: relative; }
+    .group:hover .group-hover\:opacity-100 { opacity: 1; }
+    .group:hover .group-hover\:visible { visibility: visible; }
+
+    /* Menu overlay styles */
+    .menu {
+        display: none;
+        position: fixed;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(2,6,23,0.08);
+        min-width: 180px;
+        max-width: 320px;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        z-index: 100000;
+        padding: 4px 0;
     }
-    
-    .group:hover .group-hover\:opacity-100 {
-        opacity: 1;
+    .menu.hidden { display: none; }
+    .menu.show { display: block; }
+
+    /* Icon-only action buttons for compact actions column */
+    .action-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        transition: background-color .15s ease, color .15s ease;
+        text-decoration: none;
     }
-    
-    .group:hover .group-hover\:visible {
-        visibility: visible;
+    .action-icon:hover { background: rgba(15, 23, 42, 0.04); }
+    .action-icon svg { width: 18px; height: 18px; }
+    .action-icon:focus { outline: 2px solid rgba(59,130,246,0.18); outline-offset: 2px; }
+
+    table.w-full tbody tr td { padding: 18px 8px; vertical-align: middle; }
+
+    @media (max-width: 768px) {
+        table.w-full tbody tr td { padding: 12px 10px; }
     }
+</style>
+
+<script>
+(function(){
+    document.addEventListener('click', function(e){
+        const toggle = e.target.closest('[data-toggle-menu]');
+        if (toggle) {
+            const id = toggle.getAttribute('data-toggle-menu');
+            const menu = document.getElementById(id);
+            if (!menu) return;
+
+            // Close other menus
+            document.querySelectorAll('.menu').forEach(m => {
+                if (m !== menu) {
+                    m.classList.add('hidden');
+                    m.style.left = '';
+                    m.style.top = '';
+                    m.style.display = '';
+                    m.style.visibility = '';
+                    m.style.position = '';
+                    const btn = document.querySelector(`[data-toggle-menu="${m.id}"]`);
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            const isHidden = menu.classList.contains('hidden');
+            if (isHidden) {
+                // Show menu and compute position
+                menu.classList.remove('hidden');
+                menu.style.display = 'block';
+                menu.style.visibility = 'hidden'; // hide while measuring
+
+                // Ensure menu fits within viewport
+                menu.style.maxHeight = 'calc(100vh - 40px)';
+                const rect = toggle.getBoundingClientRect();
+                const menuRect = menu.getBoundingClientRect();
+
+                // Default position below the button
+                let left = rect.right - menuRect.width;
+                if (left < 8) left = rect.left;
+                let top = rect.bottom + 8;
+
+                // If menu would go off-screen at bottom, show above toggle
+                if (top + menuRect.height > window.innerHeight - 10) {
+                    top = rect.top - menuRect.height - 8;
+                }
+
+                // Ensure menu doesn't go off-screen horizontally
+                if (left + menuRect.width > window.innerWidth - 10) {
+                    left = window.innerWidth - menuRect.width - 10;
+                }
+                if (left < 8) left = 8;
+
+                // Apply positions
+                menu.style.left = left + 'px';
+                menu.style.top = top + 'px';
+                menu.style.position = 'fixed';
+                menu.style.zIndex = 100000;
+                menu.style.visibility = 'visible';
+
+                // Set aria-expanded on the toggle
+                toggle.setAttribute('aria-expanded', 'true');
+            } else {
+                // Hide menu
+                menu.classList.add('hidden');
+                menu.style.left = '';
+                menu.style.top = '';
+                menu.style.display = '';
+                menu.style.visibility = '';
+                menu.style.position = '';
+
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+
+            e.stopPropagation();
+            return;
+        }
+
+        // Clicked outside: close all menus
+        if (!e.target.closest('.menu')) {
+            document.querySelectorAll('.menu').forEach(m => {
+                m.classList.add('hidden');
+                m.style.left = '';
+                m.style.top = '';
+                m.style.display = '';
+                m.style.visibility = '';
+                m.style.position = '';
+                const btn = document.querySelector(`[data-toggle-menu="${m.id}"]`);
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            });
+        }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.menu').forEach(m => {
+                m.classList.add('hidden');
+                m.style.left = '';
+                m.style.top = '';
+                m.style.display = '';
+                m.style.visibility = '';
+                m.style.position = '';
+                const btn = document.querySelector(`[data-toggle-menu="${m.id}"]`);
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            });
+        }
+    });
+})();
+
+// Submit status update forms via AJAX so non-interview updates don't redirect
+(function(){
+    document.addEventListener('submit', function(e){
+        const form = e.target;
+        if (!(form && form.action && form.action.includes('/applications/') && form.action.includes('/status/'))) return;
+        e.preventDefault();
+        const data = new FormData(form);
+        fetch(form.action, {
+            method: 'POST',
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
+            body: data,
+            credentials: 'same-origin'
+        }).then(resp => resp.json()).then(json => {
+            if (!json) throw new Error('No response from server');
+            if (json.redirect) {
+                window.location.href = json.redirect;
+                return;
+            }
+            if (json.success) {
+                // Update status badge in the same row
+                const row = form.closest('tr');
+                if (row) {
+                    const statusSpan = row.querySelector('td:nth-child(3) span');
+                    if (statusSpan) {
+                        statusSpan.textContent = json.status;
+                        statusSpan.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ' + (
+                            (json.status === 'Pending' && 'bg-yellow-100 text-yellow-700') ||
+                            (json.status === 'Reviewed' && 'bg-blue-100 text-blue-700') ||
+                            (json.status === 'Interview' && 'bg-purple-100 text-purple-700') ||
+                            (json.status === 'Accepted' && 'bg-green-100 text-green-700') ||
+                            (json.status === 'Rejected' && 'bg-red-100 text-red-700') ||
+                            ''
+                        );
+                    }
+                }
+
+                // Close the menu if open
+                const menu = form.closest('.menu');
+                if (menu) {
+                    menu.classList.add('hidden');
+                    menu.style.left = '';
+                    menu.style.top = '';
+                    menu.style.display = '';
+                    menu.style.visibility = '';
+                    menu.style.position = '';
+                    const btn = document.querySelector(`[data-toggle-menu="${menu.id}"]`);
+                    if (btn) btn.setAttribute('aria-expanded', 'false');
+                }
+
+                // Show a short toast
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = json.message || 'Status updated';
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.remove(); }, 2500);
+                return;
+            }
+            alert(json.error || json.message || 'Failed to update status');
+        }).catch(err => {
+            console.error(err);
+            alert('Error updating status');
+        });
+    });
+})();
+</script>
+<style>
+.toast {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    background: #111827;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(2,6,23,0.2);
+    z-index: 100001;
+    opacity: 0.95;
+}
 </style>
 
 <script>

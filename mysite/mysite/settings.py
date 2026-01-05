@@ -31,7 +31,7 @@ ALLOWED_HOSTS = [
 # APPLICATION DEFINITION
 # ======================
 INSTALLED_APPS = [
-    # "daphne",  # Commented out for development - causes import error
+    "daphne",  # ASGI server - Required for WebSocket support
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
