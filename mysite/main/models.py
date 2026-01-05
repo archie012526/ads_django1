@@ -160,6 +160,18 @@ class Job(models.Model):
         blank=True,
         null=True
     )
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('paused', 'Paused'),
+        ('closed', 'Closed'),
+        ('draft', 'Draft'),
+    ]
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='active'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     skills = models.ManyToManyField(SkillTag, blank=True, related_name='jobs')
 
