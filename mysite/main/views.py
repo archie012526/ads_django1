@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.contrib import messages
 from django.db import IntegrityError
+from django.db import models
 from django.db.models import Q
 from django.db.models import Count, Max
 from django.conf import settings
@@ -2240,10 +2241,22 @@ def employer_notifications(request):
     
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     unread_count = notifications.filter(is_read=False).count()
+
+    # Also fetch active global announcements so employers see admin posts in-page
+    now = timezone.now()
+    global_notifications = GlobalNotification.objects.filter(
+        show_on_site=True,
+        is_active=True
+    ).filter(
+        models.Q(expires_at__isnull=True) | models.Q(expires_at__gt=now)
+    ).order_by('-created_at')
     
     return render(request, "employers/employer_notifications.html", {
         "notifications": notifications,
-        "unread_count": unread_count
+        "unread_count": unread_count,
+        "global_notifications": global_notifications,
+        "global_count": global_notifications.count(),
+        "suppress_global_banner": True,  # avoid duplicate banner from base template
     })
 
 

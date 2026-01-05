@@ -32,13 +32,13 @@ ALLOWED_HOSTS = [
 # ======================
 INSTALLED_APPS = [
     "daphne",  # ASGI server - Required for WebSocket support
+    "channels",  # WebSocket framework
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # "channels",  # Commented out - not using WebSockets for messaging
     # "axes",  # Commented out for development
     "main.apps.MainConfig",
 ]
@@ -83,11 +83,12 @@ TEMPLATES = [
 WSGI_APPLICATION = "mysite.wsgi.application"
 ASGI_APPLICATION = "mysite.asgi.application"
 
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels.layers.InMemoryChannelLayer",
-#     }
-# }
+CHANNEL_LAYERS = {
+    "default": {
+        # In-memory layer is fine for local dev; switch to Redis in production
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
+}
 
 
 # ======================
