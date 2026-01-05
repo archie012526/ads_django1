@@ -17,7 +17,7 @@ from .models import Post
 from django.http import HttpResponseForbidden
 from .models import AuditLog
 
-from .models import Profile, Job, JobApplication, Notification, Skill, Message, SavedJob,SkillTag
+from .models import Profile, Job, JobApplication, Notification, Skill, Message, SavedJob, SkillTag, GlobalNotification
 
 
 def add_audit_log(request, user, action):
@@ -66,10 +66,17 @@ def admin_dashboard(request):
 
     recent_logs = AuditLog.objects.select_related('user').order_by('-timestamp')[:10]
 
+    # <-- added: fetch recent user-level notifications for admin overview
+    recent_user_notifications = Notification.objects.select_related('user', 'related_user').order_by('-created_at')[:10]
+    unread_user_notifications_count = Notification.objects.filter(is_read=False).count()
+
     context = {
         "total_users": User.objects.count(),
         "total_jobs": Job.objects.count(),
         "recent_logs": recent_logs,
+        # <-- added keys
+        "user_notifications": recent_user_notifications,
+        "unread_user_notifications_count": unread_user_notifications_count,
     }
     return render(request, "admin/admin_dashboard.html", context)
 
@@ -169,6 +176,57 @@ def admin_skill_delete(request, pk):
         skill.delete()
         add_audit_log(request, request.user, f"Admin deleted skill '{name}' (id:{pk})")
     return redirect('admin_skills')
+
+
+@login_required(login_url="/admin-panel/login/")
+def admin_notifications(request):
+    """Admin UI to list and create GlobalNotifications (announcements)."""
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+
+    # POST -> create a new GlobalNotification
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        message = request.POST.get('message')
+        level = request.POST.get('level', 'info')
+        show_on_site = request.POST.get('show_on_site') == 'on'
+        send_email = request.POST.get('send_email') == 'on'
+        is_active = request.POST.get('is_active') == 'on'
+        expires_at = request.POST.get('expires_at') or None
+
+        if title and message:
+            gn = GlobalNotification.objects.create(
+                title=title,
+                message=message,
+                level=level,
+                show_on_site=show_on_site,
+                send_email=send_email,
+                is_active=is_active,
+                expires_at=expires_at
+            )
+            add_audit_log(request, request.user, f"Admin created global message '{gn.title}' (id:{gn.id})")
+            messages.success(request, "Global message created.")
+            # TODO: if send_email, optionally send emails to users (not implemented here)
+        else:
+            messages.error(request, "Please provide both a title and message.")
+        return redirect('admin_notifications')
+
+    # GET -> list existing notifications
+    notifications = GlobalNotification.objects.all().order_by('-created_at')
+    return render(request, 'admin/admin_notifications.html', {'notifications': notifications, 'levels': GlobalNotification.LEVEL_CHOICES})
+
+
+@login_required(login_url="/admin-panel/login/")
+def admin_notification_delete(request, pk):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+    gn = get_object_or_404(GlobalNotification, pk=pk)
+    if request.method == 'POST':
+        title = gn.title
+        gn.delete()
+        add_audit_log(request, request.user, f"Admin deleted global message '{title}' (id:{pk})")
+        messages.success(request, "Global message deleted.")
+    return redirect('admin_notifications')
 
 
 @login_required(login_url="/admin-panel/login/")

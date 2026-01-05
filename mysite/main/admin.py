@@ -1,4 +1,5 @@
 from django.contrib import admin
+from .models import GlobalNotification
 from .models import (
     Profile,
     Job,
@@ -143,3 +144,9 @@ class PostAdmin(admin.ModelAdmin):
     def has_media(self, obj):
         return '✓' if (obj.image or obj.video) else '—'
     has_media.short_description = 'Media'
+
+@admin.register(GlobalNotification)
+class GlobalNotificationAdmin(admin.ModelAdmin):
+    list_display = ('title', 'level', 'is_active', 'show_on_site', 'send_email', 'created_at')
+    list_filter = ('level', 'is_active', 'show_on_site')
+    search_fields = ('title', 'message')
