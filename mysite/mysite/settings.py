@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "channels",
+    # "channels",  # Commented out - not using WebSockets for messaging
     # "axes",  # Commented out for development
     "main.apps.MainConfig",
 ]
@@ -201,8 +201,9 @@ CSRF_COOKIE_SAMESITE = "Lax"
 # settings.py
 AUTH_USER_MODEL = 'main.User'
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    }
-}
+# Channels configuration disabled - not using WebSockets
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels.layers.InMemoryChannelLayer",
+#     }
+# }

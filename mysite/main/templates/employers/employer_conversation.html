@@ -20,7 +20,7 @@
                 <h3 class="font-bold text-[#1e293b]">{{ applicant.profile.full_name|default:applicant.username }}</h3>
                 <p class="text-xs text-gray-500">{{ applicant.email }}</p>
                 {% if applications %}
-                <p class="text-xs text-blue-600 font-medium mt-1">Applied for: {{ applications|first.job.title }}</p>
+                <p class="text-xs text-blue-600 font-medium mt-1">Applied for: {{ applications.0.job.title }}</p>
                 {% endif %}
             </div>
         </div>
@@ -127,7 +127,7 @@
             <span id="charCount" class="text-xs text-gray-500">0 / 1000</span>
         </div>
 
-        <form method="POST" class="space-y-3" id="messageForm">
+        <form method="POST" action="{% url 'employer_message_conversation' applicant.id %}" class="space-y-3" id="messageForm">
             {% csrf_token %}
             
             <!-- Textarea with Better UX -->

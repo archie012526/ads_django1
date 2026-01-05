@@ -18,27 +18,15 @@
         </div>
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
             <p class="text-xs font-bold text-gray-400 uppercase">Pending</p>
-            <h3 class="text-3xl font-bold text-yellow-600 mt-1">
-                {% for app in applications %}
-                    {% if app.status == 'Pending' %}1{% endif %}
-                {% endfor %}
-            </h3>
+            <h3 class="text-3xl font-bold text-yellow-600 mt-1">{{ pending_count }}</h3>
         </div>
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
             <p class="text-xs font-bold text-gray-400 uppercase">Interviews</p>
-            <h3 class="text-3xl font-bold text-blue-600 mt-1">
-                {% for app in applications %}
-                    {% if app.status == 'Interview' %}1{% endif %}
-                {% endfor %}
-            </h3>
+            <h3 class="text-3xl font-bold text-blue-600 mt-1">{{ interview_count }}</h3>
         </div>
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
             <p class="text-xs font-bold text-gray-400 uppercase">Accepted</p>
-            <h3 class="text-3xl font-bold text-green-600 mt-1">
-                {% for app in applications %}
-                    {% if app.status == 'Accepted' %}1{% endif %}
-                {% endfor %}
-            </h3>
+            <h3 class="text-3xl font-bold text-green-600 mt-1">{{ accepted_count }}</h3>
         </div>
     </div>
 
@@ -73,106 +61,142 @@
     </div>
 
     <!-- Applicants List -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        {% if applications %}
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-100">
-                        <tr>
-                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Applicant</th>
-                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Position</th>
-                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Status</th>
-                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Applied On</th>
-                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        {% for application in applications %}
-                        <tr class="hover:bg-blue-50 transition">
-                            <!-- Applicant Info -->
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    {% if application.user.profile.profile_image %}
-                                        <img src="{{ application.user.profile.profile_image.url }}" alt="{{ application.user.username }}" 
-                                             class="w-10 h-10 rounded-full object-cover">
-                                    {% else %}
-                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                                            {{ application.user.username|first|upper }}
-                                        </div>
-                                    {% endif %}
-                                    <div>
-                                        <p class="font-semibold text-[#1e293b]">{{ application.user.profile.full_name|default:application.user.username }}</p>
-                                        <p class="text-xs text-gray-500">{{ application.user.email }}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            
-                            <!-- Position -->
-                            <td class="px-6 py-4">
-                                <p class="font-medium text-gray-800">{{ application.job.title }}</p>
-                                <p class="text-xs text-gray-500">{{ application.job.location }}</p>
-                            </td>
-                            
-                            <!-- Status -->
-                            <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold
-                                    {% if application.status == 'Pending' %}bg-yellow-100 text-yellow-700
-                                    {% elif application.status == 'Reviewed' %}bg-blue-100 text-blue-700
-                                    {% elif application.status == 'Interview' %}bg-purple-100 text-purple-700
-                                    {% elif application.status == 'Accepted' %}bg-green-100 text-green-700
-                                    {% elif application.status == 'Rejected' %}bg-red-100 text-red-700
-                                    {% endif %}">
-                                    {{ application.status }}
-                                </span>
-                            </td>
-                            
-                            <!-- Applied On -->
-                            <td class="px-6 py-4">
-                                <p class="text-sm text-gray-600">{{ application.applied_at|date:"M d, Y" }}</p>
-                                <p class="text-xs text-gray-500">{{ application.applied_at|timesince }} ago</p>
-                            </td>
-                            
-                            <!-- Actions -->
-                            <td class="px-6 py-4">
-                                <div class="flex gap-2">
-                                    <a href="{% url 'view_user_profile' application.user.id %}" 
-                                       class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-100 rounded-lg transition" title="View Profile">
-                                        👁️ View
-                                    </a>
-                                    <a href="{% url 'employer_message_conversation' application.user.id %}" 
-                                       class="px-3 py-1.5 text-xs font-medium text-green-600 hover:bg-green-100 rounded-lg transition" title="Message">
-                                        💬 Chat
-                                    </a>
-                                    <div class="relative group">
-                                        <button class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition">
-                                            ⋯
-                                        </button>
-                                        <div class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-10">
-                                            <form method="POST" action="{% url 'update_application_status' application.id %}" class="p-2">
-                                                {% csrf_token %}
-                                                <select name="status" class="w-full text-sm border border-gray-200 rounded p-2 mb-2">
-                                                    {% for value, label in application.STATUS_CHOICES %}
-                                                        <option value="{{ value }}" {% if application.status == value %}selected{% endif %}>{{ label }}</option>
-                                                    {% endfor %}
-                                                </select>
-                                                <button type="submit" class="w-full px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded transition">
-                                                    Update Status
-                                                </button>
-                                            </form>
-                                            <a href="{% url 'schedule_interview' application.id %}" 
-                                               class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-200" title="Schedule Interview">
-                                                📅 Schedule Interview
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    {% if applications %}
+        <div class="space-y-3">
+            {% for application in applications %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:pl-6 md:pr-4 hover:shadow-md transition grid grid-cols-1 md:grid-cols-12 items-center gap-6" data-app-id="{{ application.id }}">
+                <!-- Applicant Profile -->
+                <div class="flex items-center gap-4 md:col-span-3">
+                    {% if application.user.profile.profile_image %}
+                        <img src="{{ application.user.profile.profile_image.url }}" alt="{{ application.user.username }}" 
+                             class="w-12 h-12 rounded-full object-cover flex-shrink-0">
+                    {% else %}
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">
+                            {{ application.user.username|first|upper }}
+                        </div>
+                    {% endif %}
+                    <div class="min-w-0">
+                        <h3 class="font-bold text-[#1e293b]">{{ application.user.profile.full_name|default:application.user.username }}</h3>
+                        <p class="text-xs text-gray-600">{{ application.user.email }}</p>
+                    </div>
+                </div>
+
+                <!-- Job & Status Info -->
+                <div class="flex items-center gap-6 md:col-span-5 min-w-0">
+                    <div class="min-w-0 flex items-center justify-center h-16">
+                        <div class="text-center">
+                            <p class="text-xs font-bold text-gray-400 uppercase">Position</p>
+                            <p class="font-semibold text-[#1e293b] text-sm">{{ application.job.title }}</p>
+                            <p class="text-xs text-gray-500">{{ application.job.location }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center h-16">
+                        <span class="status-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap
+                            {% if application.status == 'Pending' %}bg-yellow-100 text-yellow-700
+                            {% elif application.status == 'Reviewed' %}bg-blue-100 text-blue-700
+                            {% elif application.status == 'Interview' %}bg-purple-100 text-purple-700
+                            {% elif application.status == 'Accepted' %}bg-green-100 text-green-700
+                            {% elif application.status == 'Rejected' %}bg-red-100 text-red-700
+                            {% endif %}">
+                            {{ application.status }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Interview Info (if scheduled) - Fixed width -->
+                <div class="text-xs text-center flex items-center justify-center h-16 md:col-span-2">
+                    {% if application.interview_scheduled_at %}
+                        <div>
+                            <p class="font-bold text-blue-600">{{ application.interview_scheduled_at|date:"M d" }}</p>
+                            <p class="text-gray-600 text-xs">{{ application.interview_scheduled_at|time:"h:i A" }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Actions (Icon Only) -->
+                <div class="flex items-center gap-2 md:col-span-2 justify-end">
+                    <!-- View Profile -->
+                    <a href="{% url 'view_user_profile' application.user.id %}" 
+                       title="View Profile"
+                       class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </a>
+
+                    <!-- Message -->
+                    <a href="{% url 'employer_message_conversation' application.user.id %}" 
+                       title="Send Message"
+                       class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                    </a>
+
+                    <!-- Download Invite (if scheduled) -->
+                    {% if application.interview_scheduled_at %}
+                    <a href="{% url 'download_interview_invite' application.id %}" 
+                       title="Download Interview Invite"
+                       class="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                    </a>
+                    {% endif %}
+
+                    <!-- More Actions Dropdown -->
+                    <div class="relative group">
+                        <button class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition" title="More Options" type="button">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div class="dropdown-menu absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-20">
+                            <!-- Mark as Reviewed -->
+                            <form method="POST" data-reviewed-form data-app-id="{{ application.id }}" class="block">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="Reviewed">
+                                <button type="submit" class="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100 transition flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Mark as Reviewed
+                                </button>
+                            </form>
+
+                            <!-- Schedule Interview -->
+                            <a href="{% url 'employer_schedule_interview' application.id %}" 
+                               class="block px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 border-b border-gray-100 transition flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                Schedule Interview
+                            </a>
+
+                            <!-- Status Dropdown -->
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <label class="text-xs font-bold text-gray-500 uppercase block mb-2">Change Status</label>
+                                <select class="status-select w-full text-xs border border-gray-200 rounded p-2" data-app-id="{{ application.id }}">
+                                    {% for value, label in application.STATUS_CHOICES %}
+                                        <option value="{{ value }}" {% if application.status == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="button" class="update-status-btn w-full mt-2 px-2 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded transition" data-app-id="{{ application.id }}">
+                                    Update
+                                </button>
+                            </div>
+
+                            <!-- Download Invite (if scheduled) - Now in main actions -->
+                        </div>
+                    </div>
+                </div>
             </div>
-        {% else %}
+            {% endfor %}
+        </div>
+    {% else %}
             <div class="p-12 text-center">
                 <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0zM6 20h12a6 6 0 00-6-6 6 6 0 00-6 6z"></path>
@@ -200,4 +224,117 @@
         visibility: visible;
     }
 </style>
+
+<script>
+// Keep dropdown open when interacting with it
+document.querySelectorAll('.dropdown-menu').forEach(menu => {
+    menu.addEventListener('mouseenter', function() {
+        this.closest('.group').classList.add('group-force-open');
+    });
+    menu.addEventListener('mouseleave', function() {
+        this.closest('.group').classList.remove('group-force-open');
+    });
+});
+
+// Update status button click handler
+document.querySelectorAll('.update-status-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const applicationId = this.getAttribute('data-app-id');
+        const cardDiv = document.querySelector(`[data-app-id="${applicationId}"]`);
+        const select = cardDiv.querySelector('.status-select');
+        const newStatus = select.value;
+        const csrfToken = cardDiv.querySelector('form')?.querySelector('[name="csrfmiddlewaretoken"]')?.value;
+        
+        if (!csrfToken) {
+            alert('Error: CSRF token not found');
+            return;
+        }
+        
+        // Send AJAX request
+        fetch(`/applications/${applicationId}/status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: `status=${encodeURIComponent(newStatus)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the status badge in the UI
+                const statusBadge = cardDiv.querySelector('.status-badge');
+                if (statusBadge) {
+                    // Remove old status classes
+                    statusBadge.classList.remove('bg-yellow-100', 'text-yellow-700', 'bg-blue-100', 'text-blue-700', 'bg-purple-100', 'text-purple-700', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+                    
+                    // Add new status classes based on status
+                    statusBadge.textContent = newStatus;
+                    switch(newStatus) {
+                        case 'Pending':
+                            statusBadge.classList.add('bg-yellow-100', 'text-yellow-700');
+                            break;
+                        case 'Reviewed':
+                            statusBadge.classList.add('bg-blue-100', 'text-blue-700');
+                            break;
+                        case 'Interview':
+                            statusBadge.classList.add('bg-purple-100', 'text-purple-700');
+                            break;
+                        case 'Accepted':
+                            statusBadge.classList.add('bg-green-100', 'text-green-700');
+                            break;
+                        case 'Rejected':
+                            statusBadge.classList.add('bg-red-100', 'text-red-700');
+                            break;
+                    }
+                }
+            } else {
+                alert('Error updating status: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating status');
+        });
+    });
+});
+
+// Handle "Mark as Reviewed" button via AJAX
+document.querySelectorAll('form[data-reviewed-form]').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const applicationId = this.getAttribute('data-app-id');
+        const csrfToken = this.querySelector('[name="csrfmiddlewaretoken"]').value;
+        
+        fetch(`/applications/${applicationId}/status/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: 'status=Reviewed'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const cardDiv = document.querySelector(`[data-app-id="${applicationId}"]`);
+                const statusBadge = cardDiv.querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.classList.remove('bg-yellow-100', 'text-yellow-700', 'bg-blue-100', 'text-blue-700', 'bg-purple-100', 'text-purple-700', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+                    statusBadge.classList.add('bg-blue-100', 'text-blue-700');
+                    statusBadge.textContent = 'Reviewed';
+                }
+            } else {
+                alert('Error marking as reviewed: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
+</script>
 {% endblock %}

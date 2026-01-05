@@ -533,7 +533,7 @@
             </div>
 
             <div class="message-input-area">
-                <form id="message-form" method="post" action="{% url 'conversation' conversation_user.id %}">
+                <form id="message-form" method="post" action="{% url 'conversation' conversation_user.id %}" style="width: 100%;">
                     {% csrf_token %}
                     <div class="input-wrapper">
                         <div class="input-actions-left">
@@ -546,6 +546,7 @@
                             class="message-textarea"
                             placeholder="Type your message..."
                             rows="1"
+                            required
                         ></textarea>
                         <button type="submit" class="send-button">Send ➤</button>
                     </div>
@@ -564,8 +565,6 @@
 <script>
     const conversationUserId = "{{ conversation_user.id }}";
     const currentUserId = {{ request.user.id }};
-    const currentUserName = "{{ request.user.get_full_name|default:request.user.username }}";
-    let chatSocket = null;
 
     // Auto-scroll to bottom of messages
     const messagesContainer = document.getElementById('messages-container');
@@ -585,7 +584,7 @@
         textarea.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                document.getElementById('message-form').dispatchEvent(new Event('submit', {cancelable: true}));
+                document.getElementById('message-form').submit();
             }
         });
     }
@@ -597,116 +596,19 @@
             const query = this.value.toLowerCase();
             const items = document.querySelectorAll('.conversation-item');
             items.forEach(item => {
-                const name = item.querySelector('.conversation-name span').textContent.toLowerCase();
-                const preview = item.querySelector('.conversation-preview').textContent.toLowerCase();
-                if (name.includes(query) || preview.includes(query)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
+                const nameEl = item.querySelector('.conversation-name span');
+                const previewEl = item.querySelector('.conversation-preview');
+                if (nameEl && previewEl) {
+                    const name = nameEl.textContent.toLowerCase();
+                    const preview = previewEl.textContent.toLowerCase();
+                    if (name.includes(query) || preview.includes(query)) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
                 }
             });
         });
-    }
-
-    // Initialize WebSocket only if in a conversation
-    if (conversationUserId && conversationUserId !== "") {
-        initializeWebSocket();
-    }
-
-    function initializeWebSocket() {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        chatSocket = new WebSocket(
-            protocol + '//' + window.location.host + '/ws/messages/' + conversationUserId + '/'
-        );
-
-        chatSocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            if (data.type === 'message') {
-                displayMessage(data);
-                if (data.sender_id === currentUserId) {
-                    document.getElementById('message-textarea').value = '';
-                    document.getElementById('message-textarea').style.height = 'auto';
-                }
-            }
-        };
-
-        chatSocket.onerror = function(error) {
-            console.error('WebSocket error:', error);
-        };
-
-        chatSocket.onclose = function(e) {
-            console.error('WebSocket closed unexpectedly');
-            setTimeout(initializeWebSocket, 3000);
-        };
-    }
-
-    function displayMessage(data) {
-        const container = document.getElementById('messages-container');
-        const isCurrentUser = data.sender_id === currentUserId;
-        
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message-bubble ${isCurrentUser ? 'sent' : 'received'}`;
-        
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'message-content';
-        
-        contentDiv.innerHTML = `
-            <div class="message-text">${escapeHtml(data.message)}</div>
-            <div class="message-time">${data.timestamp}</div>
-        `;
-        
-        messageDiv.appendChild(contentDiv);
-        container.appendChild(messageDiv);
-        
-        container.scrollTop = container.scrollHeight;
-    }
-
-    function escapeHtml(unsafe) {
-        return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-    // Handle form submission
-    document.getElementById('message-form')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const textarea = document.getElementById('message-textarea');
-        const message = textarea.value.trim();
-        
-        if (!message) return;
-        
-        if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
-            chatSocket.send(JSON.stringify({
-                'message': message
-            }));
-        } else {
-            sendMessageViaAjax(message);
-        }
-    });
-
-    function sendMessageViaAjax(message) {
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        
-        fetch(`/messages/${conversationUserId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': csrfToken
-            },
-            body: `message=${encodeURIComponent(message)}`
-        })
-        .then(response => {
-            if (response.ok) {
-                document.getElementById('message-textarea').value = '';
-                document.getElementById('message-textarea').style.height = 'auto';
-                location.reload();
-            }
-        })
-        .catch(error => console.error('Error:', error));
     }
 </script>
 
