@@ -1,18 +1,13 @@
-from django.utils.timezone import now
-from .models import GlobalNotification
+from .models import Notification
 
-def global_notifications(request):
-    notifications = GlobalNotification.objects.filter(
-        is_active=True,
-        show_on_site=True
-    ).filter(
-        expires_at__isnull=True
-    ) | GlobalNotification.objects.filter(
-        is_active=True,
-        show_on_site=True,
-        expires_at__gt=now()
-    )
-
-    return {
-        'global_notifications': notifications
-    }
+def employer_notifications(request):
+    """Add notification data to all employer templates"""
+    if request.user.is_authenticated and hasattr(request.user, 'profile') and request.user.profile.role == 'employer':
+        recent_notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:5]
+        unread_notifications_count = Notification.objects.filter(user=request.user, is_read=False).count()
+        
+        return {
+            'recent_notifications': recent_notifications,
+            'unread_notifications_count': unread_notifications_count,
+        }
+    return {}

@@ -243,9 +243,18 @@ class Message(models.Model):
     content = models.TextField()
     sent_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+    
+    # New fields for enhanced features
+    is_edited = models.BooleanField(default=False)
+    edited_at = models.DateTimeField(null=True, blank=True)
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.sender} → {self.receiver}"
+    
+    class Meta:
+        ordering = ['sent_at']
 
 # =========================
 #      CONTACT/POSTS/SAVED
