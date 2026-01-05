@@ -25,8 +25,17 @@
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="flex gap-2">
+        <!-- Quick Actions & Search -->
+        <div class="flex gap-2 items-center">
+            <!-- Search -->
+            <div class="relative">
+                <input type="text" 
+                       id="searchInput" 
+                       placeholder="Search messages..." 
+                       class="px-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       style="width: 200px;">
+                <div id="searchResults" class="absolute top-full mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 hidden max-h-80 overflow-y-auto z-50"></div>
+            </div>
             <a href="{% url 'view_user_profile' applicant.id %}" 
                class="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition">
                 View Profile
@@ -35,10 +44,11 @@
     </div>
 
     <!-- Messages -->
-    <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
+    <div id="messagesContainer" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
         {% if conversation %}
             {% for message in conversation %}
-            <div class="flex {% if message.sender == request.user %}justify-end{% else %}justify-start{% endif %}">
+            {% if not message.is_deleted %}
+            <div class="message-item flex {% if message.sender == request.user %}justify-end{% else %}justify-start{% endif %}" data-message-id="{{ message.id }}">
                 <div class="flex gap-3 max-w-xs {% if message.sender == request.user %}flex-row-reverse{% endif %}">
                     <!-- Avatar -->
                     {% if message.sender == request.user %}
@@ -58,15 +68,34 @@
 
                     <!-- Message Bubble -->
                     <div class="{% if message.sender == request.user %}text-right{% endif %}">
-                        <div class="{% if message.sender == request.user %}bg-blue-600 text-white{% else %}bg-white text-gray-800 border border-gray-200{% endif %} rounded-2xl px-4 py-3 shadow-sm">
-                            <p class="text-sm break-words">{{ message.content }}</p>
+                        <div class="message-bubble {% if message.sender == request.user %}bg-blue-600 text-white{% else %}bg-white text-gray-800 border border-gray-200{% endif %} rounded-2xl px-4 py-3 shadow-sm relative group">
+                            <p class="text-sm break-words message-content">{{ message.content }}</p>
+                            
+                            <!-- Edit/Delete buttons (only for own messages) -->
+                            {% if message.sender == request.user %}
+                            <div class="absolute top-2 right-2 hidden group-hover:flex gap-1">
+                                <button onclick="editMessage({{ message.id }})" class="text-xs text-white bg-blue-500 hover:bg-blue-700 rounded px-2 py-1">
+                                    ✏️
+                                </button>
+                                <button onclick="deleteMessage({{ message.id }})" class="text-xs text-white bg-red-500 hover:bg-red-700 rounded px-2 py-1">
+                                    🗑️
+                                </button>
+                            </div>
+                            {% endif %}
                         </div>
                         <p class="text-xs text-gray-500 mt-1">
                             {{ message.sent_at|date:"M d, H:i" }}
+                            {% if message.is_edited %}<span class="italic">(edited)</span>{% endif %}
+                            {% if message.is_read and message.sender == request.user %}
+                                <span class="text-blue-500">✓✓</span>
+                            {% elif message.sender == request.user %}
+                                <span class="text-gray-400">✓</span>
+                            {% endif %}
                         </p>
                     </div>
                 </div>
             </div>
+            {% endif %}
             {% endfor %}
         {% else %}
         <div class="h-full flex items-center justify-center">
@@ -77,21 +106,308 @@
 
     <!-- Message Input -->
     <div class="p-6 border-t border-gray-100 bg-white">
-        <form method="POST" class="flex gap-3">
-            {% csrf_token %}
-            <input type="text" 
-                   name="message" 
-                   placeholder="Type your message..." 
-                   required
-                   class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                   autocomplete="off">
-            <button type="submit" 
-                    class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition shadow-sm">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.429a1 1 0 001.169-1.409l-7-14z"></path>
-                </svg>
+        <!-- Quick Templates (Optional) -->
+        <div class="mb-3 flex gap-2 flex-wrap" id="quickTemplates">
+            <button type="button" onclick="insertTemplate('Thank you for applying!')" class="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full transition">
+                👋 Thank you
             </button>
+            <button type="button" onclick="insertTemplate('Can you tell me more about your experience?')" class="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full transition">
+                💼 Ask Experience
+            </button>
+            <button type="button" onclick="insertTemplate('When are you available for an interview?')" class="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full transition">
+                📅 Schedule Interview
+            </button>
+            <button type="button" onclick="insertTemplate('We would like to move forward with your application.')" class="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full transition">
+                ✅ Move Forward
+            </button>
+        </div>
+
+        <!-- Character Counter -->
+        <div class="text-right mb-2">
+            <span id="charCount" class="text-xs text-gray-500">0 / 1000</span>
+        </div>
+
+        <form method="POST" class="space-y-3" id="messageForm">
+            {% csrf_token %}
+            
+            <!-- Textarea with Better UX -->
+            <div class="relative">
+                <textarea 
+                       name="message" 
+                       id="messageInput"
+                       placeholder="Type your message... (Press Shift+Enter for new line)" 
+                       required
+                       maxlength="1000"
+                       rows="3"
+                       class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                       autocomplete="off"></textarea>
+                
+                <!-- Emoji Picker Button -->
+                <button type="button" 
+                        id="emojiBtn"
+                        class="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition"
+                        title="Add emoji">
+                    😊
+                </button>
+            </div>
+
+            <!-- Emoji Picker Dropdown -->
+            <div id="emojiPicker" class="hidden absolute bottom-24 right-8 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-50">
+                <div class="grid grid-cols-8 gap-2 max-h-48 overflow-y-auto">
+                    <button type="button" onclick="insertEmoji('😊')" class="text-2xl hover:bg-gray-100 rounded p-1">😊</button>
+                    <button type="button" onclick="insertEmoji('👍')" class="text-2xl hover:bg-gray-100 rounded p-1">👍</button>
+                    <button type="button" onclick="insertEmoji('👏')" class="text-2xl hover:bg-gray-100 rounded p-1">👏</button>
+                    <button type="button" onclick="insertEmoji('🎉')" class="text-2xl hover:bg-gray-100 rounded p-1">🎉</button>
+                    <button type="button" onclick="insertEmoji('❤️')" class="text-2xl hover:bg-gray-100 rounded p-1">❤️</button>
+                    <button type="button" onclick="insertEmoji('🔥')" class="text-2xl hover:bg-gray-100 rounded p-1">🔥</button>
+                    <button type="button" onclick="insertEmoji('✅')" class="text-2xl hover:bg-gray-100 rounded p-1">✅</button>
+                    <button type="button" onclick="insertEmoji('⭐')" class="text-2xl hover:bg-gray-100 rounded p-1">⭐</button>
+                    <button type="button" onclick="insertEmoji('💼')" class="text-2xl hover:bg-gray-100 rounded p-1">💼</button>
+                    <button type="button" onclick="insertEmoji('📅')" class="text-2xl hover:bg-gray-100 rounded p-1">📅</button>
+                    <button type="button" onclick="insertEmoji('📞')" class="text-2xl hover:bg-gray-100 rounded p-1">📞</button>
+                    <button type="button" onclick="insertEmoji('✉️')" class="text-2xl hover:bg-gray-100 rounded p-1">✉️</button>
+                    <button type="button" onclick="insertEmoji('🤝')" class="text-2xl hover:bg-gray-100 rounded p-1">🤝</button>
+                    <button type="button" onclick="insertEmoji('💪')" class="text-2xl hover:bg-gray-100 rounded p-1">💪</button>
+                    <button type="button" onclick="insertEmoji('🚀')" class="text-2xl hover:bg-gray-100 rounded p-1">🚀</button>
+                    <button type="button" onclick="insertEmoji('💡')" class="text-2xl hover:bg-gray-100 rounded p-1">💡</button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-3">
+                <button type="button" 
+                        onclick="document.getElementById('messageInput').value = ''"
+                        class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition">
+                    Clear
+                </button>
+                
+                <div class="flex-1"></div>
+                
+                <!-- Send Button -->
+                <button type="submit" 
+                        id="sendBtn"
+                        class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition shadow-sm flex items-center gap-2">
+                    <span>Send</span>
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.429a1 1 0 001.169-1.409l-7-14z"></path>
+                    </svg>
+                </button>
+            </div>
         </form>
     </div>
 </div>
+
+<script>
+// Message Search
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    clearTimeout(searchTimeout);
+    const query = e.target.value.trim();
+    
+    if (query.length < 2) {
+        document.getElementById('searchResults').classList.add('hidden');
+        return;
+    }
+    
+    searchTimeout = setTimeout(() => {
+        fetch(`/employers/messages/search/?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('searchResults');
+                if (data.results.length === 0) {
+                    resultsDiv.innerHTML = '<p class="p-4 text-gray-500 text-sm">No messages found</p>';
+                } else {
+                    resultsDiv.innerHTML = data.results.map(msg => `
+                        <div class="p-3 hover:bg-gray-50 border-b border-gray-100 cursor-pointer">
+                            <p class="text-sm font-medium text-gray-900">${msg.other_user_name}</p>
+                            <p class="text-xs text-gray-600 mt-1">${msg.content}</p>
+                            <p class="text-xs text-gray-400 mt-1">${msg.sent_at}</p>
+                        </div>
+                    `).join('');
+                }
+                resultsDiv.classList.remove('hidden');
+            });
+    }, 300);
+});
+
+// Close search results when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#searchInput') && !e.target.closest('#searchResults')) {
+        document.getElementById('searchResults').classList.add('hidden');
+    }
+});
+
+// Edit Message
+function editMessage(messageId) {
+    const messageDiv = document.querySelector(`[data-message-id="${messageId}"]`);
+    const contentEl = messageDiv.querySelector('.message-content');
+    const currentContent = contentEl.textContent;
+    
+    const newContent = prompt('Edit message:', currentContent);
+    if (newContent && newContent !== currentContent) {
+        fetch(`/messages/${messageId}/edit/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `content=${encodeURIComponent(newContent)}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                contentEl.textContent = data.content;
+                location.reload(); // Reload to show edited indicator
+            }
+        });
+    }
+}
+
+// Delete Message
+function deleteMessage(messageId) {
+    if (!confirm('Are you sure you want to delete this message?')) return;
+    
+    fetch(`/messages/${messageId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            document.querySelector(`[data-message-id="${messageId}"]`).remove();
+        }
+    });
+}
+
+// Auto-scroll to bottom on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('messagesContainer');
+    container.scrollTop = container.scrollHeight;
+});
+
+// Scroll to bottom after sending message
+document.getElementById('messageForm').addEventListener('submit', function() {
+    setTimeout(() => {
+        const container = document.getElementById('messagesContainer');
+        container.scrollTop = container.scrollHeight;
+    }, 100);
+});
+
+// ========== NEW FEATURES ==========
+
+// Character Counter
+const messageInput = document.getElementById('messageInput');
+const charCount = document.getElementById('charCount');
+
+messageInput.addEventListener('input', function() {
+    const length = this.value.length;
+    charCount.textContent = `${length} / 1000`;
+    
+    if (length > 900) {
+        charCount.classList.add('text-red-500');
+    } else {
+        charCount.classList.remove('text-red-500');
+    }
+});
+
+// Emoji Picker Toggle
+document.getElementById('emojiBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    const picker = document.getElementById('emojiPicker');
+    picker.classList.toggle('hidden');
+});
+
+// Close emoji picker when clicking outside
+document.addEventListener('click', function(e) {
+    const picker = document.getElementById('emojiPicker');
+    const emojiBtn = document.getElementById('emojiBtn');
+    
+    if (!picker.contains(e.target) && e.target !== emojiBtn) {
+        picker.classList.add('hidden');
+    }
+});
+
+// Insert Emoji
+function insertEmoji(emoji) {
+    const input = document.getElementById('messageInput');
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const text = input.value;
+    
+    input.value = text.substring(0, start) + emoji + text.substring(end);
+    input.focus();
+    
+    // Update character count
+    const event = new Event('input', { bubbles: true });
+    input.dispatchEvent(event);
+    
+    // Close picker
+    document.getElementById('emojiPicker').classList.add('hidden');
+}
+
+// Insert Template
+function insertTemplate(template) {
+    const input = document.getElementById('messageInput');
+    input.value = template;
+    input.focus();
+    
+    // Update character count
+    const event = new Event('input', { bubbles: true });
+    input.dispatchEvent(event);
+}
+
+// Keyboard Shortcuts
+messageInput.addEventListener('keydown', function(e) {
+    // Submit on Ctrl/Cmd + Enter
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('messageForm').submit();
+    }
+});
+
+// Disable send button while submitting
+document.getElementById('messageForm').addEventListener('submit', function() {
+    const btn = document.getElementById('sendBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span>Sending...</span>';
+    
+    // Re-enable after 2 seconds (in case of error)
+    setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = `
+            <span>Send</span>
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.429a1 1 0 001.169-1.409l-7-14z"></path>
+            </svg>
+        `;
+    }, 2000);
+});
+
+// Auto-save draft to localStorage
+let draftTimeout;
+messageInput.addEventListener('input', function() {
+    clearTimeout(draftTimeout);
+    draftTimeout = setTimeout(() => {
+        localStorage.setItem('messageDraft_{{ applicant.id }}', this.value);
+    }, 500);
+});
+
+// Load draft on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const draft = localStorage.getItem('messageDraft_{{ applicant.id }}');
+    if (draft && messageInput.value === '') {
+        messageInput.value = draft;
+        const event = new Event('input', { bubbles: true });
+        messageInput.dispatchEvent(event);
+    }
+});
+
+// Clear draft after successful send
+document.getElementById('messageForm').addEventListener('submit', function() {
+    localStorage.removeItem('messageDraft_{{ applicant.id }}');
+});
+</script>
+
 {% endblock %}

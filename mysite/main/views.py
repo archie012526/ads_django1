@@ -213,6 +213,10 @@ def employer_dashboard(request):
     # Get total interviews scheduled
     total_interviews = JobApplication.objects.filter(job__in=employer_jobs, status='Interview').count()
     
+    # Get notifications
+    recent_notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:5]
+    unread_notifications_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    
     # Get recent applicants
     recent_applicants = JobApplication.objects.filter(job__in=employer_jobs).select_related('user', 'job').order_by('-applied_at')[:5]
     
@@ -222,7 +226,8 @@ def employer_dashboard(request):
         if application.user not in conversations_dict:
             last_msg = Message.objects.filter(
                 Q(sender=request.user, receiver=application.user) |
-                Q(sender=application.user, receiver=request.user)
+                Q(sender=application.user, receiver=request.user),
+                is_deleted=False
             ).select_related('sender', 'receiver').order_by('-sent_at').first()
             
             conversations_dict[application.user] = {
@@ -250,6 +255,8 @@ def employer_dashboard(request):
         'recent_applicants': recent_applicants,
         'recent_conversations': recent_conversations,
         'unread_messages_count': unread_messages_count,
+        'recent_notifications': recent_notifications,
+        'unread_notifications_count': unread_notifications_count,
     }
     return render(request, "employers/dashboard.html", context)
 
@@ -1199,7 +1206,8 @@ def delete_skill(request, skill_id):
 @login_required
 def messages_inbox(request):
     msgs = Message.objects.filter(
-        Q(sender=request.user) | Q(receiver=request.user)
+        Q(sender=request.user) | Q(receiver=request.user),
+        is_deleted=False
     ).select_related('sender', 'receiver', 'sender__profile', 'receiver__profile').order_by("-sent_at")
 
     conversations = {}
@@ -1245,7 +1253,8 @@ def conversation_view(request, user_id):
     # Get all messages in the conversation
     convo = Message.objects.filter(
         Q(sender=request.user, receiver=other) |
-        Q(sender=other, receiver=request.user)
+        Q(sender=other, receiver=request.user),
+        is_deleted=False
     ).select_related('sender', 'receiver').order_by("sent_at")
 
     # Mark unread messages as read
@@ -1255,7 +1264,8 @@ def conversation_view(request, user_id):
 
     # Get all conversations for sidebar
     msgs = Message.objects.filter(
-        Q(sender=request.user) | Q(receiver=request.user)
+        Q(sender=request.user) | Q(receiver=request.user),
+        is_deleted=False
     ).select_related('sender', 'receiver', 'sender__profile', 'receiver__profile').order_by("-sent_at")
 
     conversations = {}
@@ -1276,6 +1286,67 @@ def conversation_view(request, user_id):
         "messages_qs": convo,
         "conversations": conversations.values(),
     })
+
+
+@login_required
+def edit_message(request, message_id):
+    """Edit a message (only by sender)"""
+    message = get_object_or_404(Message, id=message_id, sender=request.user)
+    
+    if request.method == "POST":
+        content = request.POST.get("content")
+        if content:
+            message.content = content
+            message.is_edited = True
+            message.edited_at = timezone.now()
+            message.save()
+            return JsonResponse({"success": True, "content": content, "edited_at": message.edited_at.strftime("%b %d, %H:%M")})
+    
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+@login_required
+def delete_message(request, message_id):
+    """Delete a message (only by sender)"""
+    message = get_object_or_404(Message, id=message_id, sender=request.user)
+    
+    if request.method == "POST":
+        message.is_deleted = True
+        message.deleted_at = timezone.now()
+        message.content = "[Message deleted]"
+        message.save()
+        return JsonResponse({"success": True})
+    
+    return JsonResponse({"success": False, "error": "Invalid request"})
+
+
+@login_required
+def search_messages(request):
+    """Search messages in conversations"""
+    query = request.GET.get("q", "")
+    if not query:
+        return JsonResponse({"results": []})
+    
+    # Search in messages where user is sender or receiver
+    messages_found = Message.objects.filter(
+        Q(sender=request.user) | Q(receiver=request.user),
+        content__icontains=query,
+        is_deleted=False
+    ).select_related('sender', 'receiver', 'sender__profile', 'receiver__profile').order_by('-sent_at')[:20]
+    
+    results = []
+    for msg in messages_found:
+        other_user = msg.receiver if msg.sender == request.user else msg.sender
+        results.append({
+            "id": msg.id,
+            "content": msg.content,
+            "sent_at": msg.sent_at.strftime("%b %d, %H:%M"),
+            "other_user_id": other_user.id,
+            "other_user_name": other_user.profile.full_name or other_user.username,
+            "is_sender": msg.sender == request.user
+        })
+    
+    return JsonResponse({"results": results})
 
 
 # ============================
@@ -1604,6 +1675,45 @@ def toggle_save_job(request, job_id):
 
 from .models import Skill
 
+# Helper: Build employer conversation list (job applicants with last message/unread counts)
+def _get_employer_conversations(user):
+    employer_jobs = Job.objects.filter(user=user)
+    job_applicants = JobApplication.objects.filter(job__in=employer_jobs).select_related('user', 'job')
+
+    conversations = {}
+    for application in job_applicants:
+        applicant = application.user
+        # Find last message exchanged (if any)
+        last_msg = Message.objects.filter(
+            Q(sender=user, receiver=applicant) | Q(sender=applicant, receiver=user),
+            is_deleted=False
+        ).select_related('sender', 'receiver').order_by('-sent_at').first()
+
+        # Count unread messages from this applicant to employer
+        unread_count = Message.objects.filter(
+            sender=applicant,
+            receiver=user,
+            is_read=False,
+            is_deleted=False
+        ).count()
+
+        # Only set once per applicant; prefer the latest message info if already present
+        if applicant not in conversations or (last_msg and conversations[applicant]['last_message'] and last_msg.sent_at > conversations[applicant]['last_message'].sent_at):
+            conversations[applicant] = {
+                'user': applicant,
+                'display_name': applicant.profile.full_name or applicant.username,
+                'avatar_url': applicant.profile.profile_image.url if applicant.profile.profile_image else None,
+                'last_message': last_msg,
+                'applied_job': application.job.title,
+                'unread_count': unread_count,
+            }
+
+    return sorted(
+        conversations.values(),
+        key=lambda x: x['last_message'].sent_at if x['last_message'] else timezone.now(),
+        reverse=True
+    )
+
 # ============================
 # EMPLOYER MESSAGING
 # ============================
@@ -1613,36 +1723,10 @@ def employer_messages_inbox(request):
     if request.user.profile.role != 'employer':
         return HttpResponseForbidden()
     
-    # Get all job applicants for jobs posted by this employer
-    employer_jobs = Job.objects.filter(user=request.user)
-    job_applicants = JobApplication.objects.filter(job__in=employer_jobs).select_related('user', 'job')
-    
-    # Get messages sent by this employer
-    messages_sent = Message.objects.filter(sender=request.user).select_related('receiver', 'receiver__profile')
-    
-    # Build conversations dictionary with applicants
-    conversations = {}
-    
-    # Add conversations from job applicants
-    for application in job_applicants:
-        if application.user not in conversations:
-            # Get last message in conversation
-            last_msg = Message.objects.filter(
-                Q(sender=request.user, receiver=application.user) |
-                Q(sender=application.user, receiver=request.user)
-            ).select_related('sender', 'receiver').order_by('-sent_at').first()
-            
-            conversations[application.user] = {
-                'user': application.user,
-                'display_name': application.user.profile.full_name or application.user.username,
-                'avatar_url': application.user.profile.profile_image.url if application.user.profile.profile_image else None,
-                'last_message': last_msg,
-                'applied_job': application.job.title,
-                'unread_count': Message.objects.filter(sender=application.user, receiver=request.user, is_read=False).count()
-            }
-    
+    conversations = _get_employer_conversations(request.user)
+
     return render(request, "employers/employer_messages.html", {
-        "conversations": sorted(conversations.values(), key=lambda x: x['last_message'].sent_at if x['last_message'] else timezone.now(), reverse=True)
+        "conversations": conversations,
     })
 
 
@@ -1683,7 +1767,8 @@ def employer_message_conversation(request, applicant_id):
     # Get all messages in the conversation
     convo = Message.objects.filter(
         Q(sender=request.user, receiver=applicant) |
-        Q(sender=applicant, receiver=request.user)
+        Q(sender=applicant, receiver=request.user),
+        is_deleted=False
     ).select_related('sender', 'receiver').order_by("sent_at")
     
     # Mark unread messages as read
@@ -1693,12 +1778,51 @@ def employer_message_conversation(request, applicant_id):
     
     # Get job applications from this applicant
     applications = JobApplication.objects.filter(user=applicant, job__user=request.user).select_related('job')
-    
+    conversations = _get_employer_conversations(request.user)
+
     return render(request, "employers/employer_conversation.html", {
         "applicant": applicant,
         "conversation": convo,
-        "applications": applications
+        "applications": applications,
+        "conversations": conversations,
     })
+
+
+@login_required
+def employer_search_messages(request):
+    """Search messages for employers"""
+    if request.user.profile.role != 'employer':
+        return JsonResponse({"error": "Forbidden"}, status=403)
+    
+    query = request.GET.get("q", "")
+    if not query:
+        return JsonResponse({"results": []})
+    
+    # Get employer's jobs
+    employer_jobs = Job.objects.filter(user=request.user)
+    applicant_ids = JobApplication.objects.filter(job__in=employer_jobs).values_list('user_id', flat=True)
+    
+    # Search in messages where user is sender or receiver (and other party is an applicant)
+    messages_found = Message.objects.filter(
+        Q(sender=request.user, receiver_id__in=applicant_ids) | 
+        Q(sender_id__in=applicant_ids, receiver=request.user),
+        content__icontains=query,
+        is_deleted=False
+    ).select_related('sender', 'receiver', 'sender__profile', 'receiver__profile').order_by('-sent_at')[:20]
+    
+    results = []
+    for msg in messages_found:
+        other_user = msg.receiver if msg.sender == request.user else msg.sender
+        results.append({
+            "id": msg.id,
+            "content": msg.content,
+            "sent_at": msg.sent_at.strftime("%b %d, %H:%M"),
+            "other_user_id": other_user.id,
+            "other_user_name": other_user.profile.full_name or other_user.username,
+            "is_sender": msg.sender == request.user
+        })
+    
+    return JsonResponse({"results": results})
 
 
 @login_required
@@ -1737,4 +1861,26 @@ def employer_applicants(request):
     return render(request, "employers/employer_applicants.html", context)
 
 
+@login_required
+def employer_notifications(request):
+    """Employer notifications page"""
+    if request.user.profile.role != 'employer':
+        return HttpResponseForbidden()
+    
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    unread_count = notifications.filter(is_read=False).count()
+    
+    return render(request, "employers/employer_notifications.html", {
+        "notifications": notifications,
+        "unread_count": unread_count
+    })
 
+
+@login_required
+def employer_mark_all_read(request):
+    """Mark all employer notifications as read"""
+    if request.user.profile.role != 'employer':
+        return HttpResponseForbidden()
+    
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return redirect('employer_notifications')
