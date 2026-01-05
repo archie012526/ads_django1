@@ -136,7 +136,6 @@ def manage_jobs(request):
 @login_required
 def employerpost_job(request):
     if request.method == "POST":
-        # Extract data from the form
         title = request.POST.get('title')
         company = request.POST.get('company_name')
         desc = request.POST.get('description')
@@ -144,9 +143,8 @@ def employerpost_job(request):
         emp_type = request.POST.get('employment_type')
         sched = request.POST.get('working_schedule')
 
-        # Create the Job object
         job = Job.objects.create(
-            user=request.user, # Links to the logged-in Employer
+            user=request.user,
             title=title,
             company_name=company,
             description=desc,
@@ -155,15 +153,18 @@ def employerpost_job(request):
             working_schedule=sched
         )
         
-        # Handle ManyToMany Skills if sent via form
-        skills_list = request.POST.getlist('skills') # Expects IDs
+        skills_list = request.POST.getlist('skills')
         if skills_list:
             job.skills.set(skills_list)
             
         return redirect('employer_dashboard')
         
-    # Get skills to show in the form dropdown
-    all_skills = SkillTag.objects.all()
+    # THE FIX: Use the 'Skill' model and filter for Global + Employer skills
+    # This allows employers to see the skills added by the admin
+    all_skills = Skill.objects.filter(
+        Q(user__isnull=True) | Q(user__user=request.user)
+    ).order_by('name')
+
     return render(request, "employers/employerpost_job.html", {"skills": all_skills})
 
 # ============================
