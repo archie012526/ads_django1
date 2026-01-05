@@ -54,6 +54,8 @@ SKILL_CHOICES = [
 
 
 class SkillForm(forms.ModelForm):
+    """Allow jobseekers to pick from admin-seeded global skills only."""
+
     name = forms.ChoiceField(
         choices=SKILL_CHOICES,
         widget=forms.Select(attrs={"class": "w-full p-2 border rounded"})
@@ -67,6 +69,16 @@ class SkillForm(forms.ModelForm):
     class Meta:
         model = Skill
         fields = ["name", "level"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Dynamically populate the "name" choices from global (admin) skills
+        global_skills = Skill.objects.filter(user__isnull=True).order_by('name').values_list('name', 'name')
+        if global_skills:
+            self.fields['name'].choices = list(global_skills)
+        else:
+            # fallback to static options if none exist yet
+            self.fields['name'].choices = SKILL_CHOICES
 
 
 class JobForm(forms.ModelForm):

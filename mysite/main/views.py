@@ -1081,21 +1081,44 @@ def download_interview_invite(request, app_id: int):
 # ============================
 @login_required
 def skills_page(request):
-    skills = Skill.objects.filter(user=request.user.profile)
+    """Show available admin-provided (global) skills and let jobseekers add from that list only."""
+
+    # User's own selected skills
+    skills = Skill.objects.filter(user=request.user.profile).order_by('name')
+
+    # Available admin/global skills
+    global_skills_qs = Skill.objects.filter(user__isnull=True).order_by('name')
 
     if request.method == "POST":
         form = SkillForm(request.POST)
         if form.is_valid():
-            skill = form.save(commit=False)
-            skill.user = request.user.profile
-            skill.save()
+            selected_name = form.cleaned_data['name']
+            level = form.cleaned_data['level']
+
+            # Ensure selected skill exists among global skills
+            if not global_skills_qs.filter(name=selected_name).exists():
+                messages.error(request, "That skill is not available. Please choose from the admin-provided list.")
+                return redirect('skills')
+
+            # Prevent duplicate skill entries for the same user
+            if Skill.objects.filter(user=request.user.profile, name=selected_name).exists():
+                messages.info(request, "You already have this skill added.")
+                return redirect('skills')
+
+            # Create a user-owned skill record referring to the chosen global skill name
+            Skill.objects.create(user=request.user.profile, name=selected_name, level=level)
+            messages.success(request, f"Added skill: {selected_name}")
             return redirect("skills")
     else:
         form = SkillForm()
 
+    # Pass options for datalist in template (name,label pairs)
+    SKILL_OPTIONS = [(s.name, s.name) for s in global_skills_qs]
+
     return render(request, "main/skills.html", {
         "skills": skills,
         "form": form,
+        "SKILL_OPTIONS": SKILL_OPTIONS,
     })
 
 
