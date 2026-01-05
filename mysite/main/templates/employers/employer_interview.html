@@ -1,0 +1,68 @@
+{% extends "employers/base_employer.html" %}
+
+{% block title %}Interview Details - Employer Hub{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6 relative">
+        <a href="{% url 'employer_applicants' %}" class="back-btn absolute left-0 top-0 inline-flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200" aria-label="Back">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </a>
+        <div class="pl-12">
+            <h2 class="text-2xl font-bold">Interview Details</h2>
+            <p class="text-gray-500 mt-1">Details for the selected interview and application</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div class="flex items-start gap-4">
+            {% if application.user.profile.profile_image %}
+                <img src="{{ application.user.profile.profile_image.url }}" class="w-16 h-16 rounded-full object-cover" alt="{{ application.user.username }}">
+            {% else %}
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-xl">{{ application.user.username|first|upper }}</div>
+            {% endif %}
+            <div>
+                <h3 class="font-semibold text-lg">{{ application.user.profile.full_name|default:application.user.username }}</h3>
+                <p class="text-sm text-gray-500">{{ application.user.email }}</p>
+            </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-xs text-gray-400">Position</p>
+                <p class="font-semibold">{{ application.job.title }}</p>
+                <p class="text-sm text-gray-500">{{ application.job.location }}</p>
+            </div>
+
+            <div>
+                <p class="text-xs text-gray-400">Status</p>
+                <p class="font-semibold">{{ application.status }}</p>
+                {% if application.interview_scheduled_at %}
+                    <p class="text-sm text-gray-500 mt-1">When: {{ application.interview_scheduled_at|date:"M d, Y h:i A" }}</p>
+                    <p class="text-sm text-gray-500">Where: {{ application.interview_location|default:"Online" }}</p>
+                    {% if application.interview_meeting_url %}
+                        <p class="text-sm text-gray-500">Meeting: <a href="{{ application.interview_meeting_url }}" target="_blank" class="text-blue-600">Join</a></p>
+                    {% endif %}
+                    <p class="mt-3"><a href="{% url 'download_interview_invite' application.id %}" class="px-4 py-2 bg-blue-600 text-white rounded-lg">⬇️ Download Invite</a></p>
+                {% else %}
+                    <p class="text-sm text-gray-500 mt-1">No schedule yet. Use the button below to schedule an interview.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mt-6 flex gap-3 items-start">
+            <a href="{% url 'employer_message_conversation' application.user.id %}" class="px-4 py-2 bg-green-600 text-white rounded-lg">💬 Message Applicant</a>
+
+            <!-- Schedule page link -->
+            <div class="relative">
+                <a href="{% url 'employer_schedule_interview' application.id %}" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg">📅 Schedule Interview</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+</div>
+{% endblock %}
