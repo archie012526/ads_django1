@@ -2,186 +2,217 @@
 {% load static %}
 
 {% block extra_head %}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'style/profile.css' %}?v=1">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'style/profile.css' %}?v=3">
 {% endblock extra_head %}
 
 {% block content %}
-    <div class="profile-container">
-
-        <div class="profile-banner">
-             <img src="{% static 'images/banner.jpg' %}" class="banner-img">
-        </div>
-
-        <div class="profile-layout-wrapper">
-            
-            <div class="profile-sidebar">
-                
-                <div class="profile-header">
-                    {% if profile.profile_image %}
-                        <img src="{{ profile.profile_image.url }}" class="profile-img">
-                    {% else %}
-                        <img src="{% static 'images/default-pfp.png' %}" class="profile-img">
-                    {% endif %}
-
-                    <a href="{% url 'profile' %}" class="profile-name">{{ profile.full_name }}</a>
-                    <p class="profile-role">{{ profile.bio }}</p>
-
-                    <div class="profile-buttons">
-                        <a href="{% url 'edit_profile' %}" class="edit-btn">Edit Profile</a>
-                    </div>
+<div class="profile-shell">
+    <div class="profile-hero">
+        <div class="hero-left">
+            {% if profile.profile_image %}
+                <img src="{{ profile.profile_image.url }}" class="profile-avatar" alt="Profile image">
+            {% else %}
+                <div class="profile-avatar placeholder"></div>
+            {% endif %}
+            <div>
+                <p class="eyebrow">Profile</p>
+                <h1 class="hero-title">{{ profile.full_name|default:user.username }}</h1>
+                <p class="hero-bio">{{ profile.bio|default:"Add a short bio to help people know you." }}</p>
+                <div class="hero-meta">
+                    {% if profile.location %}<span class="meta-pill">📍 {{ profile.location }}</span>{% endif %}
+                    {% if profile.role %}<span class="meta-pill">{{ profile.role|title }}</span>{% endif %}
                 </div>
-
-                <div class="profile-info">
-                    <a href="{% url 'job_applications' %}" class="info-card applications" style="text-decoration:none; color:inherit;">
-                        <h3>Applications</h3>
-                        <p class="info-number">{{ applications_count }}</p>
-                    </a>
-
-                    <a href="{% url 'interviews' %}" class="info-card interviews" style="text-decoration:none; color:inherit;">
-                        <h3>Interviews</h3>
-                        <p class="info-number">{{ interviews_count }}</p>
-                    </a>
-
-                    <div class="info-card status">
-                        <h3>Status</h3>
-                        <p class="info-number status-good">Active</p>
-                    </div>
+                <div class="hero-actions">
+                    <a href="{% url 'edit_profile' %}" class="primary-cta">Edit profile</a>
+                    <a href="{% url 'job_applications' %}" class="ghost-btn">View applications</a>
                 </div>
-
             </div>
-            <div class="profile-main-content">
-            <div class="profile-content-wrapper">
-                <div class="profile-left-column">
-    <!-- SKILLS -->
-    <div class="skills-section">
-        <h2>Skills & Competencies</h2>
-
-        {% if profile.skills.exists %}
-            <ul>
-                {% for skill in profile.skills.all %}
-                    <li>
-                        <strong>{{ skill.name }}</strong> — {{ skill.level }}
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No skills added yet.</p>
-        {% endif %}
+        </div>
+        <div class="hero-stats">
+            <div class="stat-chip">
+                <span class="stat-label">Applications</span>
+                <span class="stat-value">{{ applications_count }}</span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-label">Interviews</span>
+                <span class="stat-value">{{ interviews_count }}</span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-label">Skills</span>
+                <span class="stat-value">{{ profile.skills.all|length }}</span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-label">Matches</span>
+                <span class="stat-value">{{ suggestions|length }}</span>
+            </div>
+        </div>
     </div>
 
-    <!-- ✅ ADD JOB SUGGESTIONS RIGHT HERE -->
-    <div class="job-suggestions">
-    <h2 class="section-title">Job Suggestions for You</h2>
-    <p class="suggestion-intro">Matches based on your skills</p>
-
-    {% if suggestions %}
-        <div class="job-list">
-            {% for s in suggestions %}
-                {% with job=s.job %}
-                <div class="job-card">
-                    <div class="job-info">
-                        <h3 class="job-title">{{ job.title }}</h3>
-                        <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
-                        <p class="job-location">{{ job.location|default:"Remote" }}</p>
-
-                        <div class="job-badges">
-                            {% if job.employment_type %}
-                                <span class="pill">{{ job.get_employment_type_display }}</span>
-                            {% endif %}
-                            {% if job.working_schedule %}
-                                <span class="pill">{{ job.get_working_schedule_display }}</span>
-                            {% endif %}
-                            {% for tag in job.skills.all %}
-                                <span class="pill">{{ tag.name }}</span>
-                            {% endfor %}
-                        </div>
-
-                        <p class="job-description">{{ job.description|default:"No description provided."|truncatewords:35 }}</p>
+    <div class="profile-grid">
+        <div class="profile-main">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <p class="eyebrow">Skills</p>
+                        <h2 class="card-title">Skills & Competencies</h2>
                     </div>
-
-                    <div class="job-match">
-                        <span>Skill Match</span>
-                        <strong>{{ s.match_percent }}%</strong>
+                    <a href="{% url 'edit_profile' %}" class="ghost-btn small">Add skills</a>
+                </div>
+                {% if profile.skills.exists %}
+                    <div class="chip-group">
+                        {% for skill in profile.skills.all %}
+                            <span class="skill-chip">{{ skill.name }}{% if skill.level %} · {{ skill.level }}{% endif %}</span>
+                        {% endfor %}
                     </div>
+                {% else %}
+                    <p class="muted">No skills added yet.</p>
+                {% endif %}
+            </div>
 
-                    <div class="job-action">
-                        <div style="display: flex; gap: 10px;">
-                            <a href="{% url 'apply_job' job.id %}" class="apply-btn" style="flex: 1; text-align: center; padding: 10px 20px; color: white; background-color: #2c3e50; border-radius: 5px; text-decoration: none;">Apply Now</a>
-                            <a href="{% url 'toggle_save_job' job.id %}" style="padding: 10px 15px; font-size: 18px; background-color: #fff3cd; border-radius: 5px; text-decoration: none; border: 1px solid #ffc107;" title="Save Job">
-                                {% if job.saved_by.filter|length > 0 %}⭐{% else %}☆{% endif %}
-                            </a>
-                        </div>
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <p class="eyebrow">Opportunities</p>
+                        <h2 class="card-title">Job Suggestions for You</h2>
+                        <p class="muted">Matches based on your skills</p>
                     </div>
                 </div>
-                {% endwith %}
-            {% endfor %}
+                {% if suggestions %}
+                    <div class="job-list">
+                        {% for s in suggestions %}
+                            {% with job=s.job %}
+                            <div class="job-card">
+                                <div class="job-info">
+                                    <h3 class="job-title">{{ job.title }}</h3>
+                                    <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
+                                    <p class="job-location">{{ job.location|default:"Remote" }}</p>
+                                    <div class="job-badges">
+                                        {% if job.employment_type %}<span class="pill">{{ job.get_employment_type_display }}</span>{% endif %}
+                                        {% if job.working_schedule %}<span class="pill">{{ job.get_working_schedule_display }}</span>{% endif %}
+                                        {% for tag in job.skills.all %}<span class="pill">{{ tag.name }}</span>{% endfor %}
+                                    </div>
+                                    <p class="job-description">{{ job.description|default:"No description provided."|truncatewords:35 }}</p>
+                                </div>
+                                <div class="job-meta">
+                                    <span class="match-label">Skill match</span>
+                                    <span class="match-value">{{ s.match_percent }}%</span>
+                                </div>
+                                <div class="job-actions">
+                                    <a href="{% url 'apply_job' job.id %}" class="primary-cta">Apply now</a>
+                                    <a href="{% url 'toggle_save_job' job.id %}" class="icon-btn" title="Save job">{% if job.saved_by.filter|length > 0 %}⭐{% else %}☆{% endif %}</a>
+                                </div>
+                            </div>
+                            {% endwith %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="muted">No job suggestions yet. Add more skills to see tailored roles.</p>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <p class="eyebrow">Progress</p>
+                        <h2 class="card-title">My Applications</h2>
+                    </div>
+                </div>
+                {% if applications %}
+                    <div class="job-list">
+                        {% for app in applications %}
+                            <div class="job-card">
+                                <div class="job-info">
+                                    <h3 class="job-title">{{ app.job.title }}</h3>
+                                    <p class="job-company">{{ app.job.company_name|default:"Company not listed" }}</p>
+                                    <p class="job-location">{{ app.job.location|default:"Remote" }}</p>
+                                    <div class="job-badges">
+                                        <span class="pill">{{ app.status }}</span>
+                                        <span class="pill">Applied {{ app.applied_at|date:"M d, Y" }}</span>
+                                    </div>
+                                    {% if app.interview_scheduled_at %}
+                                        <p class="job-description">Interview: {{ app.interview_scheduled_at|date:"M d, Y h:i A" }}{% if app.interview_location %} • {{ app.interview_location }}{% endif %}{% if app.interview_meeting_url %} • <a href="{{ app.interview_meeting_url }}" target="_blank">Join</a>{% endif %}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="job-actions">
+                                    <a href="{% url 'download_interview_invite' app.id %}" class="ghost-btn">Download invite</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="muted">No applications yet.</p>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <p class="eyebrow">Pipeline</p>
+                        <h2 class="card-title">My Interviews</h2>
+                    </div>
+                </div>
+                {% if interviews %}
+                    <div class="job-list">
+                        {% for app in interviews %}
+                            <div class="job-card">
+                                <div class="job-info">
+                                    <h3 class="job-title">{{ app.job.title }}</h3>
+                                    <p class="job-company">{{ app.job.company_name|default:"Company not listed" }}</p>
+                                    <p class="job-location">{{ app.job.location|default:"Remote" }}</p>
+                                    <div class="job-badges">
+                                        <span class="pill">Interview</span>
+                                        <span class="pill">{{ app.interview_scheduled_at|date:"M d, Y h:i A" }}</span>
+                                    </div>
+                                    {% if app.interview_location or app.interview_meeting_url %}
+                                        <p class="job-description">{% if app.interview_location %}Location: {{ app.interview_location }}{% endif %}{% if app.interview_meeting_url %} • <a href="{{ app.interview_meeting_url }}" target="_blank">Join</a>{% endif %}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="job-actions">
+                                    <a href="{% url 'download_interview_invite' app.id %}" class="ghost-btn">Download invite</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="muted">No interviews yet.</p>
+                {% endif %}
+            </div>
         </div>
-    {% else %}
-        <p>No job suggestions yet.</p>
-    {% endif %}
+
+        <aside class="profile-aside">
+            <div class="card">
+                <p class="eyebrow">Quick Links</p>
+                <div class="link-stack">
+                    <a href="{% url 'edit_profile' %}">Update profile</a>
+                    <a href="{% url 'add_location' %}">Add location</a>
+                    <a href="{% url 'find_job' %}">Find jobs</a>
+                    <a href="{% url 'job_applications' %}">View applications</a>
+                    <a href="{% url 'interviews' %}">View interviews</a>
+                </div>
+            </div>
+
+            {% if user_posts %}
+            <div class="card">
+                <p class="eyebrow">Recent posts</p>
+                <div class="posts-list">
+                    {% for post in user_posts|slice:":3" %}
+                    <div class="post-item">
+                        <div>
+                            <p class="post-meta-line">{{ post.created_at|timesince }} ago</p>
+                            {% if post.post_type == 'article' and post.article_title %}
+                                <p class="post-title">{{ post.article_title }}</p>
+                            {% else %}
+                                <p class="post-title">{{ post.content|truncatewords:16 }}</p>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'view_user_profile' user.id %}" class="post-link">View profile</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </aside>
+    </div>
 </div>
-    <!-- Applications & Interviews Lists -->
-    <div class="job-suggestions" style="margin-top:20px;">
-        <h2 class="section-title">My Applications</h2>
-        {% if applications %}
-            <div class="job-list">
-            {% for app in applications %}
-                <div class="job-card">
-                    <div class="job-info">
-                        <h3 class="job-title">{{ app.job.title }}</h3>
-                        <p class="job-company">{{ app.job.company_name|default:"Company not listed" }}</p>
-                        <p class="job-location">{{ app.job.location|default:"Remote" }}</p>
-                        <div class="job-badges">
-                            <span class="pill">{{ app.status }}</span>
-                            <span class="pill">Applied {{ app.applied_at|date:"M d, Y" }}</span>
-                        </div>
-                        {% if app.interview_scheduled_at %}
-                            <p class="job-description">Interview: {{ app.interview_scheduled_at|date:"M d, Y h:i A" }}{% if app.interview_location %} • {{ app.interview_location }}{% endif %}{% if app.interview_meeting_url %} • <a href="{{ app.interview_meeting_url }}" target="_blank">Join</a>{% endif %}</p>
-                        {% endif %}
-                    </div>
-                    <div class="job-action">
-                        <a href="{% url 'download_interview_invite' app.id %}" class="apply-btn" style="display:inline-block; padding: 10px 20px; color: white; background-color: #0a66c2; border-radius: 5px; text-decoration: none;">Download Invite</a>
-                    </div>
-                </div>
-            {% endfor %}
-            </div>
-        {% else %}
-            <p>No applications yet.</p>
-        {% endif %}
-    </div>
-
-    <div class="job-suggestions" style="margin-top:20px;">
-        <h2 class="section-title">My Interviews</h2>
-        {% if interviews %}
-            <div class="job-list">
-            {% for app in interviews %}
-                <div class="job-card">
-                    <div class="job-info">
-                        <h3 class="job-title">{{ app.job.title }}</h3>
-                        <p class="job-company">{{ app.job.company_name|default:"Company not listed" }}</p>
-                        <p class="job-location">{{ app.job.location|default:"Remote" }}</p>
-                        <div class="job-badges">
-                            <span class="pill">Interview</span>
-                            <span class="pill">{{ app.interview_scheduled_at|date:"M d, Y h:i A" }}</span>
-                        </div>
-                        {% if app.interview_location or app.interview_meeting_url %}
-                            <p class="job-description">{% if app.interview_location %}Location: {{ app.interview_location }}{% endif %}{% if app.interview_meeting_url %} • <a href="{{ app.interview_meeting_url }}" target="_blank">Join</a>{% endif %}</p>
-                        {% endif %}
-                    </div>
-                    <div class="job-action">
-                        <a href="{% url 'download_interview_invite' app.id %}" class="apply-btn" style="display:inline-block; padding: 10px 20px; color: white; background-color: #0a66c2; border-radius: 5px; text-decoration: none;">Download Invite</a>
-                    </div>
-                </div>
-            {% endfor %}
-            </div>
-        {% else %}
-            <p>No interviews yet.</p>
-        {% endif %}
-    </div>
-                </div>
-            </div>
-            </div>
-        </div>
-    </div>
 {% endblock content %}

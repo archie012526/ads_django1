@@ -117,63 +117,40 @@
         </div>
 
         <div id="jobs-list">
-            {% if jobs %}
+            {% if external_jobs %}
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                {% for job in jobs %}
+                {% for job in external_jobs %}
                     {% if forloop.counter|divisibleby:"3" %}
                         <div class="job-card job-card--highlight job-card-color-cycle">
                     {% else %}
                         <div class="job-card job-card-color-cycle">
                     {% endif %}
 
-                        <p class="job-date">{% if job.created_at %}{{ job.created_at|date:"j M, Y" }}{% endif %}</p>
+                        <p class="job-date">{{ job.published|date:"j M, Y" }}</p>
 
                         <h3 class="job-title">{{ job.title }}</h3>
 
-                        <p class="job-company">{{ job.company_name|default:"Company not listed" }}</p>
-                        
-                        {% if job.user %}
-                            <p class="text-xs text-gray-500 mt-1">
-                                Posted by: 
-                                <a href="{% url 'view_user_profile' job.user.id %}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
-                                    {{ job.user.profile.full_name|default:job.user.username }}
-                                </a>
-                            </p>
-                        {% endif %}
+                        <p class="job-company">{{ job.company|default:"Company not listed" }}</p>
 
                         <div class="job-badges">
-                            {% if job.employment_type %}
-                                <span class="pill">{{ job.get_employment_type_display }}</span>
-                            {% endif %}
-                            {% if job.working_schedule %}
-                                <span class="pill">{{ job.get_working_schedule_display }}</span>
-                            {% endif %}
-                            {% for tag in job.skills.all %}
-                                <span class="pill">{{ tag.name }}</span>
-                            {% endfor %}
-                            <span class="pill">{{ job.location }}</span>
+                            {% if job.type %}<span class="pill">{{ job.type }}</span>{% endif %}
+                            {% if job.location %}<span class="pill">{{ job.location }}</span>{% endif %}
                         </div>
 
-                        <p class="job-description">{{ job.description|truncatewords:20 }}</p>
+                        {% if job.snippet %}
+                        <p class="job-description">{{ job.snippet|safe|truncatewords:20 }}</p>
+                        {% endif %}
 
                         <div class="mt-4 flex gap-2">
-                            <a href="{% url 'apply_job' job.id %}" class="apply-btn flex-1 text-center">Apply</a>
-                            <a href="{% url 'toggle_save_job' job.id %}" class="px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition duration-150 text-sm font-medium" title="Save Job">
-                                {% if job.saved_by.filter|length > 0 %}⭐{% else %}☆{% endif %}
-                            </a>
-                            {% if job.user and job.user != request.user %}
-                                <a href="{% url 'conversation' job.user.id %}" class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-150 text-sm font-medium">
-                                    💬
-                                </a>
-                            {% endif %}
+                            <a href="{{ job.url }}" target="_blank" rel="noopener" class="apply-btn flex-1 text-center">View & Apply</a>
                         </div>
 
                     </div>
                 {% endfor %}
                 </div>
             {% else %}
-                <p class="text-gray-500">No jobs found.</p>
+                <p class="text-gray-500">No jobs found right now. Try another search term.</p>
             {% endif %}
         </div>
 

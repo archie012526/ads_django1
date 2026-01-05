@@ -1,184 +1,135 @@
 {% extends "main/base.html" %}
 {% load static %}
 
-{% block content %}
 {% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'style/edit_profile.css' %}?v=3">
+{% endblock extra_head %}
 
-<link rel="stylesheet" href="{% static 'style/edit_profile.css' %}">
-<style>
-    input[type="text"],
-    input[type="email"],
-    input[type="tel"],
-    textarea,
-    select {
-        width: 100%;
-        padding: 0.5rem 1rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.75rem;
-        font-size: 0.95rem;
-    }
-    
-    input[type="text"]:focus,
-    input[type="email"]:focus,
-    input[type="tel"]:focus,
-    textarea:focus,
-    select:focus {
-        outline: none;
-        border-color: #a855f7;
-        box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
-    }
-    
-    textarea {
-        resize: vertical;
-        min-height: 100px;
-    }
-</style>
-{% endblock %}
-
-
-<div class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex">
-
-    <!-- LEFT SIDEBAR -->
-    <div class="w-64 bg-white shadow-lg p-6 border-r border-gray-100">
-        <ul class="space-y-4 text-gray-700">
-            <li>
-                <a href="{% url 'profile' %}" class="hover:text-purple-600 transition">
-                    Profile
-                </a>
-            </li>
-
-            <li>
-                <a href="{% url 'settings' %}" class="hover:text-purple-600 transition">
-                    Settings
-                </a>
-            </li>
-
-            <li class="bg-gradient-to-r from-purple-600 to-purple-500 text-white py-2 px-4 rounded-xl shadow-md font-medium">
-                Edit Profile
-            </li>
-
-            <li>
-                <a href="{% url 'skills' %}" class="hover:text-purple-600 transition">
-                    Skills
-                </a>
-            </li>
-
-            <li class="pt-10">
-                <a href="{% url 'logout' %}" class="text-red-500 hover:text-red-600 transition">Log Out</a>
-            </li>
-        </ul>
+{% block content %}
+<div class="edit-shell">
+    <div class="edit-hero">
+        <div class="hero-left">
+            {% if profile.profile_image %}
+                <img src="{{ profile.profile_image.url }}" class="profile-avatar" alt="Profile image">
+            {% else %}
+                <div class="profile-avatar placeholder"></div>
+            {% endif %}
+            <div>
+                <p class="eyebrow">Edit profile</p>
+                <h1 class="hero-title">{{ profile.full_name|default:user.username }}</h1>
+                <p class="hero-subtitle">Update your details so opportunities match who you are today.</p>
+                <div class="hero-meta">
+                    {% if profile.location %}<span class="meta-pill">📍 {{ profile.location }}</span>{% endif %}
+                    {% if profile.role %}<span class="meta-pill">{{ profile.role|title }}</span>{% endif %}
+                </div>
+                <div class="hero-actions">
+                    <a class="ghost-btn" href="{% url 'profile' %}">Back to profile</a>
+                    <a class="ghost-btn" href="{% url 'skills' %}">Manage skills</a>
+                </div>
+            </div>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-chip">
+                <span class="stat-label">Email</span>
+                <span class="stat-value small">{{ user.email|default:"Not set" }}</span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-label">Phone</span>
+                <span class="stat-value small">{{ profile.phone_number|default:"Not set" }}</span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-label">Location</span>
+                <span class="stat-value small">{{ profile.location|default:"Add" }}</span>
+            </div>
+        </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div class="flex-1 p-10">
+    <div class="edit-grid">
+        <aside class="edit-sidebar">
+            <p class="eyebrow">Navigation</p>
+            <div class="link-stack">
+                <a href="{% url 'profile' %}">Profile</a>
+                <a href="{% url 'settings' %}">Settings</a>
+                <span class="active-link">Edit profile</span>
+                <a href="{% url 'skills' %}">Skills</a>
+                <a class="danger" href="{% url 'logout' %}">Log out</a>
+            </div>
+        </aside>
 
-        <h2 class="text-2xl font-semibold mb-8 text-gray-800">Edit Profile</h2>
-
-        <div class="bg-white rounded-2xl shadow-lg p-10 border border-gray-100 relative overflow-hidden">
-
-            <!-- PROFILE PHOTO -->
-            <div class="flex justify-center mb-10">
-                <div class="relative">
-                    {% if profile.profile_image %}
-                        <img src="{{ profile.profile_image.url }}"
-                             class="w-28 h-28 rounded-full border-4 border-purple-200 shadow-md ring-4 ring-purple-100 object-cover">
-                    {% else %}
-                        <img src="{% static 'images/default_profile.svg' %}"
-                             class="w-28 h-28 rounded-full border-4 border-purple-200 shadow-md ring-4 ring-purple-100">
-                    {% endif %}
-
-                    <label for="profile_image_input"
-                           class="absolute bottom-1 right-1 bg-purple-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm shadow hover:bg-purple-700 transition cursor-pointer">
-                        ✎
-                    </label>
+        <div class="card form-card">
+            <div class="card-header">
+                <div>
+                    <p class="eyebrow">Details</p>
+                    <h2 class="card-title">Profile information</h2>
+                    <p class="muted">Keep your contact and bio current so employers can reach you.</p>
                 </div>
             </div>
 
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" enctype="multipart/form-data" class="form">
                 {% csrf_token %}
+                <input type="file" id="profile_image_input" name="profile_image" accept="image/*" hidden>
 
-                <!-- Hidden file input for profile image -->
-                <input type="file" id="profile_image_input" name="profile_image" accept="image/*" style="display: none;">
+                <div class="avatar-row">
+                    <div class="avatar-stack">
+                        {% if profile.profile_image %}
+                            <img src="{{ profile.profile_image.url }}" class="profile-avatar" alt="Profile image">
+                        {% else %}
+                            <div class="profile-avatar placeholder"></div>
+                        {% endif %}
+                        <label for="profile_image_input" class="icon-btn" title="Upload photo">✎</label>
+                    </div>
+                    <div class="muted">PNG or JPG up to 5MB.</div>
+                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-                    <!-- FULL NAME -->
-                    <div>
-                        <label class="font-medium text-gray-700 block mb-2">Full Name</label>
+                <div class="form-grid">
+                    <div class="field">
+                        <label>Full name</label>
                         {{ profile_form.full_name }}
                     </div>
-
-                    <!-- EMAIL -->
-                    <div>
-                        <label class="font-medium text-gray-700 block mb-2">Email</label>
+                    <div class="field">
+                        <label>Email</label>
                         {{ user_form.email }}
                     </div>
-
-                    <!-- PHONE NUMBER -->
-                    <div>
-                        <label class="font-medium text-gray-700 block mb-2">Phone Number</label>
+                    <div class="field">
+                        <label>Phone number</label>
                         {{ profile_form.phone_number }}
                     </div>
-
-                    <!-- LOCATION -->
-                    <div class="md:col-span-2">
-                        <label class="font-medium text-gray-700 block mb-2">Location</label>
+                    <div class="field full">
+                        <label>Location</label>
                         {{ profile_form.location }}
                     </div>
-
-                    <!-- BIO -->
-                    <div class="md:col-span-2">
-                        <label class="font-medium text-gray-700 block mb-2">Bio</label>
+                    <div class="field full">
+                        <label>Bio</label>
                         {{ profile_form.bio }}
                     </div>
-
-                    <!-- PROFILE IMAGE (Hidden but processed) -->
-                    <div style="display: none;">
+                    <div style="display:none;">
                         {{ profile_form.profile_image }}
                     </div>
-
                 </div>
 
-                <!-- BUTTONS -->
-                <div class="flex justify-end mt-12 space-x-4">
-                    <a href="{% url 'profile' %}"
-                       class="px-6 py-2 border border-gray-300 rounded-xl hover:bg-gray-100 transition">
-                        Back To Home
-                    </a>
-
-                    <button type="submit"
-                            class="px-7 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-xl shadow hover:shadow-lg hover:scale-[1.02] transition">
-                        Save Changes
-                    </button>
+                <div class="form-actions">
+                    <a href="{% url 'profile' %}" class="ghost-btn">Cancel</a>
+                    <button type="submit" class="primary-cta">Save changes</button>
                 </div>
-
             </form>
         </div>
     </div>
 </div>
 
 <script>
-    // Handle profile image upload
-    document.getElementById('profile_image_input').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
+    const fileInput = document.getElementById('profile_image_input');
+    const avatarPreview = document.querySelector('.avatar-stack .profile-avatar');
+    if (fileInput && avatarPreview) {
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(event) {
-                // Update the profile image preview
-                const img = document.querySelector('.w-28.h-28.rounded-full');
-                if (img) {
-                    img.src = event.target.result;
-                }
+            reader.onload = (event) => {
+                avatarPreview.src = event.target.result;
             };
             reader.readAsDataURL(file);
-        }
-    });
-
-    // Trigger file input when edit button is clicked
-    document.querySelector('label[for="profile_image_input"]').addEventListener('click', function(e) {
-        e.preventDefault();
-        document.getElementById('profile_image_input').click();
-    });
+        });
+    }
 </script>
-
-{% endblock %}
+{% endblock content %}
