@@ -1,0 +1,169 @@
+{% extends "employers/base_employer.html" %}
+
+{% block title %}Interview Details - Employer Hub{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6 relative">
+        <a href="{% url 'employer_applicants' %}" class="back-btn absolute left-0 top-0 inline-flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200" aria-label="Back">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </a>
+        <div class="pl-12">
+            <h2 class="text-2xl font-bold">Interview Details</h2>
+            <p class="text-gray-500 mt-1">Details for the selected interview and application</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div class="flex items-start gap-4">
+            {% if application.user.profile.profile_image %}
+                <img src="{{ application.user.profile.profile_image.url }}" class="w-16 h-16 rounded-full object-cover" alt="{{ application.user.username }}">
+            {% else %}
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-xl">{{ application.user.username|first|upper }}</div>
+            {% endif %}
+            <div>
+                <h3 class="font-semibold text-lg">{{ application.user.profile.full_name|default:application.user.username }}</h3>
+                <p class="text-sm text-gray-500">{{ application.user.email }}</p>
+                {% if application.user.profile.location %}
+                    <p class="text-sm text-gray-500">📍 {{ application.user.profile.location }}</p>
+                {% endif %}
+                {% if application.user.profile.phone_number %}
+                    <p class="text-sm text-gray-500">📞 {{ application.user.profile.phone_number }}</p>
+                {% endif %}
+                {% if application.user.profile.bio %}
+                    <p class="text-sm text-gray-600 mt-2">{{ application.user.profile.bio }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-xs text-gray-400">Position</p>
+                <p class="font-semibold">{{ application.job.title }}</p>
+                <p class="text-sm text-gray-500">{{ application.job.location }}</p>
+            </div>
+
+            <div>
+                <p class="text-xs text-gray-400">Status</p>
+                <p class="font-semibold">{{ application.status }}</p>
+                {% if application.interview_scheduled_at %}
+                    <p class="text-sm text-gray-500 mt-1">When: {{ application.interview_scheduled_at|date:"M d, Y h:i A" }}</p>
+                    <p class="text-sm text-gray-500">Where: {{ application.interview_location|default:"Online" }}</p>
+                    {% if application.interview_meeting_url %}
+                        <p class="text-sm text-gray-500">Meeting: <a href="{{ application.interview_meeting_url }}" target="_blank" class="text-blue-600">Join</a></p>
+                    {% endif %}
+                    <p class="mt-3"><a href="{% url 'download_interview_invite' application.id %}" class="px-4 py-2 bg-blue-600 text-white rounded-lg">⬇️ Download Invite</a></p>
+                {% else %}
+                    <p class="text-sm text-gray-500 mt-1">No schedule yet. Use the button below to schedule an interview.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mt-6 flex gap-3 items-start">
+            <a href="{% url 'employer_message_conversation' application.user.id %}" class="px-4 py-2 bg-green-600 text-white rounded-lg">💬 Message Applicant</a>
+
+            <!-- Inline schedule toggle/button -->
+            <div class="relative">
+                <button id="toggle-schedule" type="button" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg">📅 Schedule Interview</button>
+
+                <div id="schedule-panel" class="hidden absolute mt-2 right-0 w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50">
+                    <form id="schedule-form" method="POST" action="{% url 'schedule_interview' application.id %}">
+                        {% csrf_token %}
+                        <label class="text-xs text-gray-500">When</label>
+                        <input type="datetime-local" name="scheduled_at" class="w-full mt-1 mb-2 border border-gray-200 rounded p-2" value="{% if application.interview_scheduled_at %}{{ application.interview_scheduled_at|date:'Y-m-d\TH:i' }}{% endif %}">
+                        <label class="text-xs text-gray-500">Duration (minutes)</label>
+                        <input type="number" name="duration_minutes" min="15" max="240" step="15" value="45" class="w-full mt-1 mb-2 border border-gray-200 rounded p-2">
+                        <label class="text-xs text-gray-500">Location</label>
+                        <input type="text" name="location" class="w-full mt-1 mb-2 border border-gray-200 rounded p-2" value="{% if application.interview_location %}{{ application.interview_location }}{% endif %}">
+                        <label class="text-xs text-gray-500">Meeting URL</label>
+                        <input type="url" name="meeting_url" class="w-full mt-1 mb-3 border border-gray-200 rounded p-2" value="{% if application.interview_meeting_url %}{{ application.interview_meeting_url }}{% endif %}">
+                        <div class="flex gap-2">
+                            <button type="submit" class="px-3 py-1.5 bg-blue-600 text-white rounded">Schedule</button>
+                            <button type="button" id="cancel-schedule" class="px-3 py-1.5 bg-gray-100 rounded">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// Inline schedule panel toggle and AJAX submit
+(function(){
+    const toggle = document.getElementById('toggle-schedule');
+    const panel = document.getElementById('schedule-panel');
+    const cancel = document.getElementById('cancel-schedule');
+    const form = document.getElementById('schedule-form');
+
+    if (toggle && panel) {
+        toggle.addEventListener('click', function(e){
+            panel.classList.toggle('hidden');
+            e.stopPropagation();
+        });
+
+        cancel && cancel.addEventListener('click', function(){
+            panel.classList.add('hidden');
+        });
+
+        // Close on outside click
+        document.addEventListener('click', function(e){
+            if (!panel.contains(e.target) && e.target !== toggle) {
+                panel.classList.add('hidden');
+            }
+        });
+
+        form && form.addEventListener('submit', function(e){
+            e.preventDefault();
+            const url = form.action;
+            const data = new FormData(form);
+            fetch(url, {
+                method: 'POST',
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
+                body: data,
+                credentials: 'same-origin'
+            }).then(resp => {
+                return resp.text().then(text => {
+                    let json = null;
+                    try { json = text ? JSON.parse(text) : null; } catch (err) { throw new Error('Unexpected server response: ' + text); }
+                    if (resp.ok && json) return json;
+                    const msg = json && (json.error || json.message) ? (json.error || json.message) : (text || 'Failed to schedule interview');
+                    throw new Error(msg);
+                });
+            }).then(json => {
+                if (json.success) {
+                    // Update UI: show scheduled info and download link
+                    const details = panel.parentElement.parentElement.querySelector('.mt-6.grid');
+                    if (details) {
+                        // Insert or update scheduled info block
+                        let scheduledBlock = document.getElementById('scheduled-info');
+                        if (!scheduledBlock) {
+                            scheduledBlock = document.createElement('div');
+                            scheduledBlock.id = 'scheduled-info';
+                            scheduledBlock.className = 'mt-4 p-4 bg-gray-50 rounded';
+                            details.parentElement.insertBefore(scheduledBlock, details.nextSibling);
+                        }
+                        const when = json.scheduled_at ? new Date(json.scheduled_at).toLocaleString() : 'N/A';
+                        scheduledBlock.innerHTML = `\n                            <p class="text-sm text-gray-600">When: ${when}</p>\n                            <p class="text-sm text-gray-600">Where: ${json.location || 'Online'}</p>\n                            ${json.meeting_url? `<p class="text-sm text-gray-600">Meeting: <a href="${json.meeting_url}" target="_blank" class="text-blue-600">Join</a></p>` : ''}\n                            <p class="mt-3"><a href="${json.download_url}" class="px-4 py-2 bg-blue-600 text-white rounded-lg">⬇️ Download Invite</a></p>\n                        `;
+                    }
+
+                    // Close panel
+                    panel.classList.add('hidden');
+                    // Optionally show a brief success message
+                    alert(json.message);
+                } else {
+                    // This branch should not happen because server returns non-OK for errors, but keep it defensive
+                    alert(json.error || 'Failed to schedule interview');
+                }
+            }).catch(err => {
+                console.error(err);
+                alert(err.message || 'Error scheduling interview');
+            });
+        });
+    }
+})();
+</script>
+
+</div>
+{% endblock %}

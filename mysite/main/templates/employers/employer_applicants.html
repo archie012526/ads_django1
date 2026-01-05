@@ -79,18 +79,18 @@
                 <table class="w-full">
                     <thead class="bg-gray-50 border-b border-gray-100">
                         <tr>
-                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Applicant</th>
-                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Position</th>
-                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Status</th>
-                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Applied On</th>
-                            <th class="px-6 py-4 text-left text-sm font-bold text-gray-600">Actions</th>
+                            <th class="px-4 py-4 text-left text-sm font-bold text-gray-600 applicant-col">Applicant</th>
+                            <th class="px-4 py-4 text-left text-sm font-bold text-gray-600 position-col">Position</th>
+                            <th class="px-4 py-4 text-left text-sm font-bold text-gray-600 status-col">Status</th>
+                            <th class="px-4 py-4 text-left text-sm font-bold text-gray-600 applied-col">Applied On</th>
+                            <th class="px-4 py-4 text-left text-sm font-bold text-gray-600">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         {% for application in applications %}
                         <tr class="hover:bg-blue-50 transition">
                             <!-- Applicant Info -->
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 applicant-col">
                                 <div class="flex items-center gap-3">
                                     {% if application.user.profile.profile_image %}
                                         <img src="{{ application.user.profile.profile_image.url }}" alt="{{ application.user.username }}" 
@@ -103,6 +103,15 @@
                                     <div>
                                         <p class="font-semibold text-[#1e293b]">{{ application.user.profile.full_name|default:application.user.username }}</p>
                                         <p class="text-xs text-gray-500">{{ application.user.email }}</p>
+                                        {% if application.user.profile.location or application.user.profile.phone_number %}
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                {% if application.user.profile.location %}📍 {{ application.user.profile.location }}{% endif %}
+                                                {% if application.user.profile.phone_number %} {% if application.user.profile.location %}•{% endif %} 📞 {{ application.user.profile.phone_number }}{% endif %}
+                                            </p>
+                                        {% endif %}
+                                        {% if application.user.profile.bio %}
+                                            <p class="text-xs text-gray-500 mt-1 applicant-bio">{{ application.user.profile.bio }}</p>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </td>
@@ -114,40 +123,57 @@
                             </td>
                             
                             <!-- Status -->
-                            <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold
-                                    {% if application.status == 'Pending' %}bg-yellow-100 text-yellow-700
-                                    {% elif application.status == 'Reviewed' %}bg-blue-100 text-blue-700
-                                    {% elif application.status == 'Interview' %}bg-purple-100 text-purple-700
-                                    {% elif application.status == 'Accepted' %}bg-green-100 text-green-700
-                                    {% elif application.status == 'Rejected' %}bg-red-100 text-red-700
-                                    {% endif %}">
-                                    {{ application.status }}
-                                </span>
+                            <td class="px-4 py-4 status-col">
+                                {% if application.status == 'Interview' %}
+                                    <a href="{% url 'employer_interview_detail' application.id %}">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold
+                                            {% if application.status == 'Pending' %}bg-yellow-100 text-yellow-700
+                                            {% elif application.status == 'Reviewed' %}bg-blue-100 text-blue-700
+                                            {% elif application.status == 'Interview' %}bg-purple-100 text-purple-700
+                                            {% elif application.status == 'Accepted' %}bg-green-100 text-green-700
+                                            {% elif application.status == 'Rejected' %}bg-red-100 text-red-700
+                                            {% endif %}">
+                                            {{ application.status }}
+                                        </span>
+                                    </a>
+                                {% else %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold
+                                        {% if application.status == 'Pending' %}bg-yellow-100 text-yellow-700
+                                        {% elif application.status == 'Reviewed' %}bg-blue-100 text-blue-700
+                                        {% elif application.status == 'Interview' %}bg-purple-100 text-purple-700
+                                        {% elif application.status == 'Accepted' %}bg-green-100 text-green-700
+                                        {% elif application.status == 'Rejected' %}bg-red-100 text-red-700
+                                        {% endif %}">
+                                        {{ application.status }}
+                                    </span>
+                                {% endif %}
                             </td>
                             
                             <!-- Applied On -->
-                            <td class="px-6 py-4">
+                            <td class="px-4 py-4 applied-col">
                                 <p class="text-sm text-gray-600">{{ application.applied_at|date:"M d, Y" }}</p>
                                 <p class="text-xs text-gray-500">{{ application.applied_at|timesince }} ago</p>
                             </td>
                             
                             <!-- Actions -->
                             <td class="px-6 py-4">
-                                <div class="flex gap-2">
-                                    <a href="{% url 'view_user_profile' application.user.id %}" 
-                                       class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-100 rounded-lg transition" title="View Profile">
-                                        👁️ View
+                                <div class="flex items-center gap-2">
+                                    <a href="{% url 'view_user_profile' application.user.id %}" class="action-icon text-blue-600" title="View Profile" aria-label="View profile">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7z" />
+                                        </svg>
                                     </a>
-                                    <a href="{% url 'employer_message_conversation' application.user.id %}" 
-                                       class="px-3 py-1.5 text-xs font-medium text-green-600 hover:bg-green-100 rounded-lg transition" title="Message">
-                                        💬 Chat
+                                    <a href="{% url 'employer_message_conversation' application.user.id %}" class="action-icon text-green-600" title="Message" aria-label="Message applicant">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h6m2 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v6a2 2 0 01-2 2h-1" />
+                                        </svg>
                                     </a>
-                                    <div class="relative group">
-                                        <button class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition">
+                                    <div class="relative">
+                                        <button type="button" data-toggle-menu="menu-{{ application.id }}" class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition" aria-haspopup="true" aria-expanded="false">
                                             ⋯
                                         </button>
-                                        <div class="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition z-10">
+                                        <div id="menu-{{ application.id }}" class="menu hidden z-50" role="menu" aria-hidden="true">
                                             <form method="POST" action="{% url 'update_application_status' application.id %}" class="p-2">
                                                 {% csrf_token %}
                                                 <select name="status" class="w-full text-sm border border-gray-200 rounded p-2 mb-2">
@@ -159,10 +185,6 @@
                                                     Update Status
                                                 </button>
                                             </form>
-                                            <a href="{% url 'schedule_interview' application.id %}" 
-                                               class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 border-t border-gray-200" title="Schedule Interview">
-                                                📅 Schedule Interview
-                                            </a>
                                         </div>
                                     </div>
                                 </div>
@@ -188,16 +210,135 @@
 </div>
 
 <style>
-    .relative {
-        position: relative;
+    .relative { position: relative; }
+
+    /* Make applicant column wider and allow bio to wrap */
+    .applicant-col { width: 38%; }
+    .position-col { width: 25%; }
+    .status-col { width: 10%; text-align: center; padding-left: 8px !important; padding-right: 8px !important; }
+    .applied-col { width: 15%; text-align: left; }
+    .applicant-bio { color: #666; font-size: 13px; margin-top: 6px; white-space: normal; }
+    table.w-full tbody tr td { padding: 18px 8px; vertical-align: middle; }
+
+    @media (max-width: 768px) {
+        .applicant-col, .position-col, .status-col, .applied-col { width: auto; display: block; }
+        table.w-full tbody tr td { padding: 12px 10px; }
     }
-    
-    .group:hover .group-hover\:opacity-100 {
-        opacity: 1;
+
+    /* Menu base style - fixed overlay to avoid table overflow & scrollbars */
+    .menu {
+        display: none;
+        position: fixed;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(2,6,23,0.08);
+        min-width: 180px;
+        max-width: 320px;
+        overflow: visible !important;
+        z-index: 9999;
+        padding: 4px 0;
     }
-    
-    .group:hover .group-hover\:visible {
-        visibility: visible;
+    .menu.hidden { display: none; }
+    .menu.show { display: block; }
+
+    /* Icon-only action buttons for compact actions column */
+    .action-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        transition: background-color .15s ease, color .15s ease;
+        text-decoration: none;
     }
+    .action-icon:hover {
+        background: rgba(15, 23, 42, 0.04);
+    }
+    .action-icon svg { width: 18px; height: 18px; }
+    .action-icon:focus { outline: 2px solid rgba(59,130,246,0.18); outline-offset: 2px; }
 </style>
+
+<script>
+// Toggle action menus on click; keep visible until user clicks outside or toggles again.
+// Position menu as a fixed overlay so it sits over the applicant row and doesn't cause scrollbars.
+document.addEventListener('click', function(e) {
+    const toggle = e.target.closest('[data-toggle-menu]');
+    if (toggle) {
+        const id = toggle.getAttribute('data-toggle-menu');
+        const menu = document.getElementById(id);
+        if (!menu) return;
+
+        // Close other menus
+        document.querySelectorAll('.menu').forEach(m => {
+            if (m !== menu) {
+                m.classList.add('hidden');
+                m.style.left = '';
+                m.style.top = '';
+                m.style.display = '';
+                m.style.visibility = '';
+            }
+        });
+
+        const isHidden = menu.classList.contains('hidden');
+        if (isHidden) {
+            // Show menu and compute position
+            menu.classList.remove('hidden');
+            menu.style.display = 'block';
+            menu.style.visibility = 'hidden'; // hide while measuring
+
+            // Measure
+            const rect = toggle.getBoundingClientRect();
+            const menuRect = menu.getBoundingClientRect();
+
+            // Default position below the button
+            let left = rect.right - menuRect.width;
+            if (left < 8) left = rect.left;
+            let top = rect.bottom + 8;
+
+            // If menu would go off-screen at bottom, show above toggle
+            if (top + menuRect.height > window.innerHeight - 10) {
+                top = rect.top - menuRect.height - 8;
+            }
+
+            // Ensure menu doesn't go off-screen horizontally
+            if (left + menuRect.width > window.innerWidth - 10) {
+                left = window.innerWidth - menuRect.width - 10;
+            }
+            if (left < 8) left = 8;
+
+            // Apply positions
+            menu.style.left = left + 'px';
+            menu.style.top = top + 'px';
+            menu.style.position = 'fixed';
+            menu.style.zIndex = 9999;
+            menu.style.visibility = 'visible';
+        } else {
+            // Hide menu
+            menu.classList.add('hidden');
+            menu.style.left = '';
+            menu.style.top = '';
+            menu.style.display = '';
+            menu.style.visibility = '';
+            menu.style.position = '';
+        }
+
+        e.stopPropagation();
+        return;
+    }
+
+    // Clicked outside: close all menus
+    if (!e.target.closest('.menu')) {
+        document.querySelectorAll('.menu').forEach(m => {
+            m.classList.add('hidden');
+            m.style.left = '';
+            m.style.top = '';
+            m.style.display = '';
+            m.style.visibility = '';
+            m.style.position = '';
+        });
+    }
+});
+</script>
 {% endblock %}

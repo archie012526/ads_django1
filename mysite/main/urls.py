@@ -95,6 +95,7 @@ urlpatterns = [
     path("employers/messages/", views.employer_messages_inbox, name="employer_messages"),
     path("employers/messages/<int:applicant_id>/", views.employer_message_conversation, name="employer_message_conversation"),
     path("employers/applicants/", views.employer_applicants, name="employer_applicants"),
+    path("employers/applicants/<int:app_id>/interview/", views.employer_interview_detail, name="employer_interview_detail"),
 ]   
 
     
