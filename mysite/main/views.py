@@ -17,6 +17,17 @@ from django.http import HttpResponseForbidden
 from .models import AuditLog
 
 from .models import Profile, Job, JobApplication, Notification, Skill, Message, SavedJob,SkillTag
+
+
+def add_audit_log(request, user, action):
+    """Convenience helper to create an AuditLog entry with IP detection."""
+    ip = request.META.get('HTTP_X_FORWARDED_FOR')
+    if ip:
+        ip = ip.split(',')[0].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    AuditLog.objects.create(user=user, action=action, ip_address=ip)
+
 from .forms import JobForm, PostForm, SkillForm, UserForm, ProfileForm, SettingsForm, SignUpForm, JobApplicationForm
 
 from django.contrib.auth import logout as django_logout
@@ -79,6 +90,7 @@ def toggle_user_ban(request, user_id):
     user = get_object_or_404(User, id=user_id)
     user.is_active = not user.is_active
     user.save()
+    add_audit_log(request, request.user, f"Toggled user active for '{user.username}' -> is_active={user.is_active}")
     return redirect("admin_users")
 
 # ============= JOB MANAGEMENT =============
@@ -99,6 +111,7 @@ def toggle_job_approval(request, job_id):
     job = get_object_or_404(Job, id=job_id)
     job.is_approved = not job.is_approved
     job.save()
+    add_audit_log(request, request.user, f"Toggled job approval for '{job.title}' (id:{job.id}) -> is_approved={job.is_approved}")
     return redirect('admin_jobs')
 
 @login_required(login_url="/admin-panel/login/")
@@ -107,7 +120,9 @@ def delete_job(request, job_id):
         return HttpResponseForbidden()
 
     job = get_object_or_404(Job, id=job_id)
+    title = job.title
     job.delete()
+    add_audit_log(request, request.user, f"Admin deleted job '{title}' (id:{job_id})")
     return redirect('admin_jobs')
 
 def admin_skills(request):
@@ -130,6 +145,7 @@ def admin_skills(request):
                 level=level,
                 description=description
             )
+            add_audit_log(request, request.user, f"Admin added skill '{name}'")
         return redirect('admin_skills')
 
     # 3. Fetch BOTH Global skills and Admin-owned skills
@@ -148,7 +164,9 @@ def admin_skill_delete(request, pk):
     from .models import Skill
     skill = get_object_or_404(Skill, pk=pk)
     if request.method == "POST":
+        name = skill.name
         skill.delete()
+        add_audit_log(request, request.user, f"Admin deleted skill '{name}' (id:{pk})")
     return redirect('admin_skills')
 
 
@@ -172,8 +190,10 @@ def seed_skills_view(request):
 
     if created:
         messages.success(request, f"Seeded {created} skills.")
+        add_audit_log(request, request.user, f"Seeded {created} skills")
     else:
         messages.info(request, "Skills already seeded.")
+        add_audit_log(request, request.user, "Seed skills called but nothing new was added")
 
     return redirect('admin_skills')
 
@@ -289,7 +309,8 @@ def employerpost_job(request):
 
             if tag_ids:
                 job.skills.set(tag_ids)
-            
+
+        add_audit_log(request, request.user, f"Employer posted job '{job.title}' (id:{job.id})")
         return redirect('employer_dashboard')
         
     # THE FIX: Use the 'Skill' model and filter for Global + Employer skills
@@ -571,6 +592,7 @@ def homepage(request):
                 post = form.save(commit=False)
                 post.user = request.user
                 post.save()
+                add_audit_log(request, request.user, f"Created post (id:{post.id})")
                 messages.success(request, "Post created successfully!")
                 return redirect('homepage')
     else:
@@ -1135,6 +1157,7 @@ def skills_page(request):
 
             # Create a user-owned skill record referring to the chosen global skill name
             Skill.objects.create(user=request.user.profile, name=selected_name, level=level)
+            add_audit_log(request, request.user, f"Added skill '{selected_name}'")
             messages.success(request, f"Added skill: {selected_name}")
             return redirect("skills")
     else:
@@ -1210,11 +1233,12 @@ def conversation_view(request, user_id):
     if request.method == "POST":
         content = request.POST.get("message")
         if content:
-            Message.objects.create(
+            msg = Message.objects.create(
                 sender=request.user,
                 receiver=other,
                 content=content
             )
+            add_audit_log(request, request.user, f"Sent message to {other.username}: {content[:120]}")
             # Create notification for receiver
             Notification.objects.create(
                 user=other,
@@ -1496,6 +1520,7 @@ def create_job(request):
             job = form.save(commit=False)
             job.user = request.user
             job.save()
+            add_audit_log(request, request.user, f"Created job '{job.title}' (id:{job.id})")
             messages.success(request, "Job created successfully!")
             return redirect("find_job")
     else:
@@ -1513,6 +1538,7 @@ def edit_job(request, job_id: int):
             job = form.save(commit=False)
             job.user = request.user
             job.save()
+            add_audit_log(request, request.user, f"Updated job '{job.title}' (id:{job.id})")
             messages.success(request, "Job updated successfully!")
             return redirect("homepage")
     else:
@@ -1524,7 +1550,9 @@ def edit_job(request, job_id: int):
 def delete_job(request, job_id: int):
     job = get_object_or_404(Job, id=job_id, user=request.user)
     if request.method == "POST":
+        title = job.title
         job.delete()
+        add_audit_log(request, request.user, f"Deleted job '{title}' (id:{job_id})")
         messages.success(request, "Job deleted.")
         return redirect("homepage")
     return redirect("homepage")
@@ -1595,6 +1623,7 @@ def apply_job(request, job_id):
             application.user = request.user
             application.job = job
             application.save()
+            add_audit_log(request, request.user, f"Applied to job '{job.title}' (id:{job.id})")
             
             # Create notification for job poster
             Notification.objects.create(
@@ -1630,10 +1659,12 @@ def toggle_save_job(request, job_id):
     if not created:
         # Job was already saved, so delete it
         saved_job.delete()
+        add_audit_log(request, request.user, f"Removed saved job '{job.title}' (id:{job.id})")
         messages.info(request, "Job removed from saved.")
         is_saved = False
     else:
         messages.success(request, "Job saved successfully!")
+        add_audit_log(request, request.user, f"Saved job '{job.title}' (id:{job.id})")
         is_saved = True
     
     # Return JSON response for AJAX
