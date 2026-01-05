@@ -10,9 +10,9 @@ from django.db.models import Count, Max
 from django.conf import settings
 from django.core.mail import send_mail, EmailMessage
 from django.utils import timezone
+from django.urls import reverse
 from django.http import JsonResponse, HttpResponse
-from datetime import timedelta
-from datetime import datetime
+from datetime import timedelta, datetime, timezone as dt_timezone
 from .models import Post
 from django.http import HttpResponseForbidden
 from .models import AuditLog
@@ -1098,14 +1098,35 @@ def update_application_status(request, app_id: int):
 
     if request.method == 'POST':
         new_status = request.POST.get('status')
-        valid = {choice[0] for choice in JobApplication.STATUS_CHOICES}
-        if new_status in valid:
-            application.status = new_status
+        canonical = None
+        for choice_val, _ in JobApplication.STATUS_CHOICES:
+            if str(new_status).lower() == str(choice_val).lower():
+                canonical = choice_val
+                break
+        if canonical:
+            # If employer chooses Interview, redirect to interview details so they can schedule.
+            # Do not persist 'Interview' until an interview is scheduled and confirmed.
+            if canonical == 'Interview':
+                interview_url = reverse('employer_schedule_interview', args=[application.id])
+                # If AJAX, tell the client to redirect to the schedule page; otherwise perform normal redirect
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'success': True, 'redirect': interview_url})
+                messages.success(request, "Proceed to schedule the interview — the application status will be set when the interview is confirmed.")
+                return redirect(interview_url)
+
+            # Otherwise persist status immediately
+            application.status = canonical
             application.save(update_fields=['status'])
+
+            # If caller expects JSON (AJAX), return success without redirect so the UI can update in-place
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'status': canonical, 'message': 'Application status updated.'})
+
             messages.success(request, "Application status updated.")
         else:
             messages.error(request, "Invalid status selected.")
-    return redirect('job_applications')
+    # For non-AJAX submits keep the employer on the applicants page
+    return redirect('employer_applicants')
 
 
 # ============================
@@ -1120,7 +1141,10 @@ def schedule_interview(request, app_id: int):
         return redirect('job_applications')
 
     if request.method == 'POST':
+        # Support both datetime-local and separate date/time dropdowns
         scheduled_at_str = request.POST.get('scheduled_at')  # HTML datetime-local
+        date_only = request.POST.get('date')
+        time_only = request.POST.get('time')
         location = request.POST.get('location', '')
         meeting_url = request.POST.get('meeting_url', '')
         try:
@@ -1129,14 +1153,25 @@ def schedule_interview(request, app_id: int):
             duration_minutes = 45
 
         try:
+            naive = None
             if scheduled_at_str:
+                # Expect 'YYYY-MM-DDTHH:MM'
                 naive = datetime.strptime(scheduled_at_str, '%Y-%m-%dT%H:%M')
+            elif date_only and time_only:
+                naive = datetime.strptime(f"{date_only}T{time_only}", '%Y-%m-%dT%H:%M')
+            elif date_only:
+                # date only -> default to 09:00
+                naive = datetime.strptime(f"{date_only}T09:00", '%Y-%m-%dT%H:%M')
+
+            if naive:
                 aware_dt = timezone.make_aware(naive, timezone.get_current_timezone())
             else:
                 aware_dt = None
         except Exception:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': 'Invalid date/time format.'}, status=400)
             messages.error(request, 'Invalid date/time format.')
-            return redirect('job_applications')
+            return redirect('employer_applicants')
 
         application.interview_scheduled_at = aware_dt
         application.interview_location = location or None
@@ -1208,12 +1243,24 @@ def schedule_interview(request, app_id: int):
             except Exception:
                 pass
 
-        messages.success(request, 'Interview scheduled; invite emailed and ready to download.')
-    return redirect('job_applications')
+        msg_text = 'Interview scheduled; invite emailed and ready to download.'
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': msg_text,
+                'scheduled_at': application.interview_scheduled_at.isoformat() if application.interview_scheduled_at else None,
+                'location': application.interview_location,
+                'meeting_url': application.interview_meeting_url,
+                'download_url': reverse('download_interview_invite', args=[application.id])
+            })
+
+        messages.success(request, msg_text)
+        return redirect('employer_interview_detail', app_id=application.id)
 
 
 def _format_ics_dt(dt):
-    dt_utc = dt.astimezone(timezone.utc)
+    # Use stdlib UTC timezone to avoid relying on django.utils.timezone.utc
+    dt_utc = dt.astimezone(dt_timezone.utc)
     return dt_utc.strftime('%Y%m%dT%H%M%SZ')
 
 
@@ -1262,6 +1309,60 @@ def download_interview_invite(request, app_id: int):
     response['Content-Disposition'] = f'attachment; filename=interview-{application.id}.ics'
     return response
 
+
+# ------------------------------
+# Employer Interview views
+# ------------------------------
+@login_required
+def employer_interview_detail(request, app_id: int):
+    application = get_object_or_404(JobApplication, id=app_id)
+    if application.job.user != request.user:
+        messages.error(request, "You do not have permission to view this interview.")
+        return redirect('employer_applicants')
+
+    return render(request, 'employers/employer_interview.html', {
+        'application': application
+    })
+
+
+@login_required
+def employer_schedule_interview(request, app_id: int):
+    """Render a full scheduling page with date/time dropdowns for employers.
+
+    The form posts to the existing `schedule_interview` endpoint which will
+    validate and persist the schedule. This view only provides select
+    options for dates and times.
+    """
+    application = get_object_or_404(JobApplication, id=app_id)
+    if application.job.user != request.user:
+        messages.error(request, "You do not have permission to schedule this interview.")
+        return redirect('employer_applicants')
+
+    # Prepare date options (next 14 days)
+    today = timezone.localtime(timezone.now()).date()
+    date_options = []
+    for i in range(0, 15):
+        d = today + timedelta(days=i)
+        date_options.append({
+            'value': d.isoformat(),
+            'label': d.strftime('%a %b %d, %Y')
+        })
+
+    # Prepare time slots (every 30 minutes from 08:00 to 18:00)
+    time_options = []
+    for h in range(8, 19):
+        for m in (0, 30):
+            val = f"{h:02d}:{m:02d}"
+            # Display in 12h format
+            dt = datetime.strptime(val, '%H:%M')
+            label = dt.strftime('%I:%M %p').lstrip('0')
+            time_options.append({'value': val, 'label': label})
+
+    return render(request, 'employers/employer_schedule.html', {
+        'application': application,
+        'date_options': date_options,
+        'time_options': time_options,
+    })
 
 # ============================
 # SKILLS
@@ -2021,3 +2122,88 @@ def employer_mark_all_read(request):
     
     Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     return redirect('employer_notifications')
+
+
+# ======================
+# REST API ENDPOINTS
+# ======================
+
+@login_required
+def api_notifications_list(request):
+    """REST API: Get all notifications for the authenticated user"""
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    
+    data = {
+        'count': notifications.count(),
+        'unread_count': notifications.filter(is_read=False).count(),
+        'notifications': [
+            {
+                'id': n.id,
+                'title': n.title,
+                'message': n.message,
+                'notification_type': n.notification_type,
+                'is_read': n.is_read,
+                'link': n.link,
+                'created_at': n.created_at.isoformat(),
+            }
+            for n in notifications[:50]  # Limit to 50 most recent
+        ]
+    }
+    
+    return JsonResponse(data)
+
+
+@login_required
+def api_notification_mark_read(request, notification_id):
+    """REST API: Mark a specific notification as read"""
+    if request.method == 'POST':
+        try:
+            notification = Notification.objects.get(id=notification_id, user=request.user)
+            notification.is_read = True
+            notification.save()
+            return JsonResponse({'success': True, 'message': 'Notification marked as read'})
+        except Notification.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Notification not found'}, status=404)
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+
+@login_required
+def api_notifications_mark_all_read(request):
+    """REST API: Mark all notifications as read"""
+    if request.method == 'POST':
+        count = Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return JsonResponse({'success': True, 'message': f'{count} notifications marked as read', 'count': count})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+
+def api_global_notifications_list(request):
+    """REST API: Get all active global notifications"""
+    from django.utils import timezone
+    
+    now = timezone.now()
+    notifications = GlobalNotification.objects.filter(
+        show_on_site=True,
+        is_active=True
+    ).filter(
+        models.Q(expires_at__isnull=True) | models.Q(expires_at__gt=now)
+    ).order_by('-created_at')[:10]
+    
+    data = {
+        'count': notifications.count(),
+        'notifications': [
+            {
+                'id': n.id,
+                'title': n.title,
+                'message': n.message,
+                'level': n.level,
+                'created_at': n.created_at.isoformat(),
+                'expires_at': n.expires_at.isoformat() if n.expires_at else None,
+            }
+            for n in notifications
+        ]
+    }
+    
+    return JsonResponse(data)
+

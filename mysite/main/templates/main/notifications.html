@@ -56,4 +56,188 @@
 
 </div>
 
+<script>
+// Real-time notification updates for this page
+document.addEventListener('DOMContentLoaded', function() {
+    let updateCheckInterval;
+    
+    // Function to add notification to page
+    function addNotificationToPage(notification) {
+        const notifList = document.querySelector('.notif-list');
+        const noNotifsMsg = notifList.querySelector('.no-notifs');
+        
+        // Remove "no notifications" message if present
+        if (noNotifsMsg) {
+            noNotifsMsg.remove();
+        }
+        
+        // Determine color based on notification type
+        let iconColor = 'purple';
+        if (notification.notification_type === 'job_post') iconColor = 'blue';
+        else if (notification.notification_type === 'message') iconColor = 'green';
+        else if (notification.notification_type === 'job_application') iconColor = 'orange';
+        
+        // Create notification element
+        const notifDiv = document.createElement('div');
+        notifDiv.className = 'notif-item unread';
+        notifDiv.style.animation = 'slideIn 0.3s ease';
+        
+        notifDiv.innerHTML = `
+            <div class="notif-icon ${iconColor}"></div>
+            <div class="notif-content">
+                <h3>${notification.title}</h3>
+                <p>${notification.message}</p>
+                ${notification.link ? `<a href="${notification.link}" style="color: #667eea; font-size: 13px; text-decoration: none; margin-top: 4px; display: inline-block;">View Details →</a>` : ''}
+            </div>
+            <span class="notif-type">${notification.notification_type}</span>
+            <span class="notif-time">Just now</span>
+            <span class="notif-status unread-badge">unread</span>
+        `;
+        
+        // Insert at the top
+        notifList.insertBefore(notifDiv, notifList.firstChild);
+        
+        // Highlight animation
+        setTimeout(() => {
+            notifDiv.style.backgroundColor = '#f0f9ff';
+        }, 100);
+        setTimeout(() => {
+            notifDiv.style.backgroundColor = '';
+        }, 2000);
+    }
+    
+    // Connect to WebSocket when available
+    function setupWebSocketListener() {
+        // Check if WebSocket exists and is from base.html
+        if (window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN) {
+            console.log('✅ WebSocket found - setting up listener');
+            setupListener();
+            return true;
+        }
+        return false;
+    }
+    
+    function setupListener() {
+        // Store original handlers
+        const originalHandleNotification = window.handleNotification;
+        
+        // Override handleNotification to also update the page
+        window.handleNotification = function(notification) {
+            console.log('📌 Adding notification to page:', notification);
+            addNotificationToPage(notification);
+            
+            // Call original if it exists
+            if (originalHandleNotification) {
+                originalHandleNotification.call(this, notification);
+            }
+        };
+    }
+    
+    // Try to setup immediately
+    if (!setupWebSocketListener()) {
+        // If WebSocket not ready, check periodically
+        updateCheckInterval = setInterval(() => {
+            if (setupWebSocketListener()) {
+                clearInterval(updateCheckInterval);
+            }
+        }, 500);
+        
+        // Clear interval after 10 seconds
+        setTimeout(() => {
+            clearInterval(updateCheckInterval);
+            console.log('⚠️ WebSocket listener setup timeout - using API polling');
+            // Fallback to polling API every 5 seconds
+            pollNotificationsAPI();
+        }, 10000);
+    }
+    
+    // Function to poll API for new notifications
+    function pollNotificationsAPI() {
+        let lastCount = document.querySelectorAll('.notif-item').length;
+        
+        setInterval(() => {
+            fetch('/api/notifications/')
+                .then(response => response.json())
+                .then(data => {
+                    const currentCount = document.querySelectorAll('.notif-item').length;
+                    
+                    // If there are new notifications, reload page
+                    if (data.count > currentCount) {
+                        console.log('📢 New notifications detected via API - reloading...');
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error('API Error:', error));
+        }, 5000);
+    }
+    
+    // Mark all as read with API
+    const markAllBtn = document.querySelector('.mark-read-btn');
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            fetch('/api/notifications/mark-all-read/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI
+                    document.querySelectorAll('.notif-item').forEach(item => {
+                        item.classList.remove('unread');
+                        const badge = item.querySelector('.notif-status');
+                        if (badge) {
+                            badge.className = 'notif-status read-badge';
+                            badge.textContent = 'read';
+                        }
+                    });
+                    
+                    // Update badge count
+                    const badges = document.querySelectorAll('.notification-badge');
+                    badges.forEach(badge => badge.textContent = '0');
+                    
+                    console.log('✅ All notifications marked as read');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+
+// Add slide in animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
 {% endblock %}

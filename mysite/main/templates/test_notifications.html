@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-Time Notifications Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .messages {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+            background: #f9f9f9;
+        }
+        .message {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-left: 4px solid #007bff;
+            border-radius: 2px;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Real-Time Notifications Test</h1>
+        
+        <div id="status" class="status disconnected">
+            ⚫ WebSocket: Disconnected
+        </div>
+        
+        <button onclick="testNotification()">Send Test Notification</button>
+        <button onclick="clearMessages()">Clear Messages</button>
+        
+        <div class="messages" id="messages"></div>
+    </div>
+
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const statusDiv = document.getElementById('status');
+        let socket = null;
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            socket = new WebSocket(`${protocol}//${window.location.host}/ws/notifications/`);
+
+            socket.onopen = function(e) {
+                console.log('✅ WebSocket connected!');
+                updateStatus(true);
+                addMessage('✅ WebSocket Connected', 'Connected to real-time notification server');
+            };
+
+            socket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                console.log('📨 Received:', data);
+                
+                if (data.type === 'notification') {
+                    addMessage(
+                        `📬 Notification: ${data.notification.title}`,
+                        data.notification.message,
+                        'notification'
+                    );
+                } else if (data.type === 'global_notification') {
+                    addMessage(
+                        `📢 Global: ${data.notification.title}`,
+                        data.notification.message,
+                        'global'
+                    );
+                }
+            };
+
+            socket.onclose = function(e) {
+                console.log('❌ WebSocket disconnected');
+                updateStatus(false);
+                addMessage('❌ WebSocket Disconnected', 'Attempting to reconnect...');
+                // Reconnect after 3 seconds
+                setTimeout(connectWebSocket, 3000);
+            };
+
+            socket.onerror = function(error) {
+                console.error('Error:', error);
+                updateStatus(false);
+            };
+        }
+
+        function updateStatus(connected) {
+            if (connected) {
+                statusDiv.className = 'status connected';
+                statusDiv.textContent = '🟢 WebSocket: Connected';
+            } else {
+                statusDiv.className = 'status disconnected';
+                statusDiv.textContent = '🔴 WebSocket: Disconnected';
+            }
+        }
+
+        function addMessage(title, message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = 'message';
+            div.style.borderLeftColor = type === 'notification' ? '#28a745' : type === 'global' ? '#ffc107' : '#007bff';
+            div.innerHTML = `
+                <strong>${title}</strong>
+                <p>${message}</p>
+                <span class="timestamp">${timestamp}</span>
+            `;
+            messagesDiv.insertBefore(div, messagesDiv.firstChild);
+            
+            // Keep only last 20 messages
+            while (messagesDiv.children.length > 20) {
+                messagesDiv.removeChild(messagesDiv.lastChild);
+            }
+        }
+
+        function clearMessages() {
+            messagesDiv.innerHTML = '';
+            addMessage('🧹 Cleared', 'Message history cleared');
+        }
+
+        function testNotification() {
+            addMessage('📤 Sending...', 'Creating test notification on server...');
+            
+            fetch('/api/notifications/', {
+                method: 'GET'
+            })
+            .then(r => r.json())
+            .then(data => {
+                addMessage('📊 Stats', `Total: ${data.count}, Unread: ${data.unread_count}`);
+            })
+            .catch(e => addMessage('⚠️ Error', e.message));
+        }
+
+        // Connect on page load
+        window.addEventListener('load', connectWebSocket);
+    </script>
+</body>
+</html>
