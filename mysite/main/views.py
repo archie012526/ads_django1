@@ -2122,3 +2122,88 @@ def employer_mark_all_read(request):
     
     Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
     return redirect('employer_notifications')
+
+
+# ======================
+# REST API ENDPOINTS
+# ======================
+
+@login_required
+def api_notifications_list(request):
+    """REST API: Get all notifications for the authenticated user"""
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    
+    data = {
+        'count': notifications.count(),
+        'unread_count': notifications.filter(is_read=False).count(),
+        'notifications': [
+            {
+                'id': n.id,
+                'title': n.title,
+                'message': n.message,
+                'notification_type': n.notification_type,
+                'is_read': n.is_read,
+                'link': n.link,
+                'created_at': n.created_at.isoformat(),
+            }
+            for n in notifications[:50]  # Limit to 50 most recent
+        ]
+    }
+    
+    return JsonResponse(data)
+
+
+@login_required
+def api_notification_mark_read(request, notification_id):
+    """REST API: Mark a specific notification as read"""
+    if request.method == 'POST':
+        try:
+            notification = Notification.objects.get(id=notification_id, user=request.user)
+            notification.is_read = True
+            notification.save()
+            return JsonResponse({'success': True, 'message': 'Notification marked as read'})
+        except Notification.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Notification not found'}, status=404)
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+
+@login_required
+def api_notifications_mark_all_read(request):
+    """REST API: Mark all notifications as read"""
+    if request.method == 'POST':
+        count = Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return JsonResponse({'success': True, 'message': f'{count} notifications marked as read', 'count': count})
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+
+
+def api_global_notifications_list(request):
+    """REST API: Get all active global notifications"""
+    from django.utils import timezone
+    
+    now = timezone.now()
+    notifications = GlobalNotification.objects.filter(
+        show_on_site=True,
+        is_active=True
+    ).filter(
+        models.Q(expires_at__isnull=True) | models.Q(expires_at__gt=now)
+    ).order_by('-created_at')[:10]
+    
+    data = {
+        'count': notifications.count(),
+        'notifications': [
+            {
+                'id': n.id,
+                'title': n.title,
+                'message': n.message,
+                'level': n.level,
+                'created_at': n.created_at.isoformat(),
+                'expires_at': n.expires_at.isoformat() if n.expires_at else None,
+            }
+            for n in notifications
+        ]
+    }
+    
+    return JsonResponse(data)
+
