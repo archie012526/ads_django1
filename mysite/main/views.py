@@ -1503,29 +1503,6 @@ def toggle_save_job(request, job_id):
 
 from .models import Skill
 
-<<<<<<< HEAD
-def seed_skills_view(request):
-    skill_list = [
-        ("Python", "Advanced", "Backend development"),
-        ("JavaScript", "Intermediate", "Frontend scripting"),
-        ("SQL", "Advanced", "Database management"),
-        ("Project Management", "Intermediate", "Team coordination"),
-        ("Communication", "Expert", "Professional soft skill"),
-    ]
-    
-    for name, level, desc in skill_list:
-        # get_or_create prevents duplicates
-        Skill.objects.get_or_create(
-            name=name, 
-            defaults={
-                'level': level, 
-                'description': desc, 
-                'user': None  # This makes it a "Global" skill
-            }
-        )
-    
-    return redirect('admin_skills')
-=======
 # ============================
 # EMPLOYER MESSAGING
 # ============================
@@ -1660,4 +1637,3 @@ def employer_applicants(request):
 
 
 
->>>>>>> 6c52eb733f7610e4aaf371957cf4be61ee846ebf
