@@ -20,6 +20,7 @@ from .models import Profile, Job, JobApplication, Notification, Skill, Message, 
 from .forms import JobForm, PostForm, SkillForm, UserForm, ProfileForm, SettingsForm, SignUpForm, JobApplicationForm
 
 from django.contrib.auth import logout as django_logout
+from django.db.models import Q
 # ============= AUTHENTICATION =============
 
 def admin_login(request):
@@ -108,6 +109,47 @@ def delete_job(request, job_id):
     job = get_object_or_404(Job, id=job_id)
     job.delete()
     return redirect('admin_jobs')
+
+def admin_skills(request):
+    # 1. Get the Profile safely
+    try:
+        user_profile = Profile.objects.get(user=request.user)
+    except Profile.DoesNotExist:
+        return render(request, 'admin/admin_skills.html', {'error': 'Profile not found.'})
+
+    # 2. Handle adding a new skill
+    if request.method == "POST":
+        name = request.POST.get('skill_name')
+        level = request.POST.get('level', 'Beginner')
+        description = request.POST.get('description', '')
+
+        if name:
+            Skill.objects.create(
+                user=user_profile, 
+                name=name,
+                level=level,
+                description=description
+            )
+        return redirect('admin_skills')
+
+    # 3. Fetch BOTH Global skills and Admin-owned skills
+    # We do this AFTER the POST check so the list is always fresh
+    skills = Skill.objects.filter(
+        Q(user__isnull=True) | Q(user=user_profile)
+    ).order_by('-id')
+
+    context = {
+        'skills': skills,
+        'levels': Skill.LEVEL_CHOICES
+    }
+    return render(request, 'admin/admin_skills.html', context)
+
+def admin_skill_delete(request, pk):
+    from .models import Skill
+    skill = get_object_or_404(Skill, pk=pk)
+    if request.method == "POST":
+        skill.delete()
+    return redirect('admin_skills')
 
 # ============================
 #          EMPLOYERS
@@ -234,9 +276,28 @@ def signup_page(request):
         phone = request.POST.get("phone_number", "")
         birthday = request.POST.get("birthday", None)
 
+        # Preserve entered (non-password) fields when re-rendering the form
+        context = {
+            "first_name": first_name,
+            "last_name": last_name,
+            "username": username,
+            "email": email,
+            "phone_number": phone,
+            "birthday": birthday,
+            "role": role,
+        }
+
         if password != password2:
             messages.error(request, "Passwords do not match.")
-            return render(request, "main/signup.html")
+            context["password_invalid"] = True
+            return render(request, "main/signup.html", context)
+
+        # Password policy validation
+        import re
+        if len(password) < 8 or not re.search(r"[A-Z]", password) or not re.search(r"\d", password) or not re.search(r"[^A-Za-z0-9]", password):
+            messages.error(request, "Password must be at least 8 characters and include at least one uppercase letter, one number, and one symbol.")
+            context["password_invalid"] = True
+            return render(request, "main/signup.html", context)
 
         try:
             # 1. Create User with role and phone (since they are now in your Custom User model)
@@ -260,7 +321,7 @@ def signup_page(request):
             
         except IntegrityError:
             messages.error(request, "Username or Email already registered.")
-            return render(request, "main/signup.html")
+            return render(request, "main/signup.html", context)
 
         messages.success(request, "Account created successfully. Please login.")
         return redirect("login")
@@ -1403,5 +1464,26 @@ def toggle_save_job(request, job_id):
     
     return redirect(request.META.get('HTTP_REFERER', 'find_job'))
 
+from .models import Skill
 
-
+def seed_skills_view(request):
+    skill_list = [
+        ("Python", "Advanced", "Backend development"),
+        ("JavaScript", "Intermediate", "Frontend scripting"),
+        ("SQL", "Advanced", "Database management"),
+        ("Project Management", "Intermediate", "Team coordination"),
+        ("Communication", "Expert", "Professional soft skill"),
+    ]
+    
+    for name, level, desc in skill_list:
+        # get_or_create prevents duplicates
+        Skill.objects.get_or_create(
+            name=name, 
+            defaults={
+                'level': level, 
+                'description': desc, 
+                'user': None  # This makes it a "Global" skill
+            }
+        )
+    
+    return redirect('admin_skills')
