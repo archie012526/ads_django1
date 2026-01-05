@@ -3,6 +3,12 @@ body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
     background: #d9d5d5;
+    scroll-behavior: smooth;
+}
+
+/* Smooth transitions for interactive elements */
+a, button, input, textarea, select {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .page-wrapper {
@@ -94,6 +100,12 @@ body {
     border-radius: 10px;
     padding-bottom: 20px;
     border: 1px solid #ddd;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
 }
 
 .profile-banner {
