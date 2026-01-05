@@ -193,6 +193,10 @@ def employer_dashboard(request):
     # Get total interviews scheduled
     total_interviews = JobApplication.objects.filter(job__in=employer_jobs, status='Interview').count()
     
+    # Get notifications
+    recent_notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:5]
+    unread_notifications_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    
     # Get recent applicants
     recent_applicants = JobApplication.objects.filter(job__in=employer_jobs).select_related('user', 'job').order_by('-applied_at')[:5]
     
@@ -231,6 +235,8 @@ def employer_dashboard(request):
         'recent_applicants': recent_applicants,
         'recent_conversations': recent_conversations,
         'unread_messages_count': unread_messages_count,
+        'recent_notifications': recent_notifications,
+        'unread_notifications_count': unread_notifications_count,
     }
     return render(request, "employers/dashboard.html", context)
 
@@ -1638,6 +1644,45 @@ def toggle_save_job(request, job_id):
 
 from .models import Skill
 
+# Helper: Build employer conversation list (job applicants with last message/unread counts)
+def _get_employer_conversations(user):
+    employer_jobs = Job.objects.filter(user=user)
+    job_applicants = JobApplication.objects.filter(job__in=employer_jobs).select_related('user', 'job')
+
+    conversations = {}
+    for application in job_applicants:
+        applicant = application.user
+        # Find last message exchanged (if any)
+        last_msg = Message.objects.filter(
+            Q(sender=user, receiver=applicant) | Q(sender=applicant, receiver=user),
+            is_deleted=False
+        ).select_related('sender', 'receiver').order_by('-sent_at').first()
+
+        # Count unread messages from this applicant to employer
+        unread_count = Message.objects.filter(
+            sender=applicant,
+            receiver=user,
+            is_read=False,
+            is_deleted=False
+        ).count()
+
+        # Only set once per applicant; prefer the latest message info if already present
+        if applicant not in conversations or (last_msg and conversations[applicant]['last_message'] and last_msg.sent_at > conversations[applicant]['last_message'].sent_at):
+            conversations[applicant] = {
+                'user': applicant,
+                'display_name': applicant.profile.full_name or applicant.username,
+                'avatar_url': applicant.profile.profile_image.url if applicant.profile.profile_image else None,
+                'last_message': last_msg,
+                'applied_job': application.job.title,
+                'unread_count': unread_count,
+            }
+
+    return sorted(
+        conversations.values(),
+        key=lambda x: x['last_message'].sent_at if x['last_message'] else timezone.now(),
+        reverse=True
+    )
+
 # ============================
 # EMPLOYER MESSAGING
 # ============================
@@ -1647,37 +1692,10 @@ def employer_messages_inbox(request):
     if request.user.profile.role != 'employer':
         return HttpResponseForbidden()
     
-    # Get all job applicants for jobs posted by this employer
-    employer_jobs = Job.objects.filter(user=request.user)
-    job_applicants = JobApplication.objects.filter(job__in=employer_jobs).select_related('user', 'job')
-    
-    # Get messages sent by this employer
-    messages_sent = Message.objects.filter(sender=request.user).select_related('receiver', 'receiver__profile')
-    
-    # Build conversations dictionary with applicants
-    conversations = {}
-    
-    # Add conversations from job applicants
-    for application in job_applicants:
-        if application.user not in conversations:
-            # Get last message in conversation
-            last_msg = Message.objects.filter(
-                Q(sender=request.user, receiver=application.user) |
-                Q(sender=application.user, receiver=request.user),
-                is_deleted=False
-            ).select_related('sender', 'receiver').order_by('-sent_at').first()
-            
-            conversations[application.user] = {
-                'user': application.user,
-                'display_name': application.user.profile.full_name or application.user.username,
-                'avatar_url': application.user.profile.profile_image.url if application.user.profile.profile_image else None,
-                'last_message': last_msg,
-                'applied_job': application.job.title,
-                'unread_count': Message.objects.filter(sender=application.user, receiver=request.user, is_read=False).count()
-            }
-    
+    conversations = _get_employer_conversations(request.user)
+
     return render(request, "employers/employer_messages.html", {
-        "conversations": sorted(conversations.values(), key=lambda x: x['last_message'].sent_at if x['last_message'] else timezone.now(), reverse=True)
+        "conversations": conversations,
     })
 
 
@@ -1729,11 +1747,13 @@ def employer_message_conversation(request, applicant_id):
     
     # Get job applications from this applicant
     applications = JobApplication.objects.filter(user=applicant, job__user=request.user).select_related('job')
-    
+    conversations = _get_employer_conversations(request.user)
+
     return render(request, "employers/employer_conversation.html", {
         "applicant": applicant,
         "conversation": convo,
-        "applications": applications
+        "applications": applications,
+        "conversations": conversations,
     })
 
 
@@ -1810,4 +1830,26 @@ def employer_applicants(request):
     return render(request, "employers/employer_applicants.html", context)
 
 
+@login_required
+def employer_notifications(request):
+    """Employer notifications page"""
+    if request.user.profile.role != 'employer':
+        return HttpResponseForbidden()
+    
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    unread_count = notifications.filter(is_read=False).count()
+    
+    return render(request, "employers/employer_notifications.html", {
+        "notifications": notifications,
+        "unread_count": unread_count
+    })
 
+
+@login_required
+def employer_mark_all_read(request):
+    """Mark all employer notifications as read"""
+    if request.user.profile.role != 'employer':
+        return HttpResponseForbidden()
+    
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return redirect('employer_notifications')
